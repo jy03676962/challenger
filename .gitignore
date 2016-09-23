@@ -1,0 +1,14 @@
+/web/node_modules
+/web/npm-debug.log
+/web/dist
+/server/server
+*.log
+*.sublime-workspace
+.DS_Store
+*.zip
+*.db
+Carthage
+xcuserdata/
+log/
+games/
+Pods/
