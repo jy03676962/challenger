@@ -1,0 +1,94 @@
+@import './global.css';
+.root {
+	font-family: alien;
+	height: 100vh;
+}
+
+.container {
+	position: relative;
+	width: 100%;
+	height: 177.78vw;
+}
+
+.rootImg {
+	width: 100%;
+}
+
+.RankDataView {
+	position: absolute;
+	width: 91.927vw;
+	top: 0;
+	left: 4.04vw;
+}
+
+.RankHeaderView {
+	position: absolute;
+	width: 100%;
+	height: 7.865vw;
+	top: 1.3vw;
+	left: 0;
+}
+
+.RankHeaderView img {
+	width: 100%
+}
+
+.SeasonLabel {
+	position: absolute;
+	color: white;
+	font-size: 1.5vw;
+	text-align: center;
+	height: 7.865vw;
+	width: 6.4vw;
+	line-height: 7.865vw;
+	right: 0;
+	top: 0;
+}
+
+.RankListTitleLabel {
+	position: absolute;
+	color: white;
+	font-family: serif;
+	top: 0;
+	height: 1.6667vw;
+	line-height: 1.6667vw;
+	left: 1.98vw;
+	font-size: 1.2vw;
+}
+
+.CellImg {
+	position: absolute;
+	left: 1.98vw;
+	top: 0.13vw;
+	width: 1.875vw;
+	height: 1.875vw;
+}
+
+.CellLabel {
+	position: absolute;
+	height: 2.344vw;
+	line-height: 2.344vw;
+	top: 0;
+	color: white;
+}
+
+.CellPlayerLabel {
+	composes: CellLabel;
+	left: 8.28vw;
+	width: 10.78vw;
+	text-align: center;
+	font-family: serif;
+	font-size: 1vw;
+}
+
+.CellResult {
+	composes: CellLabel;
+	left: 25.3vw;
+	font-size: 1.5vw;
+}
+
+.CellDate {
+	composes: CellLabel;
+	left: 38.8vw;
+	font-size: 1.5vw;
+}

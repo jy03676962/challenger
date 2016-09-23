@@ -1,0 +1,58 @@
+@import './global.css';
+.leftBar {
+  float: left;
+}
+.rightBar {
+  float: right;
+}
+.centerBar {
+  float: left;
+  text-align: center;
+  color: green;
+  height: 60px;
+  line-height: 60px;
+}
+.message {
+  font-size: 14px;
+  text-align: center;
+  color: black;
+  height: 30px;
+  line-height: 30px;
+  margin: auto;
+  width: 140px;
+}
+.timer {
+  font-size: 20px;
+  text-align: center;
+  color: red;
+  height: 30px;
+  line-height: 30px;
+  margin: auto;
+  width: 140px;
+}
+.gold {
+  color: #FF3300;
+  margin-right: 20px;
+  text-align: right;
+  height: 30px;
+  line-height: 30px;
+}
+.energyBg {
+  float: right;
+  margin-right: 20px;
+  margin-top: 5px;
+  background-color: #666666;
+  width: 120px;
+  height: 20px;
+}
+.energy {
+  background-color: #66CC00;
+  height: 100%;
+}
+.energyText {
+  float: right;
+  margin-right: 10px;
+  height: 30px;
+  line-height: 30px;
+  color: black;
+}

@@ -1,0 +1,361 @@
+@import './global.css';
+.root {
+	height: 100vh;
+}
+
+.container {
+	position: relative;
+	width: 100%;
+	height: 177.78vw;
+}
+
+.rootImg {
+	width: 100%;
+}
+
+.callingImg {
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.callingText {
+	position: absolute;
+	top: 76.2vw;
+	left: 20vw;
+	width: 60vw;
+	text-align: center;
+	font-family: alien;
+	font-size: 18.52vw;
+	color: #00ff46;
+}
+
+.label {
+	color: white;
+	font-size: 2.41vw;
+}
+
+.timeLabel {
+	composes: label;
+	position: absolute;
+	left: 8.796vw;
+	top: 20.37vw;
+}
+
+.groupLabel {
+	composes: label;
+	position: absolute;
+	left: 8.796vw;
+	top: 27.778vw;
+}
+
+.value {
+	font-family: alien;
+	color: white;
+	font-size: 7.407vw;
+}
+
+.timeValue {
+	composes: value;
+	position: absolute;
+	right: 59.26vw;
+	top: 19.2vw;
+	width: 13vw;
+	text-align: right;
+}
+
+.groupValue {
+	composes: value;
+	position: absolute;
+	right: 59.26vw;
+	width: 13vw;
+	top: 26.4vw;
+	text-align: right;
+}
+
+.unit {
+	color: white;
+	font-size: 2.41vw;
+}
+
+.timeUnit {
+	composes: unit;
+	position: absolute;
+	left: 41.6667vw;
+	top: 20.37vw;
+}
+
+.groupUnit {
+	composes: unit;
+	position: absolute;
+	left: 41.6667vw;
+	top: 27.778vw;
+}
+
+.matchInfo {
+	position: absolute;
+	width: 443px;
+	height: 177px;
+	top: 18.52vw;
+	right: 8.333vw;
+}
+
+.matchLabel {
+	color: inherit;
+	font-size: 26px;
+}
+
+.matchTimeLabel {
+	composes: matchLabel;
+	position: absolute;
+	top: 20px;
+	left: 60px;
+}
+
+.matchGoldLabel {
+	composes: matchLabel;
+	position: absolute;
+	top: 100px;
+	left: 60px;
+}
+
+.matchValue {
+	color: inherit;
+	font-family: alien;
+	font-size: 80px;
+	text-align: right;
+}
+
+.matchTimeValue {
+	composes: matchValue;
+	position: absolute;
+	top: 10px;
+	width: 180px;
+	right: 25px;
+}
+
+.matchGoldValue {
+	composes: matchValue;
+	position: absolute;
+	top: 90px;
+	width: 180px;
+	right: 25px;
+}
+
+.history {
+	position: absolute;
+	width: 100%;
+	top: 44.91vw;
+	left: 0;
+	color: white;
+}
+
+.historyNumber {
+	color: inherit;
+	font-family: alien;
+	font-size: 3.24vw;
+	position: absolute;
+	left: 15.27778vw;
+	height: 5.185vw;
+	top: 0;
+	line-height: 5.185vw;
+}
+
+.currentNumber {
+	color: inherit;
+	font-family: alien;
+	font-size: 3.24vw;
+	position: absolute;
+	left: 15.27778vw;
+	top: 0;
+	height: 7.315vw;
+	line-height: 7.315vw;
+}
+
+.historyPlayer {
+	color: inherit;
+	font-size: 3.24vw;
+	position: absolute;
+	left: 20vw;
+	width: 43.98vw;
+	height: 5.185vw;
+	top: 0;
+	line-height: 5.185vw;
+	text-align: center;
+}
+
+.currentPlayer {
+	color: inherit;
+	font-family: alien;
+	font-size: 3.24vw;
+	position: absolute;
+	left: 20vw;
+	width: 43.98vw;
+	height: 7.315vw;
+	line-height: 7.315vw;
+	top: 0;
+	text-align: center;
+}
+
+.currentResultTitle {
+	color: inherit;
+	font-size: 2.6vw;
+	position: absolute;
+	left: 80.7vw;
+	top: 0;
+	height: 7.315vw;
+	line-height: 7.315vw;
+}
+
+.historyIcon {
+	position: absolute;
+	width: 4.259vw;
+	height: 4.259vw;
+	top: 0.463vw;
+	left: 66.6667vw;
+}
+
+.currentIcon {
+	position: absolute;
+	width: 4.259vw;
+	height: 4.259vw;
+	top: 1.574vw;
+	left: 66.6667vw;
+}
+
+.historyResultTitle {
+	color: inherit;
+	font-size: 2.6vw;
+	position: absolute;
+	left: 75vw;
+	height: 5.185vw;
+	top: 0;
+	line-height: 5.185vw;
+}
+
+.historyResult {
+	color: inherit;
+	font-family: alien;
+	font-size: 3.24vw;
+	position: absolute;
+	right:7.4vw;
+	height: 5.185vw;
+	top: 0;
+	line-height: 5.185vw;
+}
+
+.matchCell {
+	position: absolute;
+	width: 100%;
+	height: 7.315vw;
+	top: 61.48vw;
+}
+
+.matchCell img {
+	display: block;
+	margin: 0 auto;
+}
+
+.delayImg {
+	position: absolute;
+	display: block;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+
+.delayText {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	line-height: 3.333vw;
+	text-align: center;
+	color: white;
+	font-family: alien;
+	font-size: 1.38889vw;
+	top: 0;
+	left: 0;
+}
+
+.prepareCell {
+	position: absolute;
+	width: 100%;
+	height: 10.926vw;
+	left: 0;
+	top: 68.98vw;
+	color: #00ff46;
+}
+
+.prepareNumber {
+	position: absolute;
+	color: inherit;
+	font-family: alien;
+	font-size: 7.4vw;
+	left: 13.8889vw;
+	height: 100%;
+	line-height: 10.926vw;
+}
+
+.prepareBg {
+	position: absolute;
+	right: 4vw;
+	top: 0.926vw;
+	height: 9.537vw;
+	width: 68vw;
+}
+
+.prepareText {
+	position: absolute;
+	color: inherit;
+	font-size: 2.4vw;
+	left: 78.8889vw;
+	top: 7.13vw;
+}
+
+.waitingNumber {
+	position: absolute;
+	color: inherit;
+	font-family: alien;
+	font-size: 3.24vw;
+	left: 10.19vw;
+	height: 100%;
+	line-height: 5.37vw;
+	width: 7.87vw;
+	text-align: center;
+}
+
+.waitingText {
+	position: absolute;
+	color: inherit;
+	font-size: 1.85vw;
+	left: 20.19vw;
+	height: 100%;
+	line-height: 5.37vw;
+	width: 10.19vw;
+	text-align: center;
+}
+
+.waitingTime {
+	position: absolute;
+	color: inherit;
+	font-size: 1.85vw;
+	right: 4.26vw;
+	height: 100%;
+	line-height: 5.37vw;
+}
+
+.log {
+	position: absolute;
+	top: 148.4vw;
+	left: 6.85vw;
+	width: 59.26vw
+}
+
+.wechat {
+	position: absolute;
+	top: 149.8vw;
+	width: 16.2vw;
+	height: 16.2vw;
+	right: 8.333vw;
+}

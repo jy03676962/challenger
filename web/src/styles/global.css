@@ -1,0 +1,28 @@
+@font-face {
+	font-family: alien;
+	src: url('../assets/alienleaguebold.ttf');
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+body {
+	font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif, "宋体";
+	font-size: 16px;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	margin: 0;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+img {
+	max-width: 100%;
+}

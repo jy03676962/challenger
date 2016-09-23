@@ -1,0 +1,41 @@
+@import './global.css';
+div.root {}
+div.left {
+  float: left;
+  width: 50%;
+}
+div.right {
+  float: right;
+  margin: 10px;
+  width: 48%;
+  height: 600px;
+}
+div.block {
+  background-color: #C1C1C1;
+  margin: 10px;
+  padding: 10px;
+  position: relative;
+}
+div.block button {
+  text-align: center;
+  right: 20px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+div.block .content {
+  display: inline-block;
+  margin: 5px;
+  width: 100px;
+  text-align: right;
+}
+div.block .title {
+  display: inline-block;
+  margin: 5px;
+}
+div.right textarea {
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  resize: none;
+}

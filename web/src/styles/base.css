@@ -1,0 +1,8 @@
+@import './global.css';
+.base-div {
+  text-align: center;
+}
+ul.menu li {
+  display: inline;
+  padding: 0 0.5em
+}

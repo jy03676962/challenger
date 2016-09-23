@@ -1,0 +1,19 @@
+warmupTime = 22000 # 热身阶段总时长
+warmupButtonInterval = 3000 # 热身阶段按钮逐渐亮起的间隔
+
+[[lasers]]
+time = 17500
+large = [1,0,0,1,0,0,0,0,0,0]
+small = [1,0,0,0,0]
+[[lasers]]
+time = 18500
+large = [1,1,0,1,0,0,1,1,0,0]
+small = [1,0,0,1,1]
+[[lasers]]
+time = 19500
+large = [1,1,1,1,1,1,1,1,1,1]
+small = [1,1,1,1,1]
+[[lasers]]
+time = 20500
+large = [0,0,0,0,0,0,0,0,0,0]
+small = [0,0,0,0,0]

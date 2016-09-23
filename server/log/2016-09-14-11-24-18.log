@@ -1,0 +1,6 @@
+2016/09/14 11:24:18 setup log system done
+2016/09/14 11:24:18 reading cfg done
+2016/09/14 11:24:18 listen http: 172.16.10.173:3000
+2016/09/14 11:24:18 listen tcp: 172.16.10.173:4000
+2016/09/14 11:24:18 listen udp: 172.16.10.173:5000
+2016/09/14 11:24:18 inbox got connection, current:1
