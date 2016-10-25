@@ -1,11 +1,12 @@
 package core
 
 import (
-	"github.com/BurntSushi/toml"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/BurntSushi/toml"
 )
 
 var _ = log.Printf
@@ -145,6 +146,13 @@ type MatchOptions struct {
 	SurvivalRank          [4][4]int          `json:"-"`
 	SurvivalTeamRank      [4][4]int          `json:"-"`
 	LocationTransfers     []LocationTransfer `json:"-"`
+
+	//Timerift
+	FakeBooks      [5]int
+	PowerPoints    [6]int
+	CandlesColor   [6]int
+	Constellations [3]string
+	ElementSymbol  [6]int
 }
 
 type ScoreInfo [4]map[string]interface{}

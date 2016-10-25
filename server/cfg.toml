@@ -263,3 +263,12 @@ small = [1, 1, 1, 0, 0]
 [[locationTransfers]]
 from = 3
 to = 3
+
+
+#Timerift
+#Room1
+FakeBooks = [ 1, 2, 3, 4, 5]#正确的假书编号
+PowerPoint = [ 6, 3, 1, 2, 5, 4]#正确的法阵点顺序编号
+CandlesColor = [ 1, 2, 3, 4, 5, 6]#正确的颜色编号
+Constellations = ["a", "b", "c"]#正确的星座名字
+ElementSymbol = [1, 2, 3, 4, 5, 6]
