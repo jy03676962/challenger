@@ -129,6 +129,7 @@ func NewExitRoom() *ExitRoom {
 	exR.Bgm = 0
 	exR.ButtonNextStage = false
 	exR.LightStar = 0
+	return &exR
 }
 
 func NewRoom1() *Room1 {
@@ -139,7 +140,7 @@ func NewRoom1() *Room1 {
 	r1.DoorMirror = 0
 	r1.DoorWardrobe = 0
 	r1.LightStatus = false
-	return r1
+	return &r1
 }
 
 func NewRoom2() *Room2 {
@@ -185,13 +186,13 @@ func NewRoom2() *Room2 {
 	r2.MagicBooksLightStatus = false
 	r2.MagicWords = 0
 	r2.Table = MagicTable{}
-	r2.Table.ButtonStatus = map[int]bool{
-		1: false,
-		2: false,
-		3: false,
-		4: false,
-		5: false,
-		6: false,
+	r2.Table.ButtonStatus = map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
+		6: 0,
 	}
 	r2.Table.CurrentAngle = 0
 	r2.Table.IsFinish = false
@@ -212,7 +213,7 @@ func NewRoom3() *Room3 {
 		5: 0,
 		6: 0,
 	}
-	CurrentCandlesLight = 6
+	r3.CurrentCandlesLight = 6
 	r3.DoorExit = 0
 	r3.InAnimation = false
 	r3.LightStatus = false
@@ -222,7 +223,7 @@ func NewRoom3() *Room3 {
 	r3.Table.IsFinish = false
 	r3.Table.IsUseful = false
 	r3.Table.IsDestroyed = false
-	r2.Step = 1
+	r3.Step = 1
 	return &r3
 }
 
@@ -248,7 +249,7 @@ func NewRoom5() *Room5 {
 	r5 := Room5{}
 	r5.Bgm = 0
 	r5.CurrentConstellationLight = 0
-	r5.ConstellationSymbol = map[string]int{
+	r5.ConstellationSymbol = map[string]bool{
 		"A": false,
 		"B": false,
 		"C": false,
@@ -260,11 +261,11 @@ func NewRoom5() *Room5 {
 	r5.LightStatus = false
 	r5.MagicWords = 0
 	r5.Table = MagicTable{}
-	r5.Table.ButtonStatus = map[int]bool{
-		1: false,
-		2: false,
-		3: false,
-		4: false,
+	r5.Table.ButtonStatus = map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
 	}
 	r5.Table.IsFinish = false
 	r5.Table.IsUseful = false
@@ -290,13 +291,13 @@ func NewRoom6() *Room6 {
 		6: 0,
 	}
 	r6.Table = MagicTable{}
-	r6.Table.ButtonStatus = map[int]bool{
-		1: false,
-		2: false,
-		3: false,
-		4: false,
-		5: false,
-		6: false,
+	r6.Table.ButtonStatus = map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
+		6: 0,
 	}
 	return &r6
 }

@@ -17,7 +17,6 @@ import (
 	"github.com/labstack/echo"
 	st "github.com/labstack/echo/engine/standard"
 	mw "github.com/labstack/echo/middleware"
-	"golang.org/x/net/websocket"
 )
 
 const (
@@ -87,8 +86,6 @@ func main() {
 	}
 
 	core.GetOptions()
-	core.GetSurvey()
-	core.GetLaserPair()
 
 	log.Println("reading cfg done")
 
@@ -100,42 +97,6 @@ func main() {
 	ec.Static("/", "public")
 	ec.Static("/api/asset/", "api_public")
 	ec.Use(mw.Logger())
-	ec.Get("/ws", st.WrapHandler(websocket.Handler(func(ws *websocket.Conn) {
-		srv.ListenWebSocket(ws)
-	})))
-	ec.Post("/api/addteam", func(c echo.Context) error {
-		return srv.AddTeam(c)
-	})
-	ec.Post("/api/resetqueue", func(c echo.Context) error {
-		return srv.ResetQueue(c)
-	})
-	ec.Get("/api/history", func(c echo.Context) error {
-		return srv.GetHistory(c)
-	})
-	ec.Post("/api/start_answer", func(c echo.Context) error {
-		return srv.MatchStartAnswer(c)
-	})
-	ec.Post("/api/stop_answer", func(c echo.Context) error {
-		return srv.MatchStopAnswer(c)
-	})
-	ec.Get("/api/survey", func(c echo.Context) error {
-		return srv.GetSurvey(c)
-	})
-	ec.Post("/api/answer", func(c echo.Context) error {
-		return srv.UpdateQuestionInfo(c)
-	})
-	ec.Get("/api/answering", func(c echo.Context) error {
-		return srv.GetAnsweringMatchData(c)
-	})
-	ec.Post("/api/update_player", func(c echo.Context) error {
-		return srv.UpdatePlayerData(c)
-	})
-	ec.Post("/api/update_match", func(c echo.Context) error {
-		return srv.UpdateMatchData(c)
-	})
-	ec.Get("/api/sender_list", func(c echo.Context) error {
-		return srv.GetMainArduinoList(c)
-	})
 	ec.Get("/api/allhistory", func(c echo.Context) error {
 		if rankTestData == nil {
 			return c.JSON(http.StatusOK, nil)
