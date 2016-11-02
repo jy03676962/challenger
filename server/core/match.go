@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -39,8 +40,9 @@ type Match struct {
 	opt *MatchOptions
 	srv *Srv
 
-	Stage     string
-	TotalTime float64
+	Stage      string
+	TotalTime  float64
+	CurrentBgm string
 
 	msgCh   chan *InboxMessage
 	closeCh chan bool
@@ -119,7 +121,348 @@ func (m *Match) handleInputs() bool {
 
 func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来改变服务器变量
 	cmd := msg.GetCmd()
-	switch cmd {
+	if cmd == "hb" {
+		id := msg.GetStr("ID")
+		switch id {
+		case "B-1":
+			if m.CurrentBgm != msg.GetStr("MP3") {
+
+			}
+		case "L-1":
+			c := []rune(msg.GetStr("RL"))
+			var open bool
+			for k, v := range c {
+				if v == '1' {
+					open = true
+				} else if v == '0' {
+					open = false
+				}
+				switch k {
+				case 1:
+					if m.livingRoom.LightStatus != open {
+
+					}
+				case 2:
+					if m.library.LightStatus != open {
+
+					}
+				case 3:
+					if m.stairRoom.LightStatus != open {
+
+					}
+				case 4:
+					if m.magicLab.LightStatus != open {
+
+					}
+				case 5:
+					if m.starTower.LightStatus != open {
+
+					}
+				case 6:
+					if m.endRoom.LightStatus != open {
+
+					}
+				}
+			}
+		case "D-0":
+			if msg.GetStr("ST") == "1" {
+				m.entranceRoom.DoorStatus = DoorOpen
+			} else {
+				m.entranceRoom.DoorStatus = DoorClose
+			}
+		case "R-1-1":
+			if msg.GetStr("ST") == "1" {
+				m.livingRoom.DoorWardrobe = DoorOpen
+			} else {
+				m.livingRoom.DoorWardrobe = DoorClose
+			}
+		case "R-1-2":
+			if msg.GetStr("ST") == "1" {
+				m.livingRoom.CandleStatus = 1
+			} else {
+				m.livingRoom.CandleStatus = 0
+			}
+		case "R-1-3":
+			if msg.GetStr("ST") == "1" {
+				m.livingRoom.CrystalStatus = 1
+			} else {
+				m.livingRoom.CrystalStatus = 0
+			}
+		case "D-1":
+			if msg.GetStr("ST") == "1" {
+				m.livingRoom.DoorMirror = DoorOpen
+			} else {
+				m.livingRoom.DoorMirror = DoorClose
+			}
+		case "R-2-1":
+			c := []rune(msg.GetStr("BK"))
+			var open bool
+			for k, v := range c {
+				if v == '1' {
+					open = true
+				} else {
+					open = false
+				}
+				if open != m.library.FakeBooks[k] {
+					//不统一
+				}
+			}
+			mode := msg.GetStr("MD")
+			if mode == "1" {
+				m.library.InAnimation = true
+			} else {
+				m.library.InAnimation = false
+			}
+		case "R-2-2":
+			c := []rune(msg.GetStr("C"))
+			var s int
+			for k, v := range c {
+				if v == '1' {
+					s = 1
+				} else {
+					s = 0
+				}
+				if m.library.Candles[k] != s {
+					//TODO
+				}
+			}
+		case "R-2-3":
+			c := []rune(msg.GetStr("C"))
+			var s int
+			for k, v := range c {
+				if v == '1' {
+					s = 1
+				} else {
+					s = 0
+				}
+				if m.library.Candles[k+3] != s {
+					//TODO
+				}
+			}
+		case "R-2-4":
+			c := []rune(msg.GetStr("C"))
+			var s int
+			for k, v := range c {
+				if v == '1' {
+					s = 1
+				} else {
+					s = 0
+				}
+				if m.library.Candles[k+6] != s {
+					//TODO
+				}
+			}
+		case "R-2-5":
+			c := []rune(msg.GetStr("C"))
+			var s int
+			for k, v := range c {
+				if v == '1' {
+					s = 1
+				} else {
+					s = 0
+				}
+				if m.library.Candles[k+9] != s {
+					//TODO
+				}
+			}
+		case "R-2-6":
+			if msg.GetStr("U") == "1" {
+				if m.library.Table.IsUseful != true {
+					//TODO
+				}
+			} else {
+				if m.library.Table.IsUseful != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("F") == "1" {
+				if m.library.Table.IsFinish != true {
+					//TODO
+				}
+			} else {
+				if m.library.Table.IsFinish != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("D") == "1" {
+				if m.library.Table.IsDestroyed != true {
+					//TODO
+				}
+			} else {
+				if m.library.Table.IsDestroyed != false {
+					//TODO
+				}
+			}
+			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			m.library.Table.CurrentAngle, _ = strconv.Atoi(msg.GetStr("A"))
+			m.dealAngle()
+			m.dealMagicWords(m.library, m.library.MagicWords)
+		case "R-2-7":
+			if msg.GetStr("ST") == "1" {
+				if m.library.MagicBooksLightStatus[0] != true {
+					//TODO
+				}
+			} else {
+				if m.library.MagicBooksLightStatus[0] != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("LED") == "1" {
+				if m.library.MagicBooksLEDStatus[0] != true {
+					//TODO
+				}
+			} else {
+				if m.library.MagicBooksLEDStatus[0] != false {
+					//TODO
+				}
+			}
+		case "R-2-8":
+			if msg.GetStr("ST") == "1" {
+				if m.library.MagicBooksLightStatus[1] != true {
+					//TODO
+				}
+			} else {
+				if m.library.MagicBooksLightStatus[1] != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("LED") == "1" {
+				if m.library.MagicBooksLEDStatus[1] != true {
+					//TODO
+				}
+			} else {
+				if m.library.MagicBooksLEDStatus[1] != false {
+					//TODO
+				}
+			}
+		case "D-2":
+			if msg.GetStr("ST") == "1" {
+				if m.library.DoorExit != DoorOpen {
+
+				}
+			} else {
+				if m.library.DoorExit != DoorClose {
+
+				}
+			}
+		case "R-3-1":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[1] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[1], _ = strconv.Atoi(color)
+			}
+		case "R-3-2":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[2] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[2], _ = strconv.Atoi(color)
+			}
+		case "R-3-3":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[3] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[3], _ = strconv.Atoi(color)
+			}
+		case "R-3-4":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[4] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[4], _ = strconv.Atoi(color)
+			}
+		case "R-3-5":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[5] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[5], _ = strconv.Atoi(color)
+			}
+		case "R-3-6":
+			st := msg.GetStr("ST")
+			if st == "0" {
+				m.stairRoom.Candles[6] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[6], _ = strconv.Atoi(color)
+			}
+		case "R-3-7":
+			if msg.GetStr("U") == "1" {
+				if m.stairRoom.Table.IsUseful != true {
+					//TODO
+				}
+			} else {
+				if m.stairRoom.Table.IsUseful != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("F") == "1" {
+				if m.stairRoom.Table.IsFinish != true {
+					//TODO
+				}
+			} else {
+				if m.stairRoom.Table.IsFinish != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("D") == "1" {
+				if m.stairRoom.Table.IsDestroyed != true {
+					//TODO
+				}
+			} else {
+				if m.stairRoom.Table.IsDestroyed != false {
+					//TODO
+				}
+			}
+			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
+		case "D-3":
+			if msg.GetStr("ST") == "1" {
+				if m.library.DoorExit != DoorOpen {
+
+				}
+			} else {
+				if m.library.DoorExit != DoorClose {
+
+				}
+			}
+		case "R-4-1":
+		case "R-4-2":
+		case "R-4-3":
+		case "R-4-4":
+		case "R-4-5":
+		case "R-4-6":
+		case "D-4":
+		case "R-5-1":
+		case "R-5-2":
+		case "R-5-3":
+		case "R-5-4":
+		case "R-5-5":
+		case "R-5-6":
+		case "R-5-7":
+		case "D-5":
+		case "R-6-1":
+		case "R-6-2":
+		case "R-6-3":
+		case "R-6-4":
+		case "R-6-5":
+		case "R-6-6":
+		case "R-6-7":
+		case "R-6-8":
+		case "R-6-9":
+		case "D-6":
+		}
+	} else if cmd == "nextStep" {
+
+	} else if cmd == "init" {
+
 	}
 }
 
@@ -153,14 +496,26 @@ func (m *Match) gameStage() {
 		}
 	case StageRoom2:
 		if m.library.Step == 1 {
-			if m.library.CurrentFakeBookLight == 5 {
+			if m.library.MagicBooksLEDStatus[0] != true {
+				m.library.MagicBooksLEDStatus[0] = true
+				//TODO
+			}
+			if m.library.MagicBooksLEDStatus[1] != true {
+				m.library.MagicBooksLEDStatus[1] = true
+				//TODO
+			}
+			if m.fakeActNum() == 5 {
 				if m.ensureFakeBooks() {
 					m.library.InAnimation = true
 					m.fakeBooksAnimation()
 					m.library.CurrentFakeBookLight = 15
 					m.library.Table.IsUseful = true
+					m.library.Table.MarkAngle = m.library.Table.CurrentAngle
 					m.library.Step = 2
 					log.Println("room2 step 1 finish!")
+				} else {
+					m.library.CurrentFakeBookLight = 0
+					m.fakeBooksErrorAnimation()
 				}
 			}
 		} else if m.library.Step == 2 {
@@ -339,8 +694,28 @@ func (m *Match) room1Animation() {
 
 }
 
+//room2
+func (m *Match) fakeActNum() int {
+	num := 0
+	for _, v := range m.library.FakeBooks {
+		if v {
+			num++
+		}
+	}
+	return num
+}
 func (m *Match) fakeBooksAnimation() {
 
+}
+
+func (m *Match) fakeBooksErrorAnimation() {
+
+}
+
+func (m *Match) dealAngle() {
+	if !m.library.Table.IsUseful {
+		return
+	}
 }
 
 func (m *Match) ensureFakeBooks() bool {
@@ -436,4 +811,23 @@ func (m *Match) endingAnimation(s string) {
 	case StageRoom5:
 	case StageRoom6:
 	}
+	//delay Xs
+	//control door
+}
+
+func (m *Match) dealMagicWords(room interface{}, magicWords int) {
+	if magicWords == 0 {
+		return
+	}
+	switch room.(type) {
+	case *Room2:
+		if m.library.Table.IsUseful && !m.library.Table.IsDestroyed {
+
+		}
+	case *Room3:
+	case *Room4:
+	case *Room5:
+	case *Room6:
+	}
+
 }

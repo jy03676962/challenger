@@ -18,11 +18,6 @@ const (
 
 var _ = log.Println
 
-type pendingMatch struct {
-	ids  []string
-	mode string
-}
-
 type Srv struct {
 	inbox            *Inbox
 	inboxMessageChan chan *InboxMessage
@@ -46,11 +41,6 @@ func NewSrv(isSimulator bool) *Srv {
 }
 
 func (s *Srv) Run(tcpAddr string, udpAddr string, dbPath string) {
-	//e := s.db.connect(dbPath)
-	//if e != nil {
-	//log.Printf("open database error:%v\n", e.Error())
-	//os.Exit(1)
-	//}
 	go s.listenTcp(tcpAddr)
 	s.mainLoop()
 }
@@ -170,7 +160,6 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 func (s *Srv) startNewMatch() {
 	m := NewMatch(s)
 	go m.Run()
-	//s.sendMsgs("newMatch", mid, InboxAddressTypeAdminDevice, InboxAddressTypeSimulatorDevice)
 }
 
 func (s *Srv) sendMsg(cmd string, data interface{}, id string, t InboxAddressType) {

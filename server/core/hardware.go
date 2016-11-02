@@ -30,8 +30,8 @@ type Room2 struct {
 	FakeBooks             map[int]bool //假书no.? 是否开
 	CurrentFakeBookLight  int          //已经点亮的假书
 	AnimationFakeBooks    bool
-	MagicBooksLEDStatus   bool //led开关
-	MagicBooksLightStatus bool //射灯开关
+	MagicBooksLEDStatus   [2]bool //led开关
+	MagicBooksLightStatus [2]bool //射灯开关
 	Candles               map[int]int
 	DoorExit              int
 	LightStatus           bool
@@ -182,8 +182,10 @@ func NewRoom2() *Room2 {
 	r2.CurrentFakeBookLight = 0
 	r2.InAnimation = false
 	r2.LightStatus = false
-	r2.MagicBooksLEDStatus = false
-	r2.MagicBooksLightStatus = false
+	r2.MagicBooksLEDStatus[0] = false
+	r2.MagicBooksLEDStatus[1] = false
+	r2.MagicBooksLightStatus[0] = false
+	r2.MagicBooksLightStatus[1] = false
 	r2.MagicWords = 0
 	r2.Table = MagicTable{}
 	r2.Table.ButtonStatus = map[int]int{
