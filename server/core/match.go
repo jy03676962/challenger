@@ -434,20 +434,189 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-4-1":
+			if msg.GetStr("USF") == "1" {
+				m.magicLab.Stands[0].IsPowerOn = true
+			} else {
+				m.magicLab.Stands[0].IsPowerOn = false
+			}
+			if msg.GetStr("P") == "1" {
+				m.poweringAnimation()
+			} else if msg.GetStr("P") == "2" {
+				m.magicLab.Stands[0].IsPowerful = true
+				m.poweDownAnimation()
+			}
 		case "R-4-2":
+			if msg.GetStr("USF") == "1" {
+				m.magicLab.Stands[1].IsPowerOn = true
+			} else {
+				m.magicLab.Stands[1].IsPowerOn = false
+			}
+			if msg.GetStr("P") == "1" {
+				m.poweringAnimation()
+			} else if msg.GetStr("P") == "2" {
+				m.magicLab.Stands[1].IsPowerful = true
+				m.poweDownAnimation()
+			}
 		case "R-4-3":
+			if msg.GetStr("USF") == "1" {
+				m.magicLab.Stands[2].IsPowerOn = true
+			} else {
+				m.magicLab.Stands[2].IsPowerOn = false
+			}
+			if msg.GetStr("P") == "1" {
+				m.poweringAnimation()
+			} else if msg.GetStr("P") == "2" {
+				m.magicLab.Stands[2].IsPowerful = true
+				m.poweDownAnimation()
+			}
 		case "R-4-4":
+			if msg.GetStr("USF") == "1" {
+				m.magicLab.Stands[3].IsPowerOn = true
+			} else {
+				m.magicLab.Stands[3].IsPowerOn = false
+			}
+			if msg.GetStr("P") == "1" {
+				m.poweringAnimation()
+			} else if msg.GetStr("P") == "2" {
+				m.magicLab.Stands[3].IsPowerful = true
+				m.poweDownAnimation()
+			}
 		case "R-4-5":
+			if msg.GetStr("U") == "1" {
+				if m.magicLab.Table.IsUseful != true {
+					//TODO
+				}
+			} else {
+				if m.magicLab.Table.IsUseful != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("F") == "1" {
+				if m.magicLab.Table.IsFinish != true {
+					//TODO
+				}
+			} else {
+				if m.magicLab.Table.IsFinish != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("D") == "1" {
+				if m.magicLab.Table.IsDestroyed != true {
+					//TODO
+				}
+			} else {
+				if m.magicLab.Table.IsDestroyed != false {
+					//TODO
+				}
+			}
+			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
+
 		case "R-4-6":
+			if msg.GetStr("ST") == "1" {
+				if !m.magicLab.DeskLight {
+
+				}
+			} else {
+				if m.magicLab.DeskLight {
+
+				}
+			}
 		case "D-4":
+			if msg.GetStr("ST") == "1" {
+				if m.magicLab.DoorExit != DoorOpen {
+
+				}
+			} else {
+				if m.magicLab.DoorExit != DoorClose {
+
+				}
+			}
 		case "R-5-1":
+			c := []rune(msg.GetStr("L"))
+			for k, v := range c {
+				if m.starTower.ConstellationLight[k] != v {
+					//集体处理
+				}
+			}
 		case "R-5-2":
+			c := []rune(msg.GetStr("L"))
+			for k, v := range c {
+				if m.starTower.ConstellationLight[k+5] != v {
+					//集体处理
+				}
+			}
 		case "R-5-3":
+			c := []rune(msg.GetStr("L"))
+			for k, v := range c {
+				if m.starTower.ConstellationLight[k+10] != v {
+					//集体处理
+				}
+			}
 		case "R-5-4":
+			c := []rune(msg.GetStr("L"))
+			for k, v := range c {
+				if m.starTower.ConstellationLight[k+15] != v {
+					//集体处理
+				}
+			}
 		case "R-5-5":
+			c := []rune(msg.GetStr("L"))
+			for k, v := range c {
+				if m.starTower.ConstellationLight[k+20] != v {
+					//集体处理
+				}
+			}
 		case "R-5-6":
+			if msg.GetStr("U") == "1" {
+				if m.starTower.Table.IsUseful != true {
+					//TODO
+				}
+			} else {
+				if m.starTower.Table.IsUseful != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("F") == "1" {
+				if m.starTower.Table.IsFinish != true {
+					//TODO
+				}
+			} else {
+				if m.starTower.Table.IsFinish != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("D") == "1" {
+				if m.starTower.Table.IsDestroyed != true {
+					//TODO
+				}
+			} else {
+				if m.starTower.Table.IsDestroyed != false {
+					//TODO
+				}
+			}
+			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
 		case "R-5-7":
+			if msg.GetStr("ST") == "1" {
+				if m.starTower.DoorMagicRod != true {
+					//TODO
+				}
+			} else {
+				if m.starTower.DoorMagicRod != false {
+					//TODO
+				}
+			}
 		case "D-5":
+			if msg.GetStr("ST") == "1" {
+				if m.starTower.DoorExit != DoorOpen {
+
+				}
+			} else {
+				if m.starTower.DoorExit != DoorClose {
+
+				}
+			}
 		case "R-6-1":
 		case "R-6-2":
 		case "R-6-3":
@@ -763,6 +932,14 @@ func (m *Match) ensureMagicStandsPowerFul() bool {
 		}
 	}
 	return true
+}
+
+func (m *Match) poweringAnimation() {
+
+}
+
+func (m *Match) poweDownAnimation() {
+
 }
 
 //room5
