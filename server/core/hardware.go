@@ -72,7 +72,7 @@ type Room5 struct {
 	MagicWords                int
 	Table                     MagicTable
 	ConstellationSymbol       map[string]bool //星座符号
-	ConstellationLight        []bool
+	ConstellationLight        [53]bool
 	CurrentConstellationLight int //当前点亮法阵台的星座数量
 	LightStatus               bool
 	DoorExit                  int
@@ -83,16 +83,19 @@ type Room5 struct {
 
 //献祭房间
 type Room6 struct {
-	InAnimation   bool
-	MagicWords    int
-	Table         MagicTable
-	NextStep      int
-	CurrentSymbol int
-	PowerPoint    map[int]int
-	LightStatus   bool
-	DoorExit      int
-	Step          int
-	Bgm           int
+	InAnimation      bool
+	MagicWords       int
+	Table            MagicTable
+	NextStep         int
+	CurrentSymbol    int
+	PowerPoint       map[int]int
+	PowerPointUseful [6]int
+	Candles          map[int]int
+	WaterLight       bool
+	LightStatus      bool
+	DoorExit         int
+	Step             int
+	Bgm              int
 }
 
 type ExitRoom struct {
@@ -260,8 +263,8 @@ func NewRoom5() *Room5 {
 		"C": false,
 		"D": false,
 	}
-	for _, v := range r5.ConstellationLight {
-		v = false
+	for i := 0; i < 53; i++ {
+		r5.ConstellationLight[i] = false
 	}
 	r5.DoorExit = 0
 	r5.DoorMagicRod = 0
@@ -290,6 +293,18 @@ func NewRoom6() *Room6 {
 	r6.LightStatus = false
 	r6.MagicWords = 0
 	r6.NextStep = 0
+	r6.Candles = map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
+		6: 0,
+	}
+	for i := 0; i < 6; i++ {
+		r6.PowerPointUseful[i] = 0
+	}
+	r6.WaterLight = false
 	r6.PowerPoint = map[int]int{
 		1: 0,
 		2: 0,

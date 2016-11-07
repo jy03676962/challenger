@@ -79,7 +79,6 @@ func (m *Match) initHardwareData() {
 	m.endRoom = NewRoom6()
 	m.entranceRoom = NewEntranceRoom()
 	m.exitRoom = NewExitRoom()
-
 }
 
 func (m *Match) Run() {
@@ -348,12 +347,20 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		case "R-3-1":
 			st := msg.GetStr("ST")
 			if st == "0" {
+				m.stairRoom.Candles[0] = 0
+			} else {
+				color := msg.GetStr("C")
+				m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+			}
+		case "R-3-2":
+			st := msg.GetStr("ST")
+			if st == "0" {
 				m.stairRoom.Candles[1] = 0
 			} else {
 				color := msg.GetStr("C")
 				m.stairRoom.Candles[1], _ = strconv.Atoi(color)
 			}
-		case "R-3-2":
+		case "R-3-3":
 			st := msg.GetStr("ST")
 			if st == "0" {
 				m.stairRoom.Candles[2] = 0
@@ -361,7 +368,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				color := msg.GetStr("C")
 				m.stairRoom.Candles[2], _ = strconv.Atoi(color)
 			}
-		case "R-3-3":
+		case "R-3-4":
 			st := msg.GetStr("ST")
 			if st == "0" {
 				m.stairRoom.Candles[3] = 0
@@ -369,7 +376,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				color := msg.GetStr("C")
 				m.stairRoom.Candles[3], _ = strconv.Atoi(color)
 			}
-		case "R-3-4":
+		case "R-3-5":
 			st := msg.GetStr("ST")
 			if st == "0" {
 				m.stairRoom.Candles[4] = 0
@@ -377,21 +384,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				color := msg.GetStr("C")
 				m.stairRoom.Candles[4], _ = strconv.Atoi(color)
 			}
-		case "R-3-5":
+		case "R-3-6":
 			st := msg.GetStr("ST")
 			if st == "0" {
 				m.stairRoom.Candles[5] = 0
 			} else {
 				color := msg.GetStr("C")
 				m.stairRoom.Candles[5], _ = strconv.Atoi(color)
-			}
-		case "R-3-6":
-			st := msg.GetStr("ST")
-			if st == "0" {
-				m.stairRoom.Candles[6] = 0
-			} else {
-				color := msg.GetStr("C")
-				m.stairRoom.Candles[6], _ = strconv.Atoi(color)
 			}
 		case "R-3-7":
 			if msg.GetStr("U") == "1" {
@@ -535,36 +534,66 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		case "R-5-1":
 			c := []rune(msg.GetStr("L"))
 			for k, v := range c {
-				if m.starTower.ConstellationLight[k] != v {
-					//集体处理
+				if v == '1' {
+					if m.starTower.ConstellationLight[k] {
+
+					}
+				} else {
+					if !m.starTower.ConstellationLight[k] {
+
+					}
 				}
 			}
 		case "R-5-2":
 			c := []rune(msg.GetStr("L"))
 			for k, v := range c {
-				if m.starTower.ConstellationLight[k+5] != v {
-					//集体处理
+				if v == '1' {
+					if m.starTower.ConstellationLight[k+5] {
+
+					}
+				} else {
+					if !m.starTower.ConstellationLight[k+5] {
+
+					}
 				}
 			}
 		case "R-5-3":
 			c := []rune(msg.GetStr("L"))
 			for k, v := range c {
-				if m.starTower.ConstellationLight[k+10] != v {
-					//集体处理
+				if v == '1' {
+					if m.starTower.ConstellationLight[k+10] {
+
+					}
+				} else {
+					if !m.starTower.ConstellationLight[k+10] {
+
+					}
 				}
 			}
 		case "R-5-4":
 			c := []rune(msg.GetStr("L"))
 			for k, v := range c {
-				if m.starTower.ConstellationLight[k+15] != v {
-					//集体处理
+				if v == '1' {
+					if m.starTower.ConstellationLight[k+15] {
+
+					}
+				} else {
+					if !m.starTower.ConstellationLight[k+15] {
+
+					}
 				}
 			}
 		case "R-5-5":
 			c := []rune(msg.GetStr("L"))
 			for k, v := range c {
-				if m.starTower.ConstellationLight[k+20] != v {
-					//集体处理
+				if v == '1' {
+					if m.starTower.ConstellationLight[k+20] {
+
+					}
+				} else {
+					if !m.starTower.ConstellationLight[k+20] {
+
+					}
 				}
 			}
 		case "R-5-6":
@@ -599,11 +628,11 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
 		case "R-5-7":
 			if msg.GetStr("ST") == "1" {
-				if m.starTower.DoorMagicRod != true {
+				if m.starTower.DoorMagicRod != DoorOpen {
 					//TODO
 				}
 			} else {
-				if m.starTower.DoorMagicRod != false {
+				if m.starTower.DoorMagicRod != DoorClose {
 					//TODO
 				}
 			}
@@ -618,20 +647,178 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-6-1":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[0] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[0] = ty
+			}
 		case "R-6-2":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[1] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[1] = ty
+			}
 		case "R-6-3":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[2] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[2] = ty
+			}
 		case "R-6-4":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[3] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[4] = ty
+			}
 		case "R-6-5":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[4] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[5] = ty
+			}
 		case "R-6-6":
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				//TODO
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[5] {
+				//TODO
+			}
+			if msg.GetStr("F") == "1" {
+				m.endRoom.PowerPoint[6] = ty
+			}
 		case "R-6-7":
+			if msg.GetStr("U") == "1" {
+				if m.endRoom.Table.IsUseful != true {
+					//TODO
+				}
+			} else {
+				if m.endRoom.Table.IsUseful != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("F") == "1" {
+				if m.endRoom.Table.IsFinish != true {
+					//TODO
+				}
+			} else {
+				if m.endRoom.Table.IsFinish != false {
+					//TODO
+				}
+			}
+			if msg.GetStr("D") == "1" {
+				if m.endRoom.Table.IsDestroyed != true {
+					//TODO
+				}
+			} else {
+				if m.endRoom.Table.IsDestroyed != false {
+					//TODO
+				}
+			}
+			m.endRoom.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			m.dealMagicWords(m.magicLab, m.endRoom.MagicWords)
 		case "R-6-8":
+			c := []rune(msg.GetStr("C"))
+			for k, v := range c {
+				if v == '1' {
+					if m.endRoom.Candles[k] != 1 {
+						//TODO
+					}
+				} else {
+					if m.endRoom.Candles[k] != 0 {
+						//TODO
+					}
+				}
+			}
 		case "R-6-9":
+			if msg.GetStr("ST") == "1" {
+				if !m.endRoom.WaterLight {
+
+				}
+			} else {
+				if m.endRoom.WaterLight {
+
+				}
+			}
 		case "D-6":
+			if msg.GetStr("ST") == "1" {
+				if m.endRoom.DoorExit != DoorOpen {
+
+				}
+			} else {
+				if m.endRoom.DoorExit != DoorClose {
+
+				}
+			}
 		}
 	} else if cmd == "nextStep" {
-
+		switch m.Stage {
+		case StageRoom1:
+			m.setStage(StageRoom2)
+		case StageRoom2:
+			if m.library.Step < 3 {
+				m.library.Step++
+			} else {
+				m.setStage(StageRoom3)
+			}
+		case StageRoom3:
+			if m.stairRoom.Step < 3 {
+				m.library.Step++
+			} else {
+				m.setStage(StageRoom4)
+			}
+		case StageRoom4:
+			if m.magicLab.Step < 3 {
+				m.library.Step++
+			} else {
+				m.setStage(StageRoom5)
+			}
+		case StageRoom5:
+			if m.starTower.Step < 3 {
+				m.library.Step++
+			} else {
+				m.setStage(StageRoom6)
+			}
+		case StageRoom6:
+			if m.endRoom.Step < 3 {
+				m.library.Step++
+			} else {
+				m.setStage(StageEnd)
+			}
+		}
 	} else if cmd == "init" {
-
+		m.reset()
 	}
 }
 
@@ -786,7 +973,7 @@ func (m *Match) gameStage() {
 		} else if m.endRoom.Step == 2 {
 			if m.exitRoom.ButtonNextStage { //endroom 数据维护需要锁
 				m.endRoom.InAnimation = true
-				m.voicePlay()
+				m.voicePlay(m.endRoom.Step)
 				m.endRoom.Table.IsUseful = true
 				m.endRoom.InAnimation = true
 				m.magicTableAnimation(StageRoom6)
@@ -797,6 +984,7 @@ func (m *Match) gameStage() {
 		} else if m.endRoom.Step == 3 {
 			if m.ensureElementSymbol() {
 				m.endRoom.Table.IsFinish = true
+				m.voicePlay(m.endRoom.Step)
 			} else {
 				m.endRoom.Table.IsFinish = false
 			}
@@ -957,7 +1145,11 @@ func (m *Match) amMagicAnimation() {
 
 }
 
-func (m *Match) voicePlay() {
+func (m *Match) voicePlay(step int) {
+	switch step {
+	case 2:
+	case 3:
+	}
 
 }
 
