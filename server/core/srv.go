@@ -245,3 +245,23 @@ func (s *Srv) initArduinoControllers() {
 		s.aDict[addr.String()] = controller
 	}
 }
+
+func (s *Srv) bgmControl(music string) {
+	msg := NewInboxMessage()
+	msg.SetCmd("mp3_ctrl")
+	msg.Set("music", music)
+	s.sends(msg, InboxAddressTypeMusicArduino)
+}
+
+func (s *Srv) fakeBooksControl(n string, m string, id string) {
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("fake_book")
+	sendMsg.Set("mode", "0")
+	sendMsg.Set("time", strconv.Itoa(GetOptions.FakeAnimationTime))
+	books := make([]map[string]string, 1)
+	books[0] = map[string]string{"book_n": n, "book_m": m}
+	sendMsg.Set("book", books)
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
+	m.srv.sendToOne(sendMsg, addr)
+
+}

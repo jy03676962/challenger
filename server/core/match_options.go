@@ -153,11 +153,12 @@ type MatchOptions struct {
 	DoorArduino  []string
 	LightArduino []string
 
-	FakeBooks      [5]int
-	PowerPoints    [6]int
-	CandlesColor   [6]int
-	Constellations [3]string
-	ElementSymbol  [6]int
+	FakeBooks         [5]int
+	FakeAnimationTime int
+	PowerPoints       [6]int
+	CandlesColor      [6]int
+	Constellations    [3]string
+	ElementSymbol     [6]int
 }
 
 type ScoreInfo [4]map[string]interface{}

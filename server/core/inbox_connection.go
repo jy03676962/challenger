@@ -148,7 +148,7 @@ func (tcp *InboxTcpConnection) doWrite() {
 			if err != nil {
 				log.Printf("tcp written:%v, error:%v\n", string(bytes), err.Error())
 			} else {
-				//log.Printf("tcp written:%v\n", string(bytes))
+				log.Printf("tcp written:%v\n", string(bytes))
 			}
 		}
 		time.Sleep(tcpSendMinInterval * time.Millisecond)
