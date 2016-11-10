@@ -71,8 +71,10 @@ type Room5 struct {
 	MagicWords                int
 	Table                     MagicTable
 	ConstellationSymbol       map[string]bool //星座符号
-	ConstellationLight        [53]bool
+	ConstellationLight        [37]bool
+	ConstellationLed          [33]int
 	CurrentConstellationLight int //当前点亮法阵台的星座数量
+	LightWall                 bool
 	LightStatus               bool
 	DoorExit                  int
 	DoorMagicRod              int
@@ -260,14 +262,18 @@ func NewRoom5() *Room5 {
 		"C": false,
 		"D": false,
 	}
-	for i := 0; i < 53; i++ {
+	for i := 0; i < 37; i++ {
 		r5.ConstellationLight[i] = false
+	}
+	for i := 0; i < 33; i++ {
+		r5.ConstellationLed[0] = 0
 	}
 	r5.DoorExit = 0
 	r5.DoorMagicRod = 0
 	r5.InAnimation = false
 	r5.LightStatus = false
 	r5.MagicWords = 0
+	r5.LightWall = false
 	r5.Table = MagicTable{}
 	r5.Table.ButtonStatus = map[int]int{
 		1: 0,
