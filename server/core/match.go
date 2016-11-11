@@ -249,9 +249,15 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					}
 					if open != m.library.FakeBooks[k] {
 						if m.library.FakeBooks[k] {
-							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m": "1"})
+							books = append(books, map[string]string{
+								"book_n": strconv.Itoa(k),
+								"book_m": "1",
+							})
 						} else {
-							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"})
+							books = append(books, map[string]string{
+								"book_n": strconv.Itoa(k),
+								"book_m": "0",
+							})
 						}
 					}
 				}
@@ -267,62 +273,70 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "R-2-2":
 			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 3)
+			candles := make([]map[string]string, 0)
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("led_candle")
 			for k, v := range c {
-				var i int = 0
 				if m.library.Candles[k] != int(v-'0') {
-					candles[i] = map[string]string{"candle": strconv.Itoa(k), "color": strconv.Itoa(m.library.Candles[k])}
+					candles = append(candles, map[string]string{
+						"candle": strconv.Itoa(k),
+						"color":  strconv.Itoa(m.library.Candles[k]),
+					})
 				}
 			}
-			sendMsg.Set("candles", candles)
 			if len(candles) > 0 {
+				sendMsg.Set("candles", candles)
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-2-3":
 			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 3)
+			candles := make([]map[string]string, 0)
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("led_candle")
 			for k, v := range c {
-				var i int = 0
-				if m.library.Candles[k+3] != int(v-'0') {
-					candles[i] = map[string]string{"candle": strconv.Itoa(k + 3), "color": strconv.Itoa(m.library.Candles[k+3])}
+				if m.library.Candles[k] != int(v-'0') {
+					candles = append(candles, map[string]string{
+						"candle": strconv.Itoa(k + 3),
+						"color":  strconv.Itoa(m.library.Candles[k+3]),
+					})
 				}
 			}
-			sendMsg.Set("candles", candles)
 			if len(candles) > 0 {
+				sendMsg.Set("candles", candles)
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-2-4":
 			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 3)
+			candles := make([]map[string]string, 0)
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("led_candle")
 			for k, v := range c {
-				var i int = 0
-				if m.library.Candles[k+6] != int(v-'0') {
-					candles[i] = map[string]string{"candle": strconv.Itoa(k + 6), "color": strconv.Itoa(m.library.Candles[k+6])}
+				if m.library.Candles[k] != int(v-'0') {
+					candles = append(candles, map[string]string{
+						"candle": strconv.Itoa(k + 6),
+						"color":  strconv.Itoa(m.library.Candles[k+6]),
+					})
 				}
 			}
-			sendMsg.Set("candles", candles)
 			if len(candles) > 0 {
+				sendMsg.Set("candles", candles)
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-2-5":
 			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 3)
+			candles := make([]map[string]string, 0)
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("led_candle")
 			for k, v := range c {
-				var i int = 0
-				if m.library.Candles[k+9] != int(v-'0') {
-					candles[i] = map[string]string{"candle": strconv.Itoa(k + 9), "color": strconv.Itoa(m.library.Candles[k+9])}
+				if m.library.Candles[k] != int(v-'0') {
+					candles = append(candles, map[string]string{
+						"candle": strconv.Itoa(k + 9),
+						"color":  strconv.Itoa(m.library.Candles[k+9]),
+					})
 				}
 			}
-			sendMsg.Set("candles", candles)
 			if len(candles) > 0 {
+				sendMsg.Set("candles", candles)
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-2-6":
