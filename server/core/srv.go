@@ -257,11 +257,10 @@ func (s *Srv) fakeBooksControl(n string, m string, id string) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("fake_book")
 	sendMsg.Set("mode", "0")
-	sendMsg.Set("time", strconv.Itoa(GetOptions.FakeAnimationTime))
+	sendMsg.Set("time", strconv.Itoa(GetOptions().FakeAnimationTime))
 	books := make([]map[string]string, 1)
 	books[0] = map[string]string{"book_n": n, "book_m": m}
 	sendMsg.Set("book", books)
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
-	m.srv.sendToOne(sendMsg, addr)
-
+	s.sendToOne(sendMsg, addr)
 }

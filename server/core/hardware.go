@@ -91,7 +91,8 @@ type Room6 struct {
 	CurrentSymbol    int
 	PowerPoint       map[int]int
 	PowerPointUseful [6]int
-	Candles          map[int]int
+	Candles          map[int]int //第二个int代表颜色
+	CandleMode       int
 	WaterLight       bool
 	LightStatus      bool
 	DoorExit         int
@@ -296,6 +297,7 @@ func NewRoom6() *Room6 {
 	r6.LightStatus = false
 	r6.MagicWords = 0
 	r6.NextStep = 0
+	r6.CandleMode = 0
 	r6.Candles = map[int]int{
 		1: 0,
 		2: 0,

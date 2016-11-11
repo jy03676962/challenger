@@ -236,7 +236,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("fake_book")
 			sendMsg.Set("time", strconv.Itoa(m.opt.FakeAnimationTime))
-			books := make(map[string]string, 0)
+			books := make([]map[string]string, 0)
 			if mode == "0" {
 				sendMsg.Set("mode", "0")
 				c := []rune(msg.GetStr("BK"))
@@ -249,9 +249,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					}
 					if open != m.library.FakeBooks[k] {
 						if m.library.FakeBooks[k] {
-							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m", "1"})
+							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m": "1"})
 						} else {
-							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m", "0"})
+							books = append(books, map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"})
 						}
 					}
 				}
@@ -363,42 +363,45 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			m.dealAngle()
 			m.dealMagicWords(m.library, m.library.MagicWords)
 		case "R-2-7":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_book")
 			if msg.GetStr("ST") == "1" {
 				if m.library.MagicBooksLightStatus[0] != true {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.library.MagicBooksLightStatus[0] != false {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "R-2-8":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_book")
 			if msg.GetStr("ST") == "1" {
 				if m.library.MagicBooksLightStatus[1] != true {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.library.MagicBooksLightStatus[1] != false {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "D-2":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("door_ctrl")
 			if msg.GetStr("ST") == "1" {
 				if m.library.DoorExit != DoorOpen {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.library.DoorExit != DoorClose {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "R-3-1":
@@ -450,6 +453,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[5], _ = strconv.Atoi(color)
 			}
 		case "R-3-7":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_table")
 			if msg.GetStr("U") == "1" {
 				if m.stairRoom.Table.IsUseful != true {
@@ -478,19 +482,23 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					sendMsg.Set("destroyed", "1")
 				}
 			}
+			if len(sendMsg.Data) > 2 {
+				m.srv.sendToOne(sendMsg, addr)
+			}
 			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
 		case "D-3":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("door_ctrl")
 			if msg.GetStr("ST") == "1" {
 				if m.library.DoorExit != DoorOpen {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.library.DoorExit != DoorClose {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "R-4-1":
@@ -542,6 +550,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.powerDownAnimation()
 			}
 		case "R-4-5":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_table")
 			if msg.GetStr("U") == "1" {
 				if m.magicLab.Table.IsUseful != true {
@@ -570,42 +579,48 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					sendMsg.Set("destroyed", "1")
 				}
 			}
+			if len(sendMsg.Data) > 2 {
+				m.srv.sendToOne(sendMsg, addr)
+			}
 			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
 
 		case "R-4-6":
+			sendMsg := NewInboxMessage()
 			if msg.GetStr("ST") == "1" {
 				if !m.magicLab.DeskLight {
 					sendMsg.SetCmd("book_desk")
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.magicLab.DeskLight {
 					sendMsg.SetCmd("book_desk")
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "D-4":
+			sendMsg := NewInboxMessage()
 			if msg.GetStr("ST") == "1" {
 				if m.magicLab.DoorExit != DoorOpen {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 
 				}
 			} else {
 				if m.magicLab.DoorExit != DoorClose {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 
 				}
 			}
 		case "R-5-1":
 			c := []rune(msg.GetStr("L"))
-			lights := make(map[string]string, 0)
+			lights := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("star_led")
 			for k, v := range c {
 				if v == '1' {
@@ -631,7 +646,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "R-5-2":
 			c := []rune(msg.GetStr("L"))
-			lights := make(map[string]string, 0)
+			lights := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("star_led")
 			for k, v := range c {
 				if v == '1' {
@@ -656,7 +672,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "R-5-3":
 			c := []rune(msg.GetStr("L"))
-			lights := make(map[string]string, 0)
+			lights := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("star_led")
 			for k, v := range c {
 				if v == '1' {
@@ -681,7 +698,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "R-5-4":
 			c := []rune(msg.GetStr("L"))
-			lights := make(map[string]string, 0)
+			lights := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("star_led")
 			for k, v := range c {
 				if v == '1' {
@@ -706,7 +724,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "R-5-5":
 			c := []rune(msg.GetStr("L"))
-			lights := make(map[string]string, 0)
+			lights := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("star_led")
 			for k, v := range c {
 				if v == '1' {
@@ -730,6 +749,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-5-6":
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("magic_table")
 			if msg.GetStr("U") == "1" {
 				if m.starTower.Table.IsUseful != true {
 					sendMsg.Set("useful", "0")
@@ -757,9 +778,15 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					sendMsg.Set("destroyed", "1")
 				}
 			}
+			if len(sendMsg.Data) > 2 {
+				m.srv.sendToOne(sendMsg, addr)
+			}
+			star, _ := strconv.Atoi(msg.GetStr("S"))
+			m.dealStar(star)
 			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
 		case "R-5-7":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_rob")
 			if msg.GetStr("ST") == "1" {
 				if m.starTower.DoorMagicRod != DoorOpen {
@@ -773,6 +800,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-5-8":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("light_ctrl")
 			if msg.GetStr("ST") == "1" {
 				if m.starTower.LightWall != true {
@@ -786,22 +814,24 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "D-5":
+			sendMsg := NewInboxMessage()
 			if msg.GetStr("ST") == "1" {
 				if m.starTower.DoorExit != DoorOpen {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 
 				}
 			} else {
 				if m.starTower.DoorExit != DoorClose {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 
 				}
 			}
 		case "R-6-1":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -812,12 +842,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[0])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[0] = ty
+				m.endRoom.PowerPoint[0] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-2":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -828,12 +859,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[1])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[1] = ty
+				m.endRoom.PowerPoint[1] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-3":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -844,12 +876,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[2])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[2] = ty
+				m.endRoom.PowerPoint[2] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-4":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -860,12 +893,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[3])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[4] = ty
+				m.endRoom.PowerPoint[4] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-5":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -876,12 +910,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[4])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[5] = ty
+				m.endRoom.PowerPoint[5] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-6":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("power_point")
 			ty, _ := strconv.Atoi(msg.GetStr("TY"))
 			if ty != m.endRoom.CurrentSymbol {
@@ -892,12 +927,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[5])
 			}
 			if msg.GetStr("F") == "1" {
-				m.endRoom.PowerPoint[6] = ty
+				m.endRoom.PowerPoint[6] = m.endRoom.CurrentSymbol
 			}
-			if len(sendMsg) > 1 {
+			if len(sendMsg.Data) > 1 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-7":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_table")
 			if msg.GetStr("U") == "1" {
 				if m.endRoom.Table.IsUseful != true {
@@ -926,47 +962,60 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					sendMsg.Set("destroyed", "1")
 				}
 			}
+			if len(sendMsg.Data) > 2 {
+				m.srv.sendToOne(sendMsg, addr)
+			}
+			m.endRoom.CurrentSymbol, _ = strconv.Atoi(msg.GetStr("TY"))
+			m.broadSymbolToArduino(m.endRoom.CurrentSymbol)
 			m.endRoom.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
-			m.dealMagicWords(m.magicLab, m.endRoom.MagicWords)
+			m.dealMagicWords(m.endRoom, m.endRoom.MagicWords)
 		case "R-6-8":
+			candleMode := msg.GetStr("mode")
+			if candleMode != "1" {
+				return
+			}
 			c := []rune(msg.GetStr("C"))
+			candles := make([]map[string]string, 0)
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("led_candle")
 			for k, v := range c {
-				if v == '1' {
-					if m.endRoom.Candles[k] != 1 {
-						//TODO
-					}
-				} else {
-					if m.endRoom.Candles[k] != 0 {
-						//TODO
-					}
+				if int(v-'0') != m.endRoom.Candles[k] {
+					candles = append(candles, map[string]string{
+						"candle": strconv.Itoa(k),
+						"color":  strconv.Itoa(m.endRoom.Candles[k]),
+					})
 				}
 			}
+			if len(candles) > 0 {
+				sendMsg.Set("candle", candles)
+				m.srv.sendToOne(sendMsg, addr)
+			}
 		case "R-6-9":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("water_light")
 			if msg.GetStr("ST") == "1" {
 				if !m.endRoom.WaterLight {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
-
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.endRoom.WaterLight {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
-
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		case "D-6":
+			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("door_ctrl")
 			if msg.GetStr("ST") == "1" {
 				if m.endRoom.DoorExit != DoorOpen {
 					sendMsg.Set("status", "0")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
 				if m.endRoom.DoorExit != DoorClose {
 					sendMsg.Set("status", "1")
-					m.srv.send(sendMsg, addr)
+					m.srv.sendToOne(sendMsg, addr)
 				}
 			}
 		}
@@ -1040,14 +1089,6 @@ func (m *Match) gameStage() {
 		}
 	case StageRoom2:
 		if m.library.Step == 1 {
-			if m.library.MagicBooksLEDStatus[0] != true {
-				m.library.MagicBooksLEDStatus[0] = true
-				//TODO
-			}
-			if m.library.MagicBooksLEDStatus[1] != true {
-				m.library.MagicBooksLEDStatus[1] = true
-				//TODO
-			}
 			if m.fakeActNum() == 5 {
 				if m.ensureFakeBooks() {
 					m.library.InAnimation = true
@@ -1334,6 +1375,158 @@ func (m *Match) ensureConstellationSymbol() bool {
 	return true
 }
 
+func (m *Match) starControl(starNum int, isOpen bool) {
+	if isOpen {
+		switch starNum {
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+		case 15:
+		}
+	} else {
+		switch starNum {
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+		case 15:
+		}
+
+	}
+}
+
+func (m *Match) dealStar(starNum int) {
+	switch starNum {
+	case 0:
+	case 1:
+		if m.starTower.ConstellationSymbol["sct"] {
+			m.starTower.ConstellationSymbol["sct"] = false
+		} else {
+			m.starTower.ConstellationSymbol["sct"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["sct"])
+	case 2:
+		if m.starTower.ConstellationSymbol["vol"] {
+			m.starTower.ConstellationSymbol["vol"] = false
+		} else {
+			m.starTower.ConstellationSymbol["vol"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["vol"])
+	case 3:
+		if m.starTower.ConstellationSymbol["phe"] {
+			m.starTower.ConstellationSymbol["phe"] = false
+		} else {
+			m.starTower.ConstellationSymbol["phe"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["phe"])
+	case 4:
+		if m.starTower.ConstellationSymbol["crt"] {
+			m.starTower.ConstellationSymbol["crt"] = false
+		} else {
+			m.starTower.ConstellationSymbol["crt"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["crt"])
+	case 5:
+		if m.starTower.ConstellationSymbol["can"] {
+			m.starTower.ConstellationSymbol["can"] = false
+		} else {
+			m.starTower.ConstellationSymbol["can"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["can"])
+	case 6:
+		if m.starTower.ConstellationSymbol["cam"] {
+			m.starTower.ConstellationSymbol["cam"] = false
+		} else {
+			m.starTower.ConstellationSymbol["cam"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["cam"])
+	case 7:
+		if m.starTower.ConstellationSymbol["boo"] {
+			m.starTower.ConstellationSymbol["boo"] = false
+		} else {
+			m.starTower.ConstellationSymbol["boo"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["boo"])
+	case 8:
+		if m.starTower.ConstellationSymbol["mon"] {
+			m.starTower.ConstellationSymbol["mon"] = false
+		} else {
+			m.starTower.ConstellationSymbol["mon"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["mon"])
+	case 9:
+		if m.starTower.ConstellationSymbol["cap"] {
+			m.starTower.ConstellationSymbol["cap"] = false
+		} else {
+			m.starTower.ConstellationSymbol["cap"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["cap"])
+	case 10:
+		if m.starTower.ConstellationSymbol["gru"] {
+			m.starTower.ConstellationSymbol["gru"] = false
+		} else {
+			m.starTower.ConstellationSymbol["gru"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["gru"])
+	case 11:
+		if m.starTower.ConstellationSymbol["lyr"] {
+			m.starTower.ConstellationSymbol["lyr"] = false
+		} else {
+			m.starTower.ConstellationSymbol["lyr"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["lyr"])
+	case 12:
+		if m.starTower.ConstellationSymbol["crv"] {
+			m.starTower.ConstellationSymbol["crv"] = false
+		} else {
+			m.starTower.ConstellationSymbol["crv"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["crv"])
+	case 13:
+		if m.starTower.ConstellationSymbol["lac"] {
+			m.starTower.ConstellationSymbol["lac"] = false
+		} else {
+			m.starTower.ConstellationSymbol["lac"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["lac"])
+	case 14:
+		if m.starTower.ConstellationSymbol["leo"] {
+			m.starTower.ConstellationSymbol["leo"] = false
+		} else {
+			m.starTower.ConstellationSymbol["leo"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["leo"])
+	case 15:
+		if m.starTower.ConstellationSymbol["aur"] {
+			m.starTower.ConstellationSymbol["aur"] = false
+		} else {
+			m.starTower.ConstellationSymbol["aur"] = true
+		}
+		m.starControl(starNum, m.starTower.ConstellationSymbol["aur"])
+	}
+}
+
 //room6 animation
 func (m *Match) amMagicAnimation() {
 
@@ -1345,6 +1538,25 @@ func (m *Match) voicePlay(step int) {
 	case 3:
 	}
 
+}
+
+func (m *Match) broadSymbolToArduino(symbol int) {
+	if !m.endRoom.Table.IsUseful || m.endRoom.Table.IsDestroyed {
+		return
+	}
+	addrs := []InboxAddress{
+		{InboxAddressTypeRoomArduinoDevice, "R-6-1"},
+		{InboxAddressTypeRoomArduinoDevice, "R-6-2"},
+		{InboxAddressTypeRoomArduinoDevice, "R-6-3"},
+		{InboxAddressTypeRoomArduinoDevice, "R-6-4"},
+		{InboxAddressTypeRoomArduinoDevice, "R-6-5"},
+		{InboxAddressTypeRoomArduinoDevice, "R-6-6"},
+	}
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("power_point")
+	sendMsg.Set("useful", "1")
+	sendMsg.Set("type_power", strconv.Itoa(symbol))
+	m.srv.send(sendMsg, addrs)
 }
 
 func (m *Match) ensureElementSymbol() bool {
@@ -1563,9 +1775,10 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 		}
 	case *Room6:
 		if m.endRoom.Table.IsUseful && !m.endRoom.Table.IsDestroyed {
-			//TODO
-		} else {
-			//TODO
+			switch magicWords {
+			case 3:
+			case 20:
+			}
 		}
 	}
 
