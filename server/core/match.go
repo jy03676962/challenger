@@ -1133,7 +1133,7 @@ func (m *Match) gameStage() {
 		}
 	case StageRoom3:
 		if m.stairRoom.Step == 1 {
-			if m.stairRoom.CurrentCandlesLight == 0 {
+			if m.ensureCandlesPoweroff() {
 				m.stairRoom.InAnimation = true
 				m.magicTableAnimation(StageRoom3)
 				m.stairRoom.Table.IsUseful = true
@@ -1141,12 +1141,10 @@ func (m *Match) gameStage() {
 				log.Println("room3 step 1 finish!")
 			}
 		} else if m.stairRoom.Step == 2 {
-			if m.stairRoom.CurrentCandlesLight == 6 {
-				if m.ensureCandlesColor() {
-					m.stairRoom.Table.IsFinish = true
-					m.stairRoom.Step = 3
-					log.Println("room3 step 2 finish!")
-				}
+			if m.ensureCandlesColor() {
+				m.stairRoom.Table.IsFinish = true
+				m.stairRoom.Step = 3
+				log.Println("room3 step 2 finish!")
 			}
 		} else if m.stairRoom.Step == 3 {
 			if m.stairRoom.Table.IsDestroyed {
@@ -1342,6 +1340,15 @@ func (m *Match) ensurePowerPointOrder() bool {
 }
 
 //room3
+func (m *Match) ensureCandlesPoweroff() bool {
+	for _, v := range m.stairRoom.Candles {
+		if v != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func (m *Match) ensureCandlesColor() bool {
 	for k, v := range m.opt.CandlesColor {
 		if m.stairRoom.Candles[k] != v {
@@ -1389,7 +1396,7 @@ func (m *Match) ensureConstellationSymbol() bool {
 	return true
 }
 
-func (m *Match) starControl(starNum int, isOpen bool) {
+func (m *Match) starControl(starNum int, isOpen bool) { //TODO
 	if isOpen {
 		switch starNum {
 		case 1:
@@ -1611,7 +1618,21 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 	sendMsg := NewInboxMessage()
 	switch room.(type) {
 	case *Room2:
-		if m.library.Table.IsUseful && !m.library.Table.IsDestroyed {
+		if magicWords == 1 {
+			m.library.MagicBooksLightStatus[0] = true
+			m.library.MagicBooksLightStatus[1] = true
+			sendMsg.SetCmd("magic_book")
+			sendMsg.Set("status", "1")
+			addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
+			m.srv.send(sendMsg, addrs)
+		} else if magicWords == 2 {
+			m.library.MagicBooksLightStatus[0] = false
+			m.library.MagicBooksLightStatus[1] = false
+			sendMsg.SetCmd("magic_book")
+			sendMsg.Set("status", "0")
+			addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
+			m.srv.send(sendMsg, addrs)
+		} else if m.library.Table.IsUseful && !m.library.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
 				if m.library.Table.IsFinish {
@@ -1714,23 +1735,6 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.CurrentFakeBookLight++
 				}
 			}
-		} else {
-			switch magicWords {
-			case 1:
-				m.library.MagicBooksLightStatus[0] = true
-				m.library.MagicBooksLightStatus[1] = true
-				sendMsg.SetCmd("magic_book")
-				sendMsg.Set("status", "1")
-				addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
-				m.srv.send(sendMsg, addrs)
-			case 2:
-				m.library.MagicBooksLightStatus[0] = false
-				m.library.MagicBooksLightStatus[1] = false
-				sendMsg.SetCmd("magic_book")
-				sendMsg.Set("status", "0")
-				addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
-				m.srv.send(sendMsg, addrs)
-			}
 		}
 	case *Room3:
 		if m.stairRoom.Table.IsUseful && !m.stairRoom.Table.IsDestroyed {
@@ -1742,49 +1746,46 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			}
 		}
 	case *Room4:
-		if m.magicLab.Table.IsUseful && !m.magicLab.Table.IsDestroyed {
+		if magicWords == 1 {
+			m.magicLab.DeskLight = true
+			sendMsg.SetCmd("book_desk")
+			sendMsg.Set("status", "1")
+			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
+			m.srv.sendToOne(sendMsg, addr)
+
+		} else if magicWords == 2 {
+			m.magicLab.DeskLight = false
+			sendMsg.SetCmd("book_desk")
+			sendMsg.Set("status", "0")
+			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
+			m.srv.sendToOne(sendMsg, addr)
+
+		} else if m.magicLab.Table.IsUseful && !m.magicLab.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
 				if m.magicLab.Table.IsFinish {
 					m.magicLab.Table.IsDestroyed = true
 				}
 			}
-		} else {
-			switch magicWords {
-			case 1:
-				m.magicLab.DeskLight = true
-				sendMsg.SetCmd("book_desk")
-				sendMsg.Set("status", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
-				m.srv.sendToOne(sendMsg, addr)
-			case 2:
-				m.magicLab.DeskLight = false
-				sendMsg.SetCmd("book_desk")
-				sendMsg.Set("status", "0")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
-				m.srv.sendToOne(sendMsg, addr)
-			}
 		}
 	case *Room5:
+		if magicWords == 1 {
+			sendMsg.SetCmd("light_ctrl")
+			sendMsg.Set("status", "1")
+			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-5-8"}
+			m.srv.sendToOne(sendMsg, addr)
+		} else if magicWords == 2 {
+			sendMsg.SetCmd("light_ctrl")
+			sendMsg.Set("status", "0")
+			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-5-8"}
+			m.srv.sendToOne(sendMsg, addr)
+		}
 		if m.starTower.Table.IsUseful && !m.starTower.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
 				if m.starTower.Table.IsFinish {
 					m.starTower.Table.IsDestroyed = true
 				}
-			}
-		} else {
-			switch magicWords {
-			case 1:
-				sendMsg.SetCmd("light_ctrl")
-				sendMsg.Set("status", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-5-8"}
-				m.srv.sendToOne(sendMsg, addr)
-			case 2:
-				sendMsg.SetCmd("light_ctrl")
-				sendMsg.Set("status", "0")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-5-8"}
-				m.srv.sendToOne(sendMsg, addr)
 			}
 		}
 	case *Room6:

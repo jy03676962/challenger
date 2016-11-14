@@ -40,16 +40,15 @@ type Room2 struct {
 
 //楼梯间
 type Room3 struct {
-	InAnimation         bool
-	MagicWords          int
-	Table               MagicTable
-	Candles             map[int]int
-	CurrentCandlesLight int
-	DoorExit            int
-	LightStatus         bool
-	LightExitStair      bool
-	Step                int
-	Bgm                 int
+	InAnimation    bool
+	MagicWords     int
+	Table          MagicTable
+	Candles        map[int]int
+	DoorExit       int
+	LightStatus    bool
+	LightExitStair bool
+	Step           int
+	Bgm            int
 }
 
 //魔法研究室
@@ -220,7 +219,6 @@ func NewRoom3() *Room3 {
 		5: 0,
 		6: 0,
 	}
-	r3.CurrentCandlesLight = 6
 	r3.DoorExit = 0
 	r3.InAnimation = false
 	r3.LightStatus = false
