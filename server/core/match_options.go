@@ -154,11 +154,11 @@ type MatchOptions struct {
 	LightArduino []string
 
 	FakeBooks         [5]int
-	FakeAnimationTime int
-	PowerPoints       [6]int
+	FakeAnimationTime float64
 	CandlesColor      [6]int
 	Constellations    [3]string
 	ElementSymbol     [6]int
+	OpenDoorDelayTime float64
 }
 
 type ScoreInfo [4]map[string]interface{}

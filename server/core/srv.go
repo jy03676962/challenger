@@ -256,11 +256,24 @@ func (s *Srv) bgmControl(music string) {
 func (s *Srv) fakeBooksControl(n string, m string, id string) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("fake_book")
-	sendMsg.Set("mode", "0")
-	sendMsg.Set("time", strconv.Itoa(GetOptions().FakeAnimationTime))
+	sendMsg.Set("mode", "2")
+	sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
 	books := make([]map[string]string, 1)
 	books[0] = map[string]string{"book_n": n, "book_m": m}
 	sendMsg.Set("book", books)
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
+	s.sendToOne(sendMsg, addr)
+}
+
+func (s *Srv) fbControls(books []map[string]string, music string) {
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("fake_book")
+	sendMsg.Set("mode", "0")
+	sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
+	//books := make([]map[string]string, 1)
+	//books[0] = map[string]string{"book_n": n, "book_m": m}
+	sendMsg.Set("book", books)
+	sendMsg.Set("music", music)
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
 	s.sendToOne(sendMsg, addr)
 }

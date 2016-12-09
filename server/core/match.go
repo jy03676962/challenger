@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -41,9 +42,10 @@ type Match struct {
 	opt *MatchOptions
 	srv *Srv
 
-	Stage      string
-	TotalTime  float64
-	CurrentBgm string
+	Stage             string
+	TotalTime         float64
+	OpenDoorDelayTime float64
+	CurrentBgm        string
 
 	msgCh   chan *InboxMessage
 	closeCh chan bool
@@ -64,6 +66,7 @@ func NewMatch(s *Srv) *Match {
 	m.srv = s
 	m.opt = GetOptions()
 	m.TotalTime = 0 //config
+	m.OpenDoorDelayTime = GetOptions().OpenDoorDelayTime
 	m.msgCh = make(chan *InboxMessage, 1000)
 	m.closeCh = make(chan bool)
 	m.initHardwareData()
@@ -92,7 +95,7 @@ func (m *Match) Run() {
 		if m.Stage == StageEnd {
 			break
 		}
-		m.gameStage()
+		m.gameStage(dt)
 
 	}
 }
@@ -235,7 +238,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			mode := msg.GetStr("MD")
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("fake_book")
-			sendMsg.Set("time", strconv.Itoa(m.opt.FakeAnimationTime))
+			sendMsg.Set("time", strconv.FormatFloat(m.opt.FakeAnimationTime, 'f', 0, 64))
 			books := make([]map[string]string, 0)
 			if mode == "0" {
 				sendMsg.Set("mode", "0")
@@ -352,13 +355,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 			if msg.GetStr("F") == "1" {
-				if m.library.Table.IsFinish != true {
-					sendMsg.Set("finish", "0")
-				}
+				m.library.Table.IsFinish = true
 			} else {
-				if m.library.Table.IsFinish != false {
-					sendMsg.Set("finish", "1")
-				}
+				m.library.Table.IsFinish = false
 			}
 			if msg.GetStr("D") == "1" {
 				if m.library.Table.IsDestroyed != true {
@@ -375,7 +374,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.library.Table.CurrentAngle, _ = strconv.ParseFloat(msg.GetStr("A"), 64)
 			m.dealAngle()
-			m.dealMagicWords(m.library, m.library.MagicWords)
+			if !m.library.InAnimation {
+				m.dealMagicWords(m.library, m.library.MagicWords)
+			}
 		case "R-2-7":
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_book")
@@ -1090,7 +1091,7 @@ func (m *Match) setStage(s string) {
 	m.Stage = s
 }
 
-func (m *Match) gameStage() {
+func (m *Match) gameStage(dt time.Duration) {
 	if m.Stage == "" {
 		log.Println("game stage error!")
 		return
@@ -1105,30 +1106,19 @@ func (m *Match) gameStage() {
 		if m.library.Step == 1 {
 			if m.fakeActNum() == 5 {
 				if m.ensureFakeBooks() {
-					m.library.InAnimation = true
-					m.fakeBooksAnimation()
-					m.library.CurrentFakeBookLight = 15
-					m.library.Table.IsUseful = true
-					m.library.Table.MarkAngle = m.library.Table.CurrentAngle
-					m.library.Step = 2
-					log.Println("room2 step 1 finish!")
+					m.fakeBooksAnimation(dt)
 				} else {
-					m.library.CurrentFakeBookLight = 0
 					m.fakeBooksErrorAnimation()
 				}
 			}
 		} else if m.library.Step == 2 {
-			if m.ensurePowerPointOrder() {
-				m.library.Table.IsFinish = true
+			if m.library.Table.IsFinish {
 				m.library.Step = 3
 				log.Println("room2 step 2 finish!")
 			}
 		} else if m.library.Step == 3 {
 			if m.library.Table.IsDestroyed {
-				m.library.InAnimation = true
-				m.endingAnimation(StageRoom2)
-				m.library.DoorExit = DoorOpen
-				log.Println("room2 step 3 finish!")
+				m.endingAnimation(StageRoom2, dt)
 			}
 		}
 	case StageRoom3:
@@ -1149,7 +1139,7 @@ func (m *Match) gameStage() {
 		} else if m.stairRoom.Step == 3 {
 			if m.stairRoom.Table.IsDestroyed {
 				m.stairRoom.InAnimation = true
-				m.endingAnimation(StageRoom3)
+				m.endingAnimation(StageRoom3, dt)
 				m.stairRoom.DoorExit = DoorOpen
 				log.Println("room3 step 3 finish!")
 			}
@@ -1173,7 +1163,7 @@ func (m *Match) gameStage() {
 		} else if m.magicLab.Step == 3 {
 			if m.magicLab.Table.IsDestroyed {
 				m.magicLab.InAnimation = true
-				m.endingAnimation(StageRoom4)
+				m.endingAnimation(StageRoom4, dt)
 				m.magicLab.DoorExit = DoorOpen
 				log.Println("room4 step 3 finish!")
 			}
@@ -1196,7 +1186,7 @@ func (m *Match) gameStage() {
 		} else if m.starTower.Step == 3 {
 			if m.starTower.Table.IsDestroyed {
 				m.starTower.InAnimation = true
-				m.endingAnimation(StageRoom5)
+				m.endingAnimation(StageRoom5, dt)
 				m.starTower.DoorExit = DoorOpen
 				m.starTower.DoorMagicRod = DoorOpen
 				log.Println("room 5 step 3 finish!")
@@ -1231,7 +1221,7 @@ func (m *Match) gameStage() {
 			}
 			if m.endRoom.Table.IsFinish && m.endRoom.NextStep == 4 {
 				m.endRoom.InAnimation = true
-				m.endingAnimation(StageRoom6)
+				m.endingAnimation(StageRoom6, dt)
 				m.endRoom.Table.IsDestroyed = true
 				m.endRoom.DoorExit = DoorOpen
 				log.Println("room 6 step 3 finish!")
@@ -1302,11 +1292,92 @@ func (m *Match) fakeActNum() int {
 	}
 	return num
 }
-func (m *Match) fakeBooksAnimation() {
+func (m *Match) fakeBooksAnimation(dt time.Duration) {
+	sec := dt.Seconds()
+	if !m.library.InAnimation {
+		m.library.InAnimation = true
+		m.library.FakeAnimationStep = 1
+		books := make([]map[string]string, 5)
+		num := 0
+		for k, v := range m.library.FakeBooks {
+			if v {
+				books[num] = map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"}
+				num++
+			}
+		}
+		m.srv.fbControls(books, "3")
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
+			{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
+		}
+		sendMsg := NewInboxMessage()
+		sendMsg.SetCmd("magic_book")
+		sendMsg.Set("status", "0")
+		m.srv.send(sendMsg, addrs)
+		//TODO
+		//send step 1 灯光全灭，书发出3语音后全灭
+	} else {
+		m.library.FakeAnimationTime = math.Max(m.library.FakeAnimationTime-sec, 0)
+		if m.library.FakeAnimationTime == 0 {
+			m.library.FakeAnimationStep++
+			switch m.library.FakeAnimationStep {
+			case 2: //第一组开始 1
+				sendMsg := NewInboxMessage()
+				sendMsg.SetCmd("fake_book")
+				sendMsg.Set("mode", "3")
+				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
+				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
+				m.srv.sendToOne(sendMsg, addr)
+				m.library.FakeAnimationTime = opt.FakeAnimationTime
+			case 3: //第二组 2,3 并且蜡烛、灯箱开始
+				//TODO
+				m.library.FakeAnimationTime = opt.FakeAnimationTime
+			case 4: //第三组 4,5,6
+				m.library.Table.IsUseful = true
+				sendMsg := NewInboxMessage()
+				sendMsg.SetCmd("magic_table")
+				sendMsg.Set("useful", "1")
+				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
+				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
+				m.srv.sendToOne(sendMsg, addr)
+				m.library.FakeAnimationTime = opt.FakeAnimationTime
+			case 5: //第四组 7,8,9,10//记忆水晶
+				m.library.FakeAnimationTime = opt.FakeAnimationTime
+			case 6: //第五组 11,12,13,14,15 蜡烛、灯箱换颜色
+				//TODO
+				m.library.FakeAnimationTime = opt.FakeAnimationTime
+			case 7:
+				sendMsg := NewInboxMessage()
+				sendMsg.SetCmd("fake_book")
+				sendMsg.Set("mode", "1")
+				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
+				m.srv.sendToOne(sendMsg, addr)
+				m.library.InAnimation = false
+				m.library.CurrentFakeBookLight = 15
+				m.library.Table.MarkAngle = m.library.Table.CurrentAngle
+				m.library.Step = 2
+				log.Println("room2 step 1 finish!")
+
+			}
+		}
+	}
 
 }
 
 func (m *Match) fakeBooksErrorAnimation() {
+	books := make([]map[string]string, 5)
+	num := 0
+	m.library.CurrentFakeBookLight = 0
+	for k, v := range m.library.FakeBooks {
+		if v {
+			books[num] = map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"}
+			num++
+		}
+	}
+	m.srv.fbControls(books, "2")
+	for i := 0; i < 15; i++ {
+		m.library.FakeBooks[i] = false
+	}
 
 }
 
@@ -1324,15 +1395,6 @@ func (m *Match) dealAngle() {
 func (m *Match) ensureFakeBooks() bool {
 	for _, v := range m.opt.FakeBooks {
 		if !m.library.FakeBooks[v] {
-			return false
-		}
-	}
-	return true
-}
-
-func (m *Match) ensurePowerPointOrder() bool {
-	for k, v := range m.opt.PowerPoints {
-		if m.library.Table.ButtonStatus[v] != k {
 			return false
 		}
 	}
@@ -1599,9 +1661,42 @@ func (m *Match) magicTableAnimation(s string) {
 	}
 }
 
-func (m *Match) endingAnimation(s string) {
+func (m *Match) endingAnimation(s string, dt time.Duration) {
+	sec := dt.Seconds()
 	switch s {
 	case StageRoom2:
+		if m.library.InAnimation != true {
+			//animation
+			addrs := []InboxAddress{
+				{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
+				{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
+			}
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("magic_book")
+			sendMsg.Set("status", "0")
+			m.srv.send(sendMsg, addrs)
+
+			sendMsg1 := NewInboxMessage()
+			sendMsg1.SetCmd("fake_book")
+			sendMsg1.Set("mode", "0")
+			addr := InboxAddress{InboxAddressTypeDoorArduino, "R-2-1"}
+			m.srv.sendToOne(sendMsg1, addr)
+			//TODO 蜡烛
+			m.library.InAnimation = true
+		}
+		m.OpenDoorDelayTime = math.Max(m.OpenDoorDelayTime-sec, 0)
+		if m.OpenDoorDelayTime == 0 {
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("door_ctrl")
+			sendMsg.Set("status", "1")
+			addr := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
+			m.srv.sendToOne(sendMsg, addr)
+			m.library.DoorExit = 1
+			m.library.InAnimation = false
+			m.OpenDoorDelayTime = m.opt.OpenDoorDelayTime
+			log.Println("room2 finish!")
+
+		}
 	case StageRoom3:
 	case StageRoom4:
 	case StageRoom5:
@@ -1632,109 +1727,104 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("status", "0")
 			addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
 			m.srv.send(sendMsg, addrs)
-		} else if m.library.Table.IsUseful && !m.library.Table.IsDestroyed {
+		} else if !m.library.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
 				if m.library.Table.IsFinish {
 					m.library.Table.IsDestroyed = true
 				}
-				//if m.library.Table.IsFinish {
-				//sendMsg.SetCmd("door_ctrl")
-				//sendMsg.Set("status", "1")
-				//addr := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
-				//m.srv.sendToOne(sendMsg, addr)
-				//}
 			case 4:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("1", "1", "R-2-1")
 					m.library.FakeBooks[1] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 5:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("2", "1", "R-2-1")
 					m.library.FakeBooks[2] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 6:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("3", "1", "R-2-1")
 					m.library.FakeBooks[3] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 7:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("4", "1", "R-2-1")
 					m.library.FakeBooks[4] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 8:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("5", "1", "R-2-1")
 					m.library.FakeBooks[5] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 9:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("6", "1", "R-2-1")
 					m.library.FakeBooks[6] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 10:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("7", "1", "R-2-1")
 					m.library.FakeBooks[7] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 11:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("8", "1", "R-2-1")
 					m.library.FakeBooks[8] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 12:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("9", "1", "R-2-1")
 					m.library.FakeBooks[9] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 13:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("10", "1", "R-2-1")
 					m.library.FakeBooks[10] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 14:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("11", "1", "R-2-1")
 					m.library.FakeBooks[11] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 15:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("12", "1", "R-2-1")
 					m.library.FakeBooks[12] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 16:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("13", "1", "R-2-1")
 					m.library.FakeBooks[13] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 17:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("14", "1", "R-2-1")
 					m.library.FakeBooks[14] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 18:
-				if m.library.Table.IsUseful {
+				if !m.library.Table.IsUseful {
 					m.srv.fakeBooksControl("15", "1", "R-2-1")
 					m.library.FakeBooks[15] = true
 					m.library.CurrentFakeBookLight++
 				}
 			}
+			m.library.MagicWords = 0
 		}
 	case *Room3:
 		if m.stairRoom.Table.IsUseful && !m.stairRoom.Table.IsDestroyed {

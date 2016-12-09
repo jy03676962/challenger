@@ -36,6 +36,8 @@ type Room2 struct {
 	LightStatus           bool
 	Step                  int
 	Bgm                   int
+	FakeAnimationTime     float64 //假书延迟时间
+	FakeAnimationStep     int
 }
 
 //楼梯间
@@ -205,6 +207,8 @@ func NewRoom2() *Room2 {
 	r2.Table.IsUseful = false
 	r2.Table.IsDestroyed = false
 	r2.Step = 1
+	r2.FakeAnimationTime = GetOptions().FakeAnimationTime
+	r2.FakeAnimationStep = 0
 	return &r2
 }
 
