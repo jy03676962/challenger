@@ -268,8 +268,11 @@ to = 3
 #Timerift
 #Room1
 FakeBooks = [ 1, 2, 3, 4, 5]#正确的假书编号
-FakeAnimationTime = 5000
+FakeAnimationTime = 3000
 CandlesColor = [ 1, 2, 3, 4, 5, 6]#正确的颜色编号
 Constellations = ["a", "b", "c"]#正确的星座名字
 ElementSymbol = [1, 2, 3, 4, 5, 6]
-OpenDoorDelayTime = 10000
+Room2OpenDoorDelayTime = 10000
+Room3OpenDoorDelayTime = 10000
+Room4OpenDoorDelayTime = 10000
+Room5OpenDoorDelayTime = 10000
