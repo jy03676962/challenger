@@ -38,6 +38,8 @@ type Room2 struct {
 	Bgm                   int
 	FakeAnimationTime     float64 //假书延迟时间
 	FakeAnimationStep     int
+	CandleDelay           float64
+	CandleMode            int
 }
 
 //楼梯间
@@ -209,6 +211,8 @@ func NewRoom2() *Room2 {
 	r2.Step = 1
 	r2.FakeAnimationTime = GetOptions().FakeAnimationTime
 	r2.FakeAnimationStep = 0
+	r2.CandleDelay = 0
+	r2.CandleMode = 0
 	return &r2
 }
 

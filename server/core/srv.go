@@ -41,6 +41,7 @@ func NewSrv(isSimulator bool) *Srv {
 }
 
 func (s *Srv) Run(tcpAddr string, udpAddr string, dbPath string) {
+	s.startNewMatch()
 	go s.listenTcp(tcpAddr)
 	s.mainLoop()
 }
@@ -159,6 +160,7 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 
 func (s *Srv) startNewMatch() {
 	m := NewMatch(s)
+	s.match = m
 	go m.Run()
 }
 
@@ -253,27 +255,20 @@ func (s *Srv) bgmControl(music string) {
 	s.sends(msg, InboxAddressTypeMusicArduino)
 }
 
-func (s *Srv) fakeBooksControl(n string, m string, id string) {
+func (s *Srv) fakeBooksControl(mode string, music string, id string) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("fake_book")
-	sendMsg.Set("mode", "2")
+	sendMsg.Set("mode", mode)
 	sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-	books := make([]map[string]string, 1)
-	books[0] = map[string]string{"book_n": n, "book_m": m}
-	sendMsg.Set("book", books)
+	sendMsg.Set("music", music)
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
 	s.sendToOne(sendMsg, addr)
 }
 
-func (s *Srv) fbControls(books []map[string]string, music string) {
+func (s *Srv) candlesControl(candles []map[string]string, id string) {
 	sendMsg := NewInboxMessage()
-	sendMsg.SetCmd("fake_book")
-	sendMsg.Set("mode", "0")
-	sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-	//books := make([]map[string]string, 1)
-	//books[0] = map[string]string{"book_n": n, "book_m": m}
-	sendMsg.Set("book", books)
-	sendMsg.Set("music", music)
-	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
+	sendMsg.SetCmd("led_candle")
+	sendMsg.Set("candles", candles)
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
 	s.sendToOne(sendMsg, addr)
 }

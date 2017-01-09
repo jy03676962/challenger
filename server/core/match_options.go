@@ -153,12 +153,15 @@ type MatchOptions struct {
 	DoorArduino  []string
 	LightArduino []string
 
-	FakeBooks         [5]int
-	FakeAnimationTime float64
-	CandlesColor      [6]int
-	Constellations    [3]string
-	ElementSymbol     [6]int
-	OpenDoorDelayTime float64
+	FakeBooks              [5]int
+	FakeAnimationTime      float64
+	CandlesColor           [6]int
+	Constellations         [3]string
+	ElementSymbol          [6]int
+	Room2OpenDoorDelayTime float64
+	Room3OpenDoorDelayTime float64
+	Room4OpenDoorDelayTime float64
+	Room5OpenDoorDelayTime float64
 }
 
 type ScoreInfo [4]map[string]interface{}

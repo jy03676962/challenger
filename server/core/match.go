@@ -235,45 +235,45 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.livingRoom.DoorMirror = DoorClose
 			}
 		case "R-2-1":
-			mode := msg.GetStr("MD")
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("fake_book")
-			sendMsg.Set("time", strconv.FormatFloat(m.opt.FakeAnimationTime, 'f', 0, 64))
-			books := make([]map[string]string, 0)
-			if mode == "0" {
-				sendMsg.Set("mode", "0")
-				c := []rune(msg.GetStr("BK"))
-				var open bool
-				for k, v := range c {
-					if v == '1' {
-						open = true
-					} else {
-						open = false
-					}
-					if open != m.library.FakeBooks[k] {
-						if m.library.FakeBooks[k] {
-							books = append(books, map[string]string{
-								"book_n": strconv.Itoa(k),
-								"book_m": "1",
-							})
-						} else {
-							books = append(books, map[string]string{
-								"book_n": strconv.Itoa(k),
-								"book_m": "0",
-							})
-						}
-					}
-				}
-				if len(books) > 0 {
-					sendMsg.Set("book", books)
-					m.srv.sendToOne(sendMsg, addr)
-				}
-			}
-			if mode == "1" {
-				m.library.InAnimation = true
-			} else {
-				m.library.InAnimation = false
-			}
+			// mode := msg.GetStr("MD")
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("fake_book")
+			//sendMsg.Set("time", strconv.FormatFloat(m.opt.FakeAnimationTime, 'f', 0, 64))
+			//books := make([]map[string]string, 0)
+			//if mode == "0" {
+			//sendMsg.Set("mode", "0")
+			//c := []rune(msg.GetStr("BK"))
+			//var open bool
+			//for k, v := range c {
+			//if v == '1' {
+			//open = true
+			//} else {
+			//open = false
+			//}
+			//if open != m.library.FakeBooks[k] {
+			//if m.library.FakeBooks[k] {
+			//books = append(books, map[string]string{
+			//"book_n": strconv.Itoa(k),
+			//"book_m": "1",
+			//})
+			//} else {
+			//books = append(books, map[string]string{
+			//"book_n": strconv.Itoa(k),
+			//"book_m": "0",
+			//})
+			//}
+			//}
+			//}
+			//if len(books) > 0 {
+			//sendMsg.Set("book", books)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
+			//}
+			//if mode == "1" {
+			//m.library.InAnimation = true
+			//} else {
+			//m.library.InAnimation = false
+			//}
 		case "R-2-2":
 			c := []rune(msg.GetStr("C"))
 			candles := make([]map[string]string, 0)
@@ -374,7 +374,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.library.Table.CurrentAngle, _ = strconv.ParseFloat(msg.GetStr("A"), 64)
 			m.dealAngle()
-			if !m.library.InAnimation {
+			if !m.library.InAnimation && m.library.MagicWords != 0 {
 				m.dealMagicWords(m.library, m.library.MagicWords)
 			}
 		case "R-2-7":
@@ -1108,7 +1108,7 @@ func (m *Match) gameStage(dt time.Duration) {
 				if m.ensureFakeBooks() {
 					m.fakeBooksAnimation(dt)
 				} else {
-					m.fakeBooksErrorAnimation()
+					m.fakeBooksErrorAnimation(dt)
 				}
 			}
 		} else if m.library.Step == 2 {
@@ -1295,90 +1295,240 @@ func (m *Match) fakeActNum() int {
 func (m *Match) fakeBooksAnimation(dt time.Duration) {
 	sec := dt.Seconds()
 	if !m.library.InAnimation {
+		m.library.FakeAnimationTime = m.opt.FakeAnimationTime / 1000
 		m.library.InAnimation = true
 		m.library.FakeAnimationStep = 1
-		books := make([]map[string]string, 5)
-		num := 0
-		for k, v := range m.library.FakeBooks {
-			if v {
-				books[num] = map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"}
-				num++
-			}
-		}
-		m.srv.fbControls(books, "3")
-		addrs := []InboxAddress{
-			{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
-			{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
-		}
-		sendMsg := NewInboxMessage()
-		sendMsg.SetCmd("magic_book")
-		sendMsg.Set("status", "0")
-		m.srv.send(sendMsg, addrs)
-		//TODO
-		//send step 1 灯光全灭，书发出3语音后全灭
+		m.library.CandleDelay = 0
+		m.library.CandleMode = 0
 	} else {
+		//需要delay一个时间，为了方便第5本书亮起来
 		m.library.FakeAnimationTime = math.Max(m.library.FakeAnimationTime-sec, 0)
 		if m.library.FakeAnimationTime == 0 {
-			m.library.FakeAnimationStep++
 			switch m.library.FakeAnimationStep {
-			case 2: //第一组开始 1
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("fake_book")
-				sendMsg.Set("mode", "3")
-				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.library.FakeAnimationTime = opt.FakeAnimationTime
-			case 3: //第二组 2,3 并且蜡烛、灯箱开始
+			case 1:
+				if m.library.FakeAnimationTime == 0 {
+					addrs := []InboxAddress{
+						{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
+						{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
+					}
+					sendMsg := NewInboxMessage()
+					sendMsg.SetCmd("magic_book")
+					sendMsg.Set("status", "0")
+					m.srv.send(sendMsg, addrs)
+					m.srv.fakeBooksControl("4", "0", "R-2-9")
+					m.srv.fakeBooksControl("4", "0", "R-2-10")
+					m.srv.fakeBooksControl("4", "0", "R-2-11")
+					m.srv.fakeBooksControl("4", "0", "R-2-12")
+					m.srv.fakeBooksControl("4", "0", "R-2-13")
+					m.srv.fakeBooksControl("4", "0", "R-2-14")
+					m.srv.fakeBooksControl("4", "0", "R-2-15")
+					m.srv.fakeBooksControl("4", "0", "R-2-16")
+					m.srv.fakeBooksControl("4", "0", "R-2-17")
+					m.srv.fakeBooksControl("4", "0", "R-2-18")
+					m.srv.fakeBooksControl("4", "0", "R-2-19")
+					m.srv.fakeBooksControl("4", "0", "R-2-20")
+					m.srv.fakeBooksControl("4", "0", "R-2-21")
+					m.srv.fakeBooksControl("4", "0", "R-2-22")
+					m.srv.fakeBooksControl("4", "0", "R-2-23")
+					m.library.FakeAnimationTime = m.opt.FakeAnimationTime / 1000
+					m.library.FakeAnimationStep++
+					log.Println("step 1,light off and mode 4 start!")
+				}
+				//send step 1 灯光全灭
+			case 2: //第二组 2,3 并且蜡烛、灯箱开始
 				//TODO
-				m.library.FakeAnimationTime = opt.FakeAnimationTime
-			case 4: //第三组 4,5,6
+				m.library.CandleDelay = math.Max(m.library.CandleDelay-sec, 0)
+				if m.library.CandleDelay == 0 {
+					candlesN := make([]map[string]string, 1)
+					candlesS := make([]map[string]string, 1)
+					if m.library.CandleMode == 0 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 1 {
+						candlesN[0] = map[string]string{"candle": "2", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "2", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 2 {
+						candlesN[0] = map[string]string{"candle": "3", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "3", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 3 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 4 {
+						candlesN[0] = map[string]string{"candle": "2", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "2", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 5 {
+						candlesN[0] = map[string]string{"candle": "3", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "3", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0
+						m.library.CandleMode = 0
+						m.library.FakeAnimationTime = m.opt.FakeAnimationTime / 1000
+						m.library.FakeAnimationStep++
+					}
+				}
+			case 3: //第三组 4,5,6
 				m.library.Table.IsUseful = true
 				sendMsg := NewInboxMessage()
 				sendMsg.SetCmd("magic_table")
 				sendMsg.Set("useful", "1")
 				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
+				sendMsg.Set("InAnimation", "1")
+				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-6"}
 				m.srv.sendToOne(sendMsg, addr)
-				m.library.FakeAnimationTime = opt.FakeAnimationTime
-			case 5: //第四组 7,8,9,10//记忆水晶
-				m.library.FakeAnimationTime = opt.FakeAnimationTime
-			case 6: //第五组 11,12,13,14,15 蜡烛、灯箱换颜色
-				//TODO
-				m.library.FakeAnimationTime = opt.FakeAnimationTime
-			case 7:
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("fake_book")
-				sendMsg.Set("mode", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-1"}
-				m.srv.sendToOne(sendMsg, addr)
+				m.library.FakeAnimationTime = opt.FakeAnimationTime / 1000
+				m.library.FakeAnimationStep++
+			case 4: //第四组 7,8,9,10//记忆水晶
+				m.library.FakeAnimationTime = opt.FakeAnimationTime / 1000
+				m.library.FakeAnimationStep++
+			case 5: //第五组 11,12,13,14,15 蜡烛、灯箱换颜色
+				m.library.CandleDelay = math.Max(m.library.CandleDelay-sec, 0)
+				if m.library.CandleDelay == 0 {
+					candlesN := make([]map[string]string, 1)
+					candlesS := make([]map[string]string, 1)
+					if m.library.CandleMode == 0 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "1", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 1 {
+						candlesN[0] = map[string]string{"candle": "2", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "2", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 2 {
+						candlesN[0] = map[string]string{"candle": "3", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "3", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 3 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "1", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 4 {
+						candlesN[0] = map[string]string{"candle": "2", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "2", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 5 {
+						candlesN[0] = map[string]string{"candle": "3", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "3", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-5")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode = 0
+						m.library.FakeAnimationTime = m.opt.FakeAnimationTime / 1000
+						m.library.FakeAnimationStep++
+					}
+				}
+			case 6:
+				m.srv.fakeBooksControl("3", "0", "R-2-9")
+				m.srv.fakeBooksControl("3", "0", "R-2-10")
+				m.srv.fakeBooksControl("3", "0", "R-2-11")
+				m.srv.fakeBooksControl("3", "0", "R-2-12")
+				m.srv.fakeBooksControl("3", "0", "R-2-13")
+				m.srv.fakeBooksControl("3", "0", "R-2-14")
+				m.srv.fakeBooksControl("3", "0", "R-2-15")
+				m.srv.fakeBooksControl("3", "0", "R-2-16")
+				m.srv.fakeBooksControl("3", "0", "R-2-17")
+				m.srv.fakeBooksControl("3", "0", "R-2-18")
+				m.srv.fakeBooksControl("3", "0", "R-2-19")
+				m.srv.fakeBooksControl("3", "0", "R-2-20")
+				m.srv.fakeBooksControl("3", "0", "R-2-21")
+				m.srv.fakeBooksControl("3", "0", "R-2-22")
+				m.srv.fakeBooksControl("3", "0", "R-2-23")
 				m.library.InAnimation = false
 				m.library.CurrentFakeBookLight = 15
 				m.library.Table.MarkAngle = m.library.Table.CurrentAngle
 				m.library.Step = 2
 				log.Println("room2 step 1 finish!")
-
 			}
 		}
 	}
 
 }
 
-func (m *Match) fakeBooksErrorAnimation() {
-	books := make([]map[string]string, 5)
-	num := 0
-	m.library.CurrentFakeBookLight = 0
-	for k, v := range m.library.FakeBooks {
-		if v {
-			books[num] = map[string]string{"book_n": strconv.Itoa(k), "book_m": "0"}
-			num++
+func (m *Match) fakeBooksErrorAnimation(dt time.Duration) {
+	//需要delay一个时间，为了方便第5本书亮起来
+	sec := dt.Seconds()
+	if !m.library.InAnimation {
+		m.library.FakeAnimationTime = m.opt.FakeAnimationTime / 1000
+		m.library.InAnimation = true
+	} else {
+		m.library.FakeAnimationTime = math.Max(m.library.FakeAnimationTime-sec, 0)
+		m.library.CurrentFakeBookLight = 0
+		for k, v := range m.library.FakeBooks {
+			if v {
+				switch k {
+				case 1:
+					m.srv.fakeBooksControl("1", "2", "R-2-9")
+				case 2:
+					m.srv.fakeBooksControl("1", "2", "R-2-10")
+				case 3:
+					m.srv.fakeBooksControl("1", "2", "R-2-11")
+				case 4:
+					m.srv.fakeBooksControl("1", "2", "R-2-12")
+				case 5:
+					m.srv.fakeBooksControl("1", "2", "R-2-13")
+				case 6:
+					m.srv.fakeBooksControl("1", "2", "R-2-14")
+				case 7:
+					m.srv.fakeBooksControl("1", "2", "R-2-15")
+				case 8:
+					m.srv.fakeBooksControl("1", "2", "R-2-16")
+				case 9:
+					m.srv.fakeBooksControl("1", "2", "R-2-17")
+				case 10:
+					m.srv.fakeBooksControl("1", "2", "R-2-18")
+				case 11:
+					m.srv.fakeBooksControl("1", "2", "R-2-19")
+				case 12:
+					m.srv.fakeBooksControl("1", "2", "R-2-20")
+				case 13:
+					m.srv.fakeBooksControl("1", "2", "R-2-21")
+				case 14:
+					m.srv.fakeBooksControl("1", "2", "R-2-22")
+				case 15:
+					m.srv.fakeBooksControl("1", "2", "R-2-23")
+				}
+			}
 		}
+		for i := 1; i < 16; i++ {
+			m.library.FakeBooks[i] = false
+		}
+		m.library.InAnimation = false
 	}
-	m.srv.fbControls(books, "2")
-	for i := 0; i < 15; i++ {
-		m.library.FakeBooks[i] = false
-	}
-
 }
 
 func (m *Match) dealAngle() {
@@ -1676,27 +1826,46 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 			sendMsg.Set("status", "0")
 			m.srv.send(sendMsg, addrs)
 
-			sendMsg1 := NewInboxMessage()
-			sendMsg1.SetCmd("fake_book")
-			sendMsg1.Set("mode", "0")
-			addr := InboxAddress{InboxAddressTypeDoorArduino, "R-2-1"}
-			m.srv.sendToOne(sendMsg1, addr)
-			//TODO 蜡烛
-			m.library.InAnimation = true
-		}
-		m.OpenDoorDelayTime = math.Max(m.OpenDoorDelayTime-sec, 0)
-		if m.OpenDoorDelayTime == 0 {
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("door_ctrl")
-			sendMsg.Set("status", "1")
-			addr := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
-			m.srv.sendToOne(sendMsg, addr)
-			m.library.DoorExit = 1
-			m.library.InAnimation = false
-			m.OpenDoorDelayTime = m.opt.OpenDoorDelayTime
-			log.Println("room2 finish!")
+			m.srv.fakeBooksControl("4", "0", "R-2-9")
+			m.srv.fakeBooksControl("4", "0", "R-2-10")
+			m.srv.fakeBooksControl("4", "0", "R-2-11")
+			m.srv.fakeBooksControl("4", "0", "R-2-12")
+			m.srv.fakeBooksControl("4", "0", "R-2-13")
+			m.srv.fakeBooksControl("4", "0", "R-2-14")
+			m.srv.fakeBooksControl("4", "0", "R-2-15")
+			m.srv.fakeBooksControl("4", "0", "R-2-16")
+			m.srv.fakeBooksControl("4", "0", "R-2-17")
+			m.srv.fakeBooksControl("4", "0", "R-2-18")
+			m.srv.fakeBooksControl("4", "0", "R-2-19")
+			m.srv.fakeBooksControl("4", "0", "R-2-20")
+			m.srv.fakeBooksControl("4", "0", "R-2-21")
+			m.srv.fakeBooksControl("4", "0", "R-2-22")
+			m.srv.fakeBooksControl("4", "0", "R-2-23")
 
+			//TODO 蜡烛
+			candles := make([]map[string]string, 3)
+			candles[0] = map[string]string{"candle": "1", "color": "0"}
+			candles[1] = map[string]string{"candle": "2", "color": "0"}
+			candles[2] = map[string]string{"candle": "3", "color": "0"}
+			m.srv.candlesControl(candles, "R-2-2")
+			m.srv.candlesControl(candles, "R-2-3")
+			m.srv.candlesControl(candles, "R-2-4")
+			m.srv.candlesControl(candles, "R-2-5")
+			m.library.InAnimation = true
+			//m.OpenDoorDelayTime = m.opt.Room2OpenDoorDelayTime
 		}
+		//m.OpenDoorDelayTime = math.Max(m.OpenDoorDelayTime-sec, 0)
+		//if m.OpenDoorDelayTime == 0 {
+		sendMsg := NewInboxMessage()
+		sendMsg.SetCmd("door_ctrl")
+		sendMsg.Set("status", "1")
+		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
+		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
+		m.srv.sendToOne(sendMsg, addr)
+		m.library.DoorExit = 1
+		m.library.InAnimation = false
+		log.Println("room2 finish!")
+		//}
 	case StageRoom3:
 	case StageRoom4:
 	case StageRoom5:
@@ -1734,92 +1903,92 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.Table.IsDestroyed = true
 				}
 			case 4:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("1", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-9")
 					m.library.FakeBooks[1] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 5:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("2", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-10")
 					m.library.FakeBooks[2] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 6:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("3", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-11")
 					m.library.FakeBooks[3] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 7:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("4", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-12")
 					m.library.FakeBooks[4] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 8:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("5", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-13")
 					m.library.FakeBooks[5] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 9:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("6", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-14")
 					m.library.FakeBooks[6] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 10:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("7", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-15")
 					m.library.FakeBooks[7] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 11:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("8", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-16")
 					m.library.FakeBooks[8] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 12:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("9", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-17")
 					m.library.FakeBooks[9] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 13:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("10", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-18")
 					m.library.FakeBooks[10] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 14:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("11", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-19")
 					m.library.FakeBooks[11] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 15:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("12", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-20")
 					m.library.FakeBooks[12] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 16:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("13", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-21")
 					m.library.FakeBooks[13] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 17:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("14", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-22")
 					m.library.FakeBooks[14] = true
 					m.library.CurrentFakeBookLight++
 				}
 			case 18:
-				if !m.library.Table.IsUseful {
-					m.srv.fakeBooksControl("15", "1", "R-2-1")
+				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-23")
 					m.library.FakeBooks[15] = true
 					m.library.CurrentFakeBookLight++
 				}
