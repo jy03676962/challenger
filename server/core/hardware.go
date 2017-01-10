@@ -74,9 +74,9 @@ type Room5 struct {
 	MagicWords                int
 	Table                     MagicTable
 	ConstellationSymbol       map[string]bool //星座符号
-	ConstellationLight        [37]bool
+	ConstellationLight        [37]int
 	ConstellationLed          [33]int
-	CurrentConstellationLight int //当前点亮法阵台的星座数量
+	CurrentConstellationLight int //正在亮的星座
 	LightWall                 bool
 	LightStatus               bool
 	DoorExit                  int
@@ -220,12 +220,12 @@ func NewRoom3() *Room3 {
 	r3 := Room3{}
 	r3.Bgm = 0
 	r3.Candles = map[int]int{
+		0: 0,
 		1: 0,
 		2: 0,
 		3: 0,
 		4: 0,
 		5: 0,
-		6: 0,
 	}
 	r3.DoorExit = 0
 	r3.InAnimation = false
@@ -264,13 +264,24 @@ func NewRoom5() *Room5 {
 	r5.Bgm = 0
 	r5.CurrentConstellationLight = 0
 	r5.ConstellationSymbol = map[string]bool{
-		"A": false,
-		"B": false,
-		"C": false,
-		"D": false,
+		"sct": false,
+		"vol": false,
+		"phe": false,
+		"crt": false,
+		"can": false,
+		"cam": false,
+		"boo": false,
+		"mon": false,
+		"cap": false,
+		"gru": false,
+		"lyr": false,
+		"crv": false,
+		"lac": false,
+		"leo": false,
+		"aur": false,
 	}
 	for i := 0; i < 37; i++ {
-		r5.ConstellationLight[i] = false
+		r5.ConstellationLight[i] = 0
 	}
 	for i := 0; i < 33; i++ {
 		r5.ConstellationLed[0] = 0
@@ -311,6 +322,7 @@ func NewRoom6() *Room6 {
 		4: 0,
 		5: 0,
 		6: 0,
+		7: 0,
 	}
 	for i := 0; i < 6; i++ {
 		r6.PowerPointUseful[i] = 0

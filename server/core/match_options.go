@@ -156,7 +156,7 @@ type MatchOptions struct {
 	FakeBooks              [5]int
 	FakeAnimationTime      float64
 	CandlesColor           [6]int
-	Constellations         [3]string
+	Constellations         [5]string
 	ElementSymbol          [6]int
 	Room2OpenDoorDelayTime float64
 	Room3OpenDoorDelayTime float64

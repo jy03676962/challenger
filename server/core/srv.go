@@ -272,3 +272,35 @@ func (s *Srv) candlesControl(candles []map[string]string, id string) {
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
 	s.sendToOne(sendMsg, addr)
 }
+
+func (s *Srv) stairRoomCandlesCtrl(status string, id string) {
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("candle_ctrl")
+	sendMsg.Set("status", status)
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
+	s.sendToOne(sendMsg, addr)
+
+}
+
+func (s *Srv) powerStatus(power []map[string]string) {
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("magic_table")
+	sendMsg.Set("power", power)
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-5"}
+	s.sendToOne(sendMsg, addr)
+}
+
+func (s *Srv) starControl(lights []map[string]string, leds []map[string]string) {
+	sendMsg := NewInboxMessage()
+	sendMsg.SetCmd("star_led")
+	sendMsg.Set("light", lights)
+	sendMsg.Set("led", leds)
+	addrs := []InboxAddress{
+		{InboxAddressTypeRoomArduinoDevice, "R-5-1"},
+		{InboxAddressTypeRoomArduinoDevice, "R-5-2"},
+		{InboxAddressTypeRoomArduinoDevice, "R-5-3"},
+		{InboxAddressTypeRoomArduinoDevice, "R-5-4"},
+		{InboxAddressTypeRoomArduinoDevice, "R-5-5"}}
+	s.send(sendMsg, addrs)
+
+}
