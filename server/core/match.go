@@ -273,73 +273,73 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			//m.library.InAnimation = false
 			//}
 		case "R-2-2":
-			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 0)
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("led_candle")
-			for k, v := range c {
-				if m.library.Candles[k] != int(v-'0') {
-					candles = append(candles, map[string]string{
-						"candle": strconv.Itoa(k),
-						"color":  strconv.Itoa(m.library.Candles[k]),
-					})
-				}
-			}
-			if len(candles) > 0 {
-				sendMsg.Set("candles", candles)
-				m.srv.sendToOne(sendMsg, addr)
-			}
+			//c := []rune(msg.GetStr("C"))
+			//candles := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("led_candle")
+			//for k, v := range c {
+			//if m.library.Candles[k] != int(v-'0') {
+			//candles = append(candles, map[string]string{
+			//"candle": strconv.Itoa(k),
+			//"color":  strconv.Itoa(m.library.Candles[k]),
+			//})
+			//}
+			//}
+			//if len(candles) > 0 {
+			//sendMsg.Set("candles", candles)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-2-3":
-			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 0)
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("led_candle")
-			for k, v := range c {
-				if m.library.Candles[k] != int(v-'0') {
-					candles = append(candles, map[string]string{
-						"candle": strconv.Itoa(k + 3),
-						"color":  strconv.Itoa(m.library.Candles[k+3]),
-					})
-				}
-			}
-			if len(candles) > 0 {
-				sendMsg.Set("candles", candles)
-				m.srv.sendToOne(sendMsg, addr)
-			}
+			//c := []rune(msg.GetStr("C"))
+			//candles := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("led_candle")
+			//for k, v := range c {
+			//if m.library.Candles[k] != int(v-'0') {
+			//candles = append(candles, map[string]string{
+			//"candle": strconv.Itoa(k + 3),
+			//"color":  strconv.Itoa(m.library.Candles[k+3]),
+			//})
+			//}
+			//}
+			//if len(candles) > 0 {
+			//sendMsg.Set("candles", candles)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-2-4":
-			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 0)
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("led_candle")
-			for k, v := range c {
-				if m.library.Candles[k] != int(v-'0') {
-					candles = append(candles, map[string]string{
-						"candle": strconv.Itoa(k + 6),
-						"color":  strconv.Itoa(m.library.Candles[k+6]),
-					})
-				}
-			}
-			if len(candles) > 0 {
-				sendMsg.Set("candles", candles)
-				m.srv.sendToOne(sendMsg, addr)
-			}
+			//c := []rune(msg.GetStr("C"))
+			//candles := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("led_candle")
+			//for k, v := range c {
+			//if m.library.Candles[k] != int(v-'0') {
+			//candles = append(candles, map[string]string{
+			//"candle": strconv.Itoa(k + 6),
+			//"color":  strconv.Itoa(m.library.Candles[k+6]),
+			//})
+			//}
+			//}
+			//if len(candles) > 0 {
+			//sendMsg.Set("candles", candles)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-2-5":
-			c := []rune(msg.GetStr("C"))
-			candles := make([]map[string]string, 0)
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("led_candle")
-			for k, v := range c {
-				if m.library.Candles[k] != int(v-'0') {
-					candles = append(candles, map[string]string{
-						"candle": strconv.Itoa(k + 9),
-						"color":  strconv.Itoa(m.library.Candles[k+9]),
-					})
-				}
-			}
-			if len(candles) > 0 {
-				sendMsg.Set("candles", candles)
-				m.srv.sendToOne(sendMsg, addr)
-			}
+			// c := []rune(msg.GetStr("C"))
+			//candles := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("led_candle")
+			//for k, v := range c {
+			//if m.library.Candles[k] != int(v-'0') {
+			//candles = append(candles, map[string]string{
+			//"candle": strconv.Itoa(k + 9),
+			//"color":  strconv.Itoa(m.library.Candles[k+9]),
+			//})
+			//}
+			//}
+			//if len(candles) > 0 {
+			//sendMsg.Set("candles", candles)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-2-6":
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_table")
@@ -361,8 +361,10 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.srv.sendToOne(sendMsg, addr)
 			}
 			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
-			m.library.Table.CurrentAngle, _ = strconv.ParseFloat(msg.GetStr("A"), 64)
-			m.dealAngle()
+			angle, _ := strconv.ParseFloat(msg.GetStr("A"), 64)
+			if angle != m.library.Table.CurrentAngle {
+				m.dealAngle(angle)
+			}
 			if !m.library.InAnimation && m.library.MagicWords != 0 {
 				m.dealMagicWords(m.library, m.library.MagicWords)
 			}
@@ -370,12 +372,12 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_book")
 			if msg.GetStr("ST") == "1" {
-				if m.library.MagicBooksLightStatus[0] != true {
+				if !m.library.MagicBooksLightStatus[0] {
 					sendMsg.Set("status", "0")
 					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
-				if m.library.MagicBooksLightStatus[0] != false {
+				if m.library.MagicBooksLightStatus[0] {
 					sendMsg.Set("status", "1")
 					m.srv.sendToOne(sendMsg, addr)
 				}
@@ -384,12 +386,12 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_book")
 			if msg.GetStr("ST") == "1" {
-				if m.library.MagicBooksLightStatus[1] != true {
+				if !m.library.MagicBooksLightStatus[1] {
 					sendMsg.Set("status", "0")
 					m.srv.sendToOne(sendMsg, addr)
 				}
 			} else {
-				if m.library.MagicBooksLightStatus[1] != false {
+				if m.library.MagicBooksLightStatus[1] {
 					sendMsg.Set("status", "1")
 					m.srv.sendToOne(sendMsg, addr)
 				}
@@ -1029,31 +1031,31 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		case StageRoom1:
 			m.setStage(StageRoom2)
 		case StageRoom2:
-			if m.library.Step < 3 {
+			if m.library.Step < 4 {
 				m.library.Step++
 			} else {
 				m.setStage(StageRoom3)
 			}
 		case StageRoom3:
-			if m.stairRoom.Step < 3 {
+			if m.stairRoom.Step < 4 {
 				m.library.Step++
 			} else {
 				m.setStage(StageRoom4)
 			}
 		case StageRoom4:
-			if m.magicLab.Step < 3 {
+			if m.magicLab.Step < 4 {
 				m.library.Step++
 			} else {
 				m.setStage(StageRoom5)
 			}
 		case StageRoom5:
-			if m.starTower.Step < 3 {
+			if m.starTower.Step < 4 {
 				m.library.Step++
 			} else {
 				m.setStage(StageRoom6)
 			}
 		case StageRoom6:
-			if m.endRoom.Step < 3 {
+			if m.endRoom.Step < 5 {
 				m.library.Step++
 			} else {
 				m.setStage(StageEnd)
@@ -1123,6 +1125,7 @@ func (m *Match) gameStage(dt time.Duration) {
 		}
 	case StageRoom2:
 		if m.library.Step == 1 {
+			m.fakeBooksAnimation(dt)
 			if m.fakeActNum() == 5 {
 				if m.ensureFakeBooks() {
 					m.fakeBooksAnimation(dt)
@@ -1374,44 +1377,44 @@ func (m *Match) fakeBooksAnimation(dt time.Duration) {
 					candlesN := make([]map[string]string, 1)
 					candlesS := make([]map[string]string, 1)
 					if m.library.CandleMode == 0 {
-						candlesN[0] = map[string]string{"candle": "1", "color": "1"}
+						candlesN[0] = map[string]string{"candle": "0", "color": "1"}
 						m.srv.candlesControl(candlesN, "R-2-2")
-						candlesS[0] = map[string]string{"candle": "1", "color": "1"}
+						candlesS[0] = map[string]string{"candle": "0", "color": "1"}
 						m.srv.candlesControl(candlesS, "R-2-4")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
 					} else if m.library.CandleMode == 1 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "1", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 2 {
 						candlesN[0] = map[string]string{"candle": "2", "color": "1"}
 						m.srv.candlesControl(candlesN, "R-2-2")
 						candlesS[0] = map[string]string{"candle": "2", "color": "1"}
 						m.srv.candlesControl(candlesS, "R-2-4")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 2 {
-						candlesN[0] = map[string]string{"candle": "3", "color": "1"}
-						m.srv.candlesControl(candlesN, "R-2-2")
-						candlesS[0] = map[string]string{"candle": "3", "color": "1"}
-						m.srv.candlesControl(candlesS, "R-2-4")
+					} else if m.library.CandleMode == 3 {
+						candlesN[0] = map[string]string{"candle": "0", "color": "1"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "0", "color": "1"}
+						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 3 {
+					} else if m.library.CandleMode == 4 {
 						candlesN[0] = map[string]string{"candle": "1", "color": "1"}
 						m.srv.candlesControl(candlesN, "R-2-3")
 						candlesS[0] = map[string]string{"candle": "1", "color": "1"}
 						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 4 {
+					} else if m.library.CandleMode == 5 {
 						candlesN[0] = map[string]string{"candle": "2", "color": "1"}
 						m.srv.candlesControl(candlesN, "R-2-3")
 						candlesS[0] = map[string]string{"candle": "2", "color": "1"}
-						m.srv.candlesControl(candlesS, "R-2-5")
-						m.library.CandleDelay = 0.5
-						m.library.CandleMode++
-					} else if m.library.CandleMode == 5 {
-						candlesN[0] = map[string]string{"candle": "3", "color": "1"}
-						m.srv.candlesControl(candlesN, "R-2-3")
-						candlesS[0] = map[string]string{"candle": "3", "color": "1"}
 						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0
 						m.library.CandleMode = 0
@@ -1424,8 +1427,8 @@ func (m *Match) fakeBooksAnimation(dt time.Duration) {
 				sendMsg := NewInboxMessage()
 				sendMsg.SetCmd("magic_table")
 				sendMsg.Set("useful", "1")
-				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
 				sendMsg.Set("InAnimation", "1")
+				sendMsg.Set("time", "2000")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-2-6"}
 				m.srv.sendToOne(sendMsg, addr)
 				m.library.FakeAnimationTime = opt.FakeAnimationTime / 1000
@@ -1439,44 +1442,44 @@ func (m *Match) fakeBooksAnimation(dt time.Duration) {
 					candlesN := make([]map[string]string, 1)
 					candlesS := make([]map[string]string, 1)
 					if m.library.CandleMode == 0 {
-						candlesN[0] = map[string]string{"candle": "1", "color": "2"}
+						candlesN[0] = map[string]string{"candle": "0", "color": "2"}
 						m.srv.candlesControl(candlesN, "R-2-2")
-						candlesS[0] = map[string]string{"candle": "1", "color": "3"}
+						candlesS[0] = map[string]string{"candle": "0", "color": "3"}
 						m.srv.candlesControl(candlesS, "R-2-4")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
 					} else if m.library.CandleMode == 1 {
+						candlesN[0] = map[string]string{"candle": "1", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-2")
+						candlesS[0] = map[string]string{"candle": "1", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-4")
+						m.library.CandleDelay = 0.5
+						m.library.CandleMode++
+					} else if m.library.CandleMode == 2 {
 						candlesN[0] = map[string]string{"candle": "2", "color": "2"}
 						m.srv.candlesControl(candlesN, "R-2-2")
 						candlesS[0] = map[string]string{"candle": "2", "color": "3"}
 						m.srv.candlesControl(candlesS, "R-2-4")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 2 {
-						candlesN[0] = map[string]string{"candle": "3", "color": "2"}
-						m.srv.candlesControl(candlesN, "R-2-2")
-						candlesS[0] = map[string]string{"candle": "3", "color": "3"}
-						m.srv.candlesControl(candlesS, "R-2-4")
+					} else if m.library.CandleMode == 3 {
+						candlesN[0] = map[string]string{"candle": "0", "color": "2"}
+						m.srv.candlesControl(candlesN, "R-2-3")
+						candlesS[0] = map[string]string{"candle": "0", "color": "3"}
+						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 3 {
+					} else if m.library.CandleMode == 4 {
 						candlesN[0] = map[string]string{"candle": "1", "color": "2"}
 						m.srv.candlesControl(candlesN, "R-2-3")
 						candlesS[0] = map[string]string{"candle": "1", "color": "3"}
 						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode++
-					} else if m.library.CandleMode == 4 {
+					} else if m.library.CandleMode == 5 {
 						candlesN[0] = map[string]string{"candle": "2", "color": "2"}
 						m.srv.candlesControl(candlesN, "R-2-3")
 						candlesS[0] = map[string]string{"candle": "2", "color": "3"}
-						m.srv.candlesControl(candlesS, "R-2-5")
-						m.library.CandleDelay = 0.5
-						m.library.CandleMode++
-					} else if m.library.CandleMode == 5 {
-						candlesN[0] = map[string]string{"candle": "3", "color": "2"}
-						m.srv.candlesControl(candlesN, "R-2-3")
-						candlesS[0] = map[string]string{"candle": "3", "color": "3"}
 						m.srv.candlesControl(candlesS, "R-2-5")
 						m.library.CandleDelay = 0.5
 						m.library.CandleMode = 0
@@ -1563,19 +1566,218 @@ func (m *Match) fakeBooksErrorAnimation(dt time.Duration) {
 	}
 }
 
-func (m *Match) dealAngle() {
-	if !m.library.Table.IsUseful {
+func (m *Match) dealAngle(angle float64) {
+	if !m.library.Table.IsUseful || m.library.Table.IsDestroyed {
 		return
 	}
-	addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-2"}, {InboxAddressTypeRoomArduinoDevice, "R-2-3"}, {InboxAddressTypeRoomArduinoDevice, "R-2-4"}, {InboxAddressTypeRoomArduinoDevice, "R-2-5"}}
-	sendMsg := NewInboxMessage()
-	sendMsg.SetCmd("led_candle")
-	sendMsg.Set("angle", strconv.FormatFloat(m.library.Table.CurrentAngle-m.library.Table.MarkAngle, 'f', -1, 64))
-	m.srv.send(sendMsg, addrs)
+	//day:2  moon:3
+	candles1 := make([]map[string]string, 3)
+	candles2 := make([]map[string]string, 3)
+	candles3 := make([]map[string]string, 3)
+	candles4 := make([]map[string]string, 3)
+	if angle > 0 && angle < 30 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	} else if angle > 30 && angle < 60 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	} else if angle > 60 && angle < 90 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	} else if angle > 90 && angle < 120 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	} else if angle > 120 && angle < 150 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	} else if angle > 150 && angle < 180 {
+		candles1[0] = map[string]string{"candle": "0", "color": "3"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "2"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 180 && angle < 210 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "3"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "2"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 210 && angle < 240 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 240 && angle < 270 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "3"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "2"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 270 && angle < 300 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "3"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "2"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 300 && angle < 330 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "2"}
+	} else if angle > 330 && angle < 360 {
+		candles1[0] = map[string]string{"candle": "0", "color": "2"}
+		candles1[1] = map[string]string{"candle": "1", "color": "2"}
+		candles1[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles2[0] = map[string]string{"candle": "0", "color": "2"}
+		candles2[1] = map[string]string{"candle": "1", "color": "2"}
+		candles2[2] = map[string]string{"candle": "2", "color": "2"}
+
+		candles3[0] = map[string]string{"candle": "0", "color": "3"}
+		candles3[1] = map[string]string{"candle": "1", "color": "3"}
+		candles3[2] = map[string]string{"candle": "2", "color": "3"}
+
+		candles4[0] = map[string]string{"candle": "0", "color": "3"}
+		candles4[1] = map[string]string{"candle": "1", "color": "3"}
+		candles4[2] = map[string]string{"candle": "2", "color": "3"}
+	}
+	m.srv.candlesControl(candles1, "R-2-2")
+	m.srv.candlesControl(candles2, "R-2-3")
+	m.srv.candlesControl(candles3, "R-2-4")
+	m.srv.candlesControl(candles4, "R-2-5")
+	m.library.Table.CurrentAngle = angle
 }
 
 func (m *Match) ensureFakeBooks() bool {
-	for _, v := range m.opt.FakeBooks {
+	for k, v := range m.opt.FakeBooks {
+		log.Println("k = ", k, "v = ", v)
 		if !m.library.FakeBooks[v] {
 			return false
 		}
@@ -3020,57 +3222,51 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 	//sec := dt.Seconds()
 	switch s {
 	case StageRoom2:
-		if m.library.InAnimation != true {
-			//animation
-			addrs := []InboxAddress{
-				{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
-				{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
-			}
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("magic_book")
-			sendMsg.Set("status", "0")
-			m.srv.send(sendMsg, addrs)
-
-			m.srv.fakeBooksControl("4", "0", "R-2-9")
-			m.srv.fakeBooksControl("4", "0", "R-2-10")
-			m.srv.fakeBooksControl("4", "0", "R-2-11")
-			m.srv.fakeBooksControl("4", "0", "R-2-12")
-			m.srv.fakeBooksControl("4", "0", "R-2-13")
-			m.srv.fakeBooksControl("4", "0", "R-2-14")
-			m.srv.fakeBooksControl("4", "0", "R-2-15")
-			m.srv.fakeBooksControl("4", "0", "R-2-16")
-			m.srv.fakeBooksControl("4", "0", "R-2-17")
-			m.srv.fakeBooksControl("4", "0", "R-2-18")
-			m.srv.fakeBooksControl("4", "0", "R-2-19")
-			m.srv.fakeBooksControl("4", "0", "R-2-20")
-			m.srv.fakeBooksControl("4", "0", "R-2-21")
-			m.srv.fakeBooksControl("4", "0", "R-2-22")
-			m.srv.fakeBooksControl("4", "0", "R-2-23")
-
-			//TODO 蜡烛
-			candles := make([]map[string]string, 3)
-			candles[0] = map[string]string{"candle": "1", "color": "0"}
-			candles[1] = map[string]string{"candle": "2", "color": "0"}
-			candles[2] = map[string]string{"candle": "3", "color": "0"}
-			m.srv.candlesControl(candles, "R-2-2")
-			m.srv.candlesControl(candles, "R-2-3")
-			m.srv.candlesControl(candles, "R-2-4")
-			m.srv.candlesControl(candles, "R-2-5")
-			m.library.InAnimation = true
-			//m.OpenDoorDelayTime = m.opt.Room2OpenDoorDelayTime
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
+			{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
 		}
-		//m.OpenDoorDelayTime = math.Max(m.OpenDoorDelayTime-sec, 0)
-		//if m.OpenDoorDelayTime == 0 {
 		sendMsg := NewInboxMessage()
-		sendMsg.SetCmd("door_ctrl")
-		sendMsg.Set("status", "1")
-		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
-		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
-		m.srv.sendToOne(sendMsg, addr)
+		sendMsg.SetCmd("magic_book")
+		sendMsg.Set("status", "0")
+		m.srv.send(sendMsg, addrs)
+
+		m.srv.fakeBooksControl("0", "0", "R-2-9")
+		m.srv.fakeBooksControl("0", "0", "R-2-10")
+		m.srv.fakeBooksControl("0", "0", "R-2-11")
+		m.srv.fakeBooksControl("0", "0", "R-2-12")
+		m.srv.fakeBooksControl("0", "0", "R-2-13")
+		m.srv.fakeBooksControl("0", "0", "R-2-14")
+		m.srv.fakeBooksControl("0", "0", "R-2-15")
+		m.srv.fakeBooksControl("0", "0", "R-2-16")
+		m.srv.fakeBooksControl("0", "0", "R-2-17")
+		m.srv.fakeBooksControl("0", "0", "R-2-18")
+		m.srv.fakeBooksControl("0", "0", "R-2-19")
+		m.srv.fakeBooksControl("0", "0", "R-2-20")
+		m.srv.fakeBooksControl("0", "0", "R-2-21")
+		m.srv.fakeBooksControl("0", "0", "R-2-22")
+		m.srv.fakeBooksControl("0", "0", "R-2-23")
+
+		//TODO 蜡烛
+		candles := make([]map[string]string, 3)
+		candles[0] = map[string]string{"candle": "0", "color": "0"}
+		candles[1] = map[string]string{"candle": "1", "color": "0"}
+		candles[2] = map[string]string{"candle": "2", "color": "0"}
+		m.srv.candlesControl(candles, "R-2-2")
+		m.srv.candlesControl(candles, "R-2-3")
+		m.srv.candlesControl(candles, "R-2-4")
+		m.srv.candlesControl(candles, "R-2-5")
+		m.library.InAnimation = true
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("door_ctrl")
+		sendMsg1.Set("status", "1")
+		sendMsg1.Set("time", m.opt.Room2OpenDoorDelayTime)
+		log.Println(m.opt.Room2OpenDoorDelayTime)
+		addr1 := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
+		m.srv.sendToOne(sendMsg1, addr1)
 		m.library.DoorExit = DoorOpen
 		m.library.InAnimation = false
 		log.Println("room2 finish!")
-		//}
 	case StageRoom3:
 		m.srv.stairRoomCandlesCtrl("0", "R-3-1")
 		m.srv.stairRoomCandlesCtrl("0", "R-3-2")
@@ -3140,19 +3336,23 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 	switch room.(type) {
 	case *Room2:
 		if magicWords == 1 {
-			m.library.MagicBooksLightStatus[0] = true
-			m.library.MagicBooksLightStatus[1] = true
-			sendMsg.SetCmd("magic_book")
-			sendMsg.Set("status", "1")
-			addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
-			m.srv.send(sendMsg, addrs)
+			if !m.library.MagicBooksLightStatus[0] {
+				sendMsg.SetCmd("magic_book")
+				sendMsg.Set("status", "1")
+				addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
+				m.srv.send(sendMsg, addrs)
+				m.library.MagicBooksLightStatus[0] = true
+				m.library.MagicBooksLightStatus[1] = true
+			}
 		} else if magicWords == 2 {
-			m.library.MagicBooksLightStatus[0] = false
-			m.library.MagicBooksLightStatus[1] = false
-			sendMsg.SetCmd("magic_book")
-			sendMsg.Set("status", "0")
-			addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
-			m.srv.send(sendMsg, addrs)
+			if m.library.MagicBooksLightStatus[0] {
+				sendMsg.SetCmd("magic_book")
+				sendMsg.Set("status", "0")
+				addrs := []InboxAddress{{InboxAddressTypeRoomArduinoDevice, "R-2-7"}, {InboxAddressTypeRoomArduinoDevice, "R-2-8"}}
+				m.srv.send(sendMsg, addrs)
+				m.library.MagicBooksLightStatus[0] = false
+				m.library.MagicBooksLightStatus[1] = false
+			}
 		} else if !m.library.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
@@ -3250,8 +3450,8 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.CurrentFakeBookLight++
 				}
 			}
-			m.library.MagicWords = 0
 		}
+		m.library.MagicWords = 0
 	case *Room3:
 		if m.stairRoom.Table.IsUseful && !m.stairRoom.Table.IsDestroyed {
 			switch magicWords {

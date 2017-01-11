@@ -153,7 +153,7 @@ type MatchOptions struct {
 	DoorArduino  []string
 	LightArduino []string
 
-	FakeBooks              [5]int
+	FakeBooks              []int
 	FakeAnimationTime      float64
 	CandlesColor           [6]int
 	Constellations         [5]string

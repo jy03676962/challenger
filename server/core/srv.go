@@ -297,7 +297,6 @@ func (s *Srv) fakeBooksControl(mode string, music string, id string) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("fake_book")
 	sendMsg.Set("mode", mode)
-	sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
 	sendMsg.Set("music", music)
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, id}
 	s.sendToOne(sendMsg, addr)

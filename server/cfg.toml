@@ -1,3 +1,15 @@
+#Timerift
+#Room1
+FakeBooks = [ 1, 5, 8, 10, 13]#正确的假书编号
+FakeAnimationTime = 3000.0
+CandlesColor = [ 1, 2, 3, 4, 5, 6]#正确的颜色编号
+Constellations = ["crt", "cam", "boo", "mon", "lac"]#正确的星座名字
+ElementSymbol = [1, 2, 3, 4, 5, 6]
+Room2OpenDoorDelayTime = 10000.0
+Room3OpenDoorDelayTime = 10000.0
+Room4OpenDoorDelayTime = 10000.0
+Room5OpenDoorDelayTime = 10000.0
+
 arenaWidth = 8 # 场地长
 arenaHeight = 6 # 场地高
 t1 = 0.1 # 按钮读条时间1
@@ -265,14 +277,3 @@ from = 3
 to = 3
 
 
-#Timerift
-#Room1
-FakeBooks = [ 1, 5, 8, 10, 13]#正确的假书编号
-FakeAnimationTime = 3000
-CandlesColor = [ 1, 2, 3, 4, 5, 6]#正确的颜色编号
-Constellations = ["crt", "cam", "boo", "mon", "lac"]#正确的星座名字
-ElementSymbol = [1, 2, 3, 4, 5, 6]
-Room2OpenDoorDelayTime = 10000
-Room3OpenDoorDelayTime = 10000
-Room4OpenDoorDelayTime = 10000
-Room5OpenDoorDelayTime = 10000
