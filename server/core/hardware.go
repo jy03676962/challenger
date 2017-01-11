@@ -31,7 +31,6 @@ type Room2 struct {
 	CurrentFakeBookLight  int          //已经点亮的假书
 	AnimationFakeBooks    bool
 	MagicBooksLightStatus [2]bool //射灯开关
-	Candles               map[int]int
 	DoorExit              int
 	LightStatus           bool
 	Step                  int
@@ -121,6 +120,7 @@ type MagicTable struct {
 
 //魔法座台
 type MagicStands struct {
+	Power      string
 	IsPowerOn  bool
 	IsPowerful bool
 }
@@ -157,20 +157,6 @@ func NewRoom2() *Room2 {
 	r2 := Room2{}
 	r2.AnimationFakeBooks = false
 	r2.Bgm = 0
-	r2.Candles = map[int]int{
-		1:  0,
-		2:  0,
-		3:  0,
-		4:  0,
-		5:  0,
-		6:  0,
-		7:  0,
-		8:  0,
-		9:  0,
-		10: 0,
-		11: 0,
-		12: 0,
-	}
 	r2.DoorExit = 0
 	r2.FakeBooks = map[int]bool{
 		1:  false,
@@ -220,12 +206,12 @@ func NewRoom3() *Room3 {
 	r3 := Room3{}
 	r3.Bgm = 0
 	r3.Candles = map[int]int{
-		0: 0,
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-		5: 0,
+		0: 1,
+		1: 1,
+		2: 1,
+		3: 1,
+		4: 1,
+		5: 1,
 	}
 	r3.DoorExit = 0
 	r3.InAnimation = false
@@ -251,6 +237,7 @@ func NewRoom4() *Room4 {
 	for i := 0; i < 4; i++ {
 		r4.Stands[i].IsPowerful = false
 		r4.Stands[i].IsPowerOn = false
+		r4.Stands[i].Power = "0"
 	}
 	r4.Table = MagicTable{}
 	r4.Table.IsFinish = false

@@ -232,114 +232,6 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			} else {
 				m.livingRoom.DoorMirror = DoorClose
 			}
-		case "R-2-1":
-			// mode := msg.GetStr("MD")
-			//sendMsg := NewInboxMessage()
-			//sendMsg.SetCmd("fake_book")
-			//sendMsg.Set("time", strconv.FormatFloat(m.opt.FakeAnimationTime, 'f', 0, 64))
-			//books := make([]map[string]string, 0)
-			//if mode == "0" {
-			//sendMsg.Set("mode", "0")
-			//c := []rune(msg.GetStr("BK"))
-			//var open bool
-			//for k, v := range c {
-			//if v == '1' {
-			//open = true
-			//} else {
-			//open = false
-			//}
-			//if open != m.library.FakeBooks[k] {
-			//if m.library.FakeBooks[k] {
-			//books = append(books, map[string]string{
-			//"book_n": strconv.Itoa(k),
-			//"book_m": "1",
-			//})
-			//} else {
-			//books = append(books, map[string]string{
-			//"book_n": strconv.Itoa(k),
-			//"book_m": "0",
-			//})
-			//}
-			//}
-			//}
-			//if len(books) > 0 {
-			//sendMsg.Set("book", books)
-			//m.srv.sendToOne(sendMsg, addr)
-			//}
-			//}
-			//if mode == "1" {
-			//m.library.InAnimation = true
-			//} else {
-			//m.library.InAnimation = false
-			//}
-		case "R-2-2":
-			//c := []rune(msg.GetStr("C"))
-			//candles := make([]map[string]string, 0)
-			//sendMsg := NewInboxMessage()
-			//sendMsg.SetCmd("led_candle")
-			//for k, v := range c {
-			//if m.library.Candles[k] != int(v-'0') {
-			//candles = append(candles, map[string]string{
-			//"candle": strconv.Itoa(k),
-			//"color":  strconv.Itoa(m.library.Candles[k]),
-			//})
-			//}
-			//}
-			//if len(candles) > 0 {
-			//sendMsg.Set("candles", candles)
-			//m.srv.sendToOne(sendMsg, addr)
-			//}
-		case "R-2-3":
-			//c := []rune(msg.GetStr("C"))
-			//candles := make([]map[string]string, 0)
-			//sendMsg := NewInboxMessage()
-			//sendMsg.SetCmd("led_candle")
-			//for k, v := range c {
-			//if m.library.Candles[k] != int(v-'0') {
-			//candles = append(candles, map[string]string{
-			//"candle": strconv.Itoa(k + 3),
-			//"color":  strconv.Itoa(m.library.Candles[k+3]),
-			//})
-			//}
-			//}
-			//if len(candles) > 0 {
-			//sendMsg.Set("candles", candles)
-			//m.srv.sendToOne(sendMsg, addr)
-			//}
-		case "R-2-4":
-			//c := []rune(msg.GetStr("C"))
-			//candles := make([]map[string]string, 0)
-			//sendMsg := NewInboxMessage()
-			//sendMsg.SetCmd("led_candle")
-			//for k, v := range c {
-			//if m.library.Candles[k] != int(v-'0') {
-			//candles = append(candles, map[string]string{
-			//"candle": strconv.Itoa(k + 6),
-			//"color":  strconv.Itoa(m.library.Candles[k+6]),
-			//})
-			//}
-			//}
-			//if len(candles) > 0 {
-			//sendMsg.Set("candles", candles)
-			//m.srv.sendToOne(sendMsg, addr)
-			//}
-		case "R-2-5":
-			// c := []rune(msg.GetStr("C"))
-			//candles := make([]map[string]string, 0)
-			//sendMsg := NewInboxMessage()
-			//sendMsg.SetCmd("led_candle")
-			//for k, v := range c {
-			//if m.library.Candles[k] != int(v-'0') {
-			//candles = append(candles, map[string]string{
-			//"candle": strconv.Itoa(k + 9),
-			//"color":  strconv.Itoa(m.library.Candles[k+9]),
-			//})
-			//}
-			//}
-			//if len(candles) > 0 {
-			//sendMsg.Set("candles", candles)
-			//m.srv.sendToOne(sendMsg, addr)
-			//}
 		case "R-2-6":
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("magic_table")
@@ -416,7 +308,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[0] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-2":
 			st := msg.GetStr("ST")
@@ -424,7 +318,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[1] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[1], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-3":
 			st := msg.GetStr("ST")
@@ -432,7 +328,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[2] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[2], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-4":
 			st := msg.GetStr("ST")
@@ -440,7 +338,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[3] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[3], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-5":
 			st := msg.GetStr("ST")
@@ -448,7 +348,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[4] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[4], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-6":
 			st := msg.GetStr("ST")
@@ -456,7 +358,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.stairRoom.Candles[5] = 0
 			} else {
 				color := msg.GetStr("C")
-				m.stairRoom.Candles[5], _ = strconv.Atoi(color)
+				if color != "0" {
+					m.stairRoom.Candles[0], _ = strconv.Atoi(color)
+				}
 			}
 		case "R-3-7":
 			sendMsg := NewInboxMessage()
@@ -482,8 +386,10 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			if len(sendMsg.Data) > 2 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
-			m.library.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
-			m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
+			m.stairRoom.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
+			if !m.stairRoom.InAnimation && m.stairRoom.MagicWords != 0 {
+				m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
+			}
 		case "D-3":
 			sendMsg := NewInboxMessage()
 			sendMsg.SetCmd("door_ctrl")
@@ -499,36 +405,57 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-4-1":
+			if !m.magicLab.Stands[0].IsPowerOn || m.magicLab.Stands[0].IsPowerful {
+				return
+			}
 			status := msg.GetStr("P")
-			power := make([]map[string]string, 1)
-			power = append(power, map[string]string{"power_type": "1", "status": status})
-			//m.srv.powerStatus(power)
-			if status == "2" {
-				m.magicLab.Stands[0].IsPowerful = true
+			if status != m.magicLab.Stands[0].Power {
+				power := make([]map[string]string, 1)
+				power = append(power, map[string]string{"power_type": "1", "status": status})
+				m.srv.powerStatus(power)
+				if status == "2" {
+					m.magicLab.Stands[0].IsPowerful = true
+				}
+				m.magicLab.Stands[0].Power = status
 			}
 		case "R-4-2":
+			if !m.magicLab.Stands[1].IsPowerOn || m.magicLab.Stands[1].IsPowerful {
+				return
+			}
 			status := msg.GetStr("P")
-			power := make([]map[string]string, 1)
-			power = append(power, map[string]string{"power_type": "2", "status": status})
-			//m.srv.powerStatus(power)
-			if status == "2" {
-				m.magicLab.Stands[1].IsPowerful = true
+			if status != m.magicLab.Stands[1].Power {
+				power := make([]map[string]string, 1)
+				power = append(power, map[string]string{"power_type": "2", "status": status})
+				m.srv.powerStatus(power)
+				if status == "2" {
+					m.magicLab.Stands[1].IsPowerful = true
+				}
 			}
 		case "R-4-3":
+			if !m.magicLab.Stands[2].IsPowerOn || m.magicLab.Stands[2].IsPowerful {
+				return
+			}
 			status := msg.GetStr("P")
-			power := make([]map[string]string, 1)
-			power = append(power, map[string]string{"power_type": "3", "status": status})
-			//m.srv.powerStatus(power)
-			if status == "2" {
-				m.magicLab.Stands[2].IsPowerful = true
+			if status != m.magicLab.Stands[2].Power {
+				power := make([]map[string]string, 1)
+				power = append(power, map[string]string{"power_type": "3", "status": status})
+				m.srv.powerStatus(power)
+				if status == "2" {
+					m.magicLab.Stands[2].IsPowerful = true
+				}
 			}
 		case "R-4-4":
+			if !m.magicLab.Stands[3].IsPowerOn || m.magicLab.Stands[3].IsPowerful {
+				return
+			}
 			status := msg.GetStr("P")
-			power := make([]map[string]string, 1)
-			power = append(power, map[string]string{"power_type": "4", "status": status})
-			//m.srv.powerStatus(power)
-			if status == "2" {
-				m.magicLab.Stands[3].IsPowerful = true
+			if status != m.magicLab.Stands[3].Power {
+				power := make([]map[string]string, 1)
+				power = append(power, map[string]string{"power_type": "4", "status": status})
+				m.srv.powerStatus(power)
+				if status == "2" {
+					m.magicLab.Stands[3].IsPowerful = true
+				}
 			}
 		case "R-4-5":
 			sendMsg := NewInboxMessage()
@@ -555,7 +482,9 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.srv.sendToOne(sendMsg, addr)
 			}
 			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
-			m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
+			if !m.magicLab.InAnimation && m.magicLab.MagicWords != 0 {
+				m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
+			}
 
 		case "R-4-6":
 			sendMsg := NewInboxMessage()
@@ -1033,30 +962,35 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		case StageRoom2:
 			if m.library.Step < 4 {
 				m.library.Step++
+				log.Println("jump 1 step,current step:", m.library.Step)
 			} else {
 				m.setStage(StageRoom3)
 			}
 		case StageRoom3:
 			if m.stairRoom.Step < 4 {
-				m.library.Step++
+				m.stairRoom.Step++
+				log.Println("jump 1 step,current step:", m.stairRoom.Step)
 			} else {
 				m.setStage(StageRoom4)
 			}
 		case StageRoom4:
 			if m.magicLab.Step < 4 {
-				m.library.Step++
+				m.magicLab.Step++
+				log.Println("jump 1 step,current step:", m.magicLab.Step)
 			} else {
 				m.setStage(StageRoom5)
 			}
 		case StageRoom5:
 			if m.starTower.Step < 4 {
-				m.library.Step++
+				m.starTower.Step++
+				log.Println("jump 1 step,current step:", m.starTower.Step)
 			} else {
 				m.setStage(StageRoom6)
 			}
 		case StageRoom6:
 			if m.endRoom.Step < 5 {
-				m.library.Step++
+				m.endRoom.Step++
+				log.Println("jump 1 step,current step:", m.endRoom.Step)
 			} else {
 				m.setStage(StageEnd)
 			}
@@ -1125,7 +1059,6 @@ func (m *Match) gameStage(dt time.Duration) {
 		}
 	case StageRoom2:
 		if m.library.Step == 1 {
-			m.fakeBooksAnimation(dt)
 			if m.fakeActNum() == 5 {
 				if m.ensureFakeBooks() {
 					m.fakeBooksAnimation(dt)
@@ -1136,9 +1069,10 @@ func (m *Match) gameStage(dt time.Duration) {
 		} else if m.library.Step == 2 {
 			if m.library.Table.IsFinish {
 				m.library.Step = 3
-				log.Println("room2 step 2 finish!")
+				log.Println("magic table finish!")
 			}
 		} else if m.library.Step == 3 {
+			m.endingAnimation(StageRoom2, dt)
 			if m.library.Table.IsDestroyed {
 				m.endingAnimation(StageRoom2, dt)
 			}
@@ -1148,7 +1082,7 @@ func (m *Match) gameStage(dt time.Duration) {
 			if m.ensureCandlesPoweroff() {
 				m.magicTableAnimation(StageRoom3)
 				m.stairRoom.Step = 2
-				log.Println("room3 step 1 finish!")
+				log.Println("all candles off!")
 			}
 		} else if m.stairRoom.Step == 2 {
 			if m.ensureCandlesColor() {
@@ -1160,13 +1094,12 @@ func (m *Match) gameStage(dt time.Duration) {
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-3-7"}
 				m.srv.sendToOne(sendMsg, addr)
 				m.stairRoom.Step = 3
-				log.Println("room3 step 2 finish!")
+				log.Println("all candles color right!")
 			}
 		} else if m.stairRoom.Step == 3 {
 			if m.stairRoom.Table.IsDestroyed {
 				m.endingAnimation(StageRoom3, dt)
 				m.stairRoom.DoorExit = DoorOpen
-				log.Println("room3 step 3 finish!")
 			}
 		}
 	case StageRoom4:
@@ -1174,7 +1107,7 @@ func (m *Match) gameStage(dt time.Duration) {
 			if m.ensureMagicStandsPowerOn() {
 				m.magicTableAnimation(StageRoom4)
 				m.magicLab.Step = 2
-				log.Println("room4 step 1 finish!")
+				log.Println("all magic stands launch!")
 			}
 		} else if m.magicLab.Step == 2 {
 			if m.ensureMagicStandsPowerFul() {
@@ -1186,14 +1119,13 @@ func (m *Match) gameStage(dt time.Duration) {
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-5"}
 				m.srv.sendToOne(sendMsg, addr)
 				m.magicLab.Step = 3
-				log.Println("room4 step 2 finish!")
+				log.Println("all magic stands poweful!")
 
 			}
 		} else if m.magicLab.Step == 3 {
 			if m.magicLab.Table.IsDestroyed {
 				m.endingAnimation(StageRoom4, dt)
 				m.magicLab.DoorExit = DoorOpen
-				log.Println("room4 step 3 finish!")
 			}
 		}
 	case StageRoom5:
@@ -1507,7 +1439,7 @@ func (m *Match) fakeBooksAnimation(dt time.Duration) {
 				m.library.CurrentFakeBookLight = 15
 				m.library.Table.MarkAngle = m.library.Table.CurrentAngle
 				m.library.Step = 2
-				log.Println("room2 step 1 finish!")
+				log.Println("fakebooks right!magic table launch!")
 			}
 		}
 	}
@@ -1563,6 +1495,7 @@ func (m *Match) fakeBooksErrorAnimation(dt time.Duration) {
 			m.library.FakeBooks[i] = false
 		}
 		m.library.InAnimation = false
+		log.Println("fakebooks error!")
 	}
 }
 
@@ -3260,7 +3193,7 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("door_ctrl")
 		sendMsg1.Set("status", "1")
-		sendMsg1.Set("time", m.opt.Room2OpenDoorDelayTime)
+		sendMsg1.Set("time", strconv.FormatFloat(m.opt.Room2OpenDoorDelayTime, 'f', 0, 64))
 		log.Println(m.opt.Room2OpenDoorDelayTime)
 		addr1 := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
 		m.srv.sendToOne(sendMsg1, addr1)
@@ -3277,9 +3210,10 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("door_ctrl")
 		sendMsg.Set("status", "1")
-		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
+		sendMsg.Set("time", strconv.FormatFloat(m.opt.Room3OpenDoorDelayTime, 'f', 0, 64))
 		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-3"}
 		m.srv.sendToOne(sendMsg, addr)
+		log.Println("room3 finish!")
 	case StageRoom4:
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("book_desk")
@@ -3290,10 +3224,10 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("door_ctrl")
 		sendMsg.Set("status", "1")
-		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
+		sendMsg.Set("time", strconv.FormatFloat(m.opt.Room4OpenDoorDelayTime, 'f', 0, 64))
 		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-4"}
 		m.srv.sendToOne(sendMsg, addr)
-
+		log.Println("room4 finish!")
 	case StageRoom5:
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("magic_rob")
@@ -3304,28 +3238,30 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("door_ctrl")
 		sendMsg.Set("status", "1")
-		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
+		sendMsg.Set("time", strconv.FormatFloat(m.opt.Room5OpenDoorDelayTime, 'f', 0, 64))
 		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-5"}
 		m.srv.sendToOne(sendMsg, addr)
+		log.Println("room5 finish!")
 	case StageRoom6:
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("magic_table")
 		sendMsg.Set("destroyed", "1")
 		addr := InboxAddress{InboxAddressTypeDoorArduino, "R-6-7"}
 		m.srv.sendToOne(sendMsg, addr)
+
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("led_candle")
 		sendMsg1.Set("mode", "0")
 		addr1 := InboxAddress{InboxAddressTypeDoorArduino, "R-6-8"}
 		m.srv.sendToOne(sendMsg1, addr1)
+
 		sendMsg2 := NewInboxMessage()
 		sendMsg2.SetCmd("water_light")
 		sendMsg2.Set("status", "0")
 		addr2 := InboxAddress{InboxAddressTypeDoorArduino, "R-6-9"}
 		m.srv.sendToOne(sendMsg2, addr2)
+		log.Println("game over!")
 	}
-	//delay Xs
-	//control door
 }
 
 func (m *Match) dealMagicWords(room interface{}, magicWords int) {
@@ -3483,24 +3419,36 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 				}
 			}
 		} else if magicWords == 4 {
+			if m.magicLab.Stands[0].IsPowerOn {
+				return
+			}
 			m.magicLab.Stands[0].IsPowerOn = true
 			sendMsg.SetCmd("magic_desk")
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-1"}
 			m.srv.sendToOne(sendMsg, addr)
 		} else if magicWords == 5 {
+			if m.magicLab.Stands[1].IsPowerOn {
+				return
+			}
 			m.magicLab.Stands[1].IsPowerOn = true
 			sendMsg.SetCmd("magic_desk")
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-2"}
 			m.srv.sendToOne(sendMsg, addr)
 		} else if magicWords == 6 {
+			if m.magicLab.Stands[2].IsPowerOn {
+				return
+			}
 			m.magicLab.Stands[2].IsPowerOn = true
 			sendMsg.SetCmd("magic_desk")
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-3"}
 			m.srv.sendToOne(sendMsg, addr)
 		} else if magicWords == 7 {
+			if m.magicLab.Stands[3].IsPowerOn {
+				return
+			}
 			m.magicLab.Stands[3].IsPowerOn = true
 			sendMsg.SetCmd("magic_desk")
 			sendMsg.Set("useful", "1")
