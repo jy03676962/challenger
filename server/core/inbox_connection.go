@@ -104,6 +104,8 @@ func at(id string) InboxAddressType {
 		return InboxAddressTypeMusicArduino
 	} else if strings.HasPrefix(id, "D") {
 		return InboxAddressTypeDoorArduino
+	} else if strings.HasPrefix(id, "A") {
+		return InboxAddressTypeAdminDevice
 	}
 	return InboxAddressTypeUnknown
 }

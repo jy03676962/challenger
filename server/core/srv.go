@@ -40,9 +40,9 @@ func NewSrv(isSimulator bool) *Srv {
 	return &s
 }
 
-func (s *Srv) Run(tcpAddr string, udpAddr string, dbPath string) {
-	s.startNewMatch()
+func (s *Srv) Run(tcpAddr string, adminAddr string, dbPath string) {
 	go s.listenTcp(tcpAddr)
+	go s.listenTcp(adminAddr)
 	s.mainLoop()
 }
 
@@ -65,6 +65,31 @@ func (s *Srv) mainLoop() {
 }
 
 func (s *Srv) listenTcp(address string) {
+	tcpAddress, err := net.ResolveTCPAddr("tcp", address)
+	if err != nil {
+		log.Println("resolve tcp address error:", err.Error())
+		os.Exit(1)
+	}
+	lr, err := net.ListenTCP("tcp", tcpAddress)
+	if err != nil {
+		log.Println("listen tcp error:", err.Error())
+		os.Exit(1)
+	}
+	defer lr.Close()
+	log.Println("listen tcp:", address)
+	for {
+		conn, err := lr.AcceptTCP()
+		//conn.SetKeepAlive(true)
+		if err != nil {
+			log.Println("tcp listen error: ", err.Error())
+		} else {
+			log.Printf("got new tcp connection:%v\n", conn.RemoteAddr())
+			go s.inbox.ListenConnection(NewInboxTcpConnection(conn))
+		}
+	}
+}
+
+func (s *Srv) listenAdmin(address string) {
 	tcpAddress, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
 		log.Println("resolve tcp address error:", err.Error())
@@ -119,11 +144,17 @@ func (s *Srv) handleInboxMessage(msg *InboxMessage) {
 		s.handleAdminMessage(msg)
 	case InboxAddressTypeRoomArduinoDevice:
 		s.handleArduinoMessage(msg)
+	case InboxAddressTypeDoorArduino:
+		s.handleArduinoMessage(msg)
+	case InboxAddressTypeMusicArduino:
+		s.handleArduinoMessage(msg)
 	}
 }
 
 func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
-	s.match.OnMatchCmdArrived(msg)
+	if s.match != nil {
+		s.match.OnMatchCmdArrived(msg)
+	}
 }
 
 func (s *Srv) handlePostGameMessage(msg *InboxMessage) {
@@ -136,8 +167,11 @@ func (s *Srv) handlePostGameMessage(msg *InboxMessage) {
 func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	switch msg.GetCmd() {
 	case "init":
+		if s.match != nil {
+			s.match.reset()
+		}
 		s.sendMsg("init", nil, msg.Address.ID, msg.Address.Type)
-	case "teamStart":
+	case "gameStart":
 		s.startNewMatch()
 	case "arduinoModeChange":
 		mode := strconv.Itoa(int(ArduinoMode(msg.Get("mode").(float64))))
@@ -155,6 +189,10 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		s.sendMsg("ArduinoList", arduinolist, msg.Address.ID, msg.Address.Type)
 	case "stopMatch":
 		s.match.OnMatchCmdArrived(msg)
+	case "nextStep":
+		if s.match != nil {
+			s.match.OnMatchCmdArrived(msg)
+		}
 	}
 }
 

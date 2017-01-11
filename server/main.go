@@ -23,7 +23,7 @@ const (
 	host        = "192.168.1.5"
 	httpAddr    = host + ":3000"
 	tcpAddr     = host + ":4000"
-	udpAddr     = host + ":5000"
+	adminAddr   = host + ":5000"
 	dbPath      = "./challenger.db"
 	isSimulator = false
 	testRank    = true
@@ -90,7 +90,7 @@ func main() {
 	log.Println("reading cfg done")
 
 	srv := core.NewSrv(isSimulator)
-	go srv.Run(tcpAddr, udpAddr, dbPath)
+	go srv.Run(tcpAddr, adminAddr, dbPath)
 
 	// setup echo
 	ec := echo.New()

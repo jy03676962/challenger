@@ -23,7 +23,8 @@ const (
 )
 
 const (
-	StageRoom1 = "ready"
+	READY      = "ready"
+	StageRoom1 = "going-r1"
 	StageRoom2 = "going-r2"
 	StageRoom3 = "going-r3"
 	StageRoom4 = "going-r4"
@@ -45,7 +46,7 @@ type Match struct {
 	Stage             string
 	TotalTime         float64
 	OpenDoorDelayTime float64
-	CurrentBgm        string
+	CurrentBgm        int
 
 	msgCh   chan *InboxMessage
 	closeCh chan bool
@@ -62,7 +63,8 @@ type Match struct {
 
 func NewMatch(s *Srv) *Match {
 	m := Match{}
-	m.Stage = StageRoom1
+	m.Stage = READY
+	m.CurrentBgm = 0
 	m.srv = s
 	m.opt = GetOptions()
 	m.TotalTime = 0 //config
@@ -82,6 +84,7 @@ func (m *Match) initHardwareData() {
 	m.endRoom = NewRoom6()
 	m.entranceRoom = NewEntranceRoom()
 	m.exitRoom = NewExitRoom()
+	m.initHardware()
 }
 
 func (m *Match) Run() {
@@ -127,10 +130,6 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		id := msg.GetStr("ID")
 		addr := InboxAddress{att(id), id}
 		switch id {
-		case "B-1":
-			if m.CurrentBgm != msg.GetStr("MP3") {
-				m.srv.bgmControl(m.CurrentBgm)
-			}
 		case "L-1":
 			isChange := false
 			sendMsg := NewInboxMessage()
@@ -501,7 +500,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			status := msg.GetStr("P")
 			power := make([]map[string]string, 1)
 			power = append(power, map[string]string{"power_type": "1", "status": status})
-			m.srv.powerStatus(power)
+			//m.srv.powerStatus(power)
 			if status == "2" {
 				m.magicLab.Stands[0].IsPowerful = true
 			}
@@ -509,7 +508,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			status := msg.GetStr("P")
 			power := make([]map[string]string, 1)
 			power = append(power, map[string]string{"power_type": "2", "status": status})
-			m.srv.powerStatus(power)
+			//m.srv.powerStatus(power)
 			if status == "2" {
 				m.magicLab.Stands[1].IsPowerful = true
 			}
@@ -517,7 +516,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			status := msg.GetStr("P")
 			power := make([]map[string]string, 1)
 			power = append(power, map[string]string{"power_type": "3", "status": status})
-			m.srv.powerStatus(power)
+			//m.srv.powerStatus(power)
 			if status == "2" {
 				m.magicLab.Stands[2].IsPowerful = true
 			}
@@ -525,7 +524,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			status := msg.GetStr("P")
 			power := make([]map[string]string, 1)
 			power = append(power, map[string]string{"power_type": "4", "status": status})
-			m.srv.powerStatus(power)
+			//m.srv.powerStatus(power)
 			if status == "2" {
 				m.magicLab.Stands[3].IsPowerful = true
 			}
@@ -798,13 +797,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[0])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[0] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
 				sendMsg1.Set("power_done", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg1, addr)
+				addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
+				m.srv.sendToOne(sendMsg1, addr1)
 				m.endRoom.CurrentSymbol = 0
 				m.broadSymbolToArduino(0)
 			}
@@ -823,7 +822,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[1])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[1] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
@@ -848,7 +847,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[2])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[2] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
@@ -873,7 +872,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[3])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[4] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
@@ -898,7 +897,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[4])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[5] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
@@ -923,7 +922,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				sendMsg.Set("useful", m.endRoom.PowerPointUseful[5])
 			}
 			power, _ := strconv.Atoi(msg.GetStr("F"))
-			if power == m.endRoom.CurrentSymbol {
+			if power == m.endRoom.CurrentSymbol && power != 0 {
 				m.endRoom.PowerPoint[6] = m.endRoom.CurrentSymbol
 				sendMsg1 := NewInboxMessage()
 				sendMsg1.SetCmd("magic_table")
@@ -1025,6 +1024,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		}
 	} else if cmd == "nextStep" {
 		switch m.Stage {
+		case READY:
+			m.setStage(StageRoom1)
 		case StageRoom1:
 			m.setStage(StageRoom2)
 		case StageRoom2:
@@ -1069,11 +1070,35 @@ func (m *Match) setStage(s string) {
 	}
 	switch s {
 	case StageRoom1:
+		if m.CurrentBgm != 2 {
+			m.CurrentBgm = 2
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom2:
+		if m.CurrentBgm != 3 {
+			m.CurrentBgm = 3
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom3:
+		if m.CurrentBgm != 4 {
+			m.CurrentBgm = 4
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom4:
+		if m.CurrentBgm != 5 {
+			m.CurrentBgm = 5
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom5:
+		if m.CurrentBgm != 6 {
+			m.CurrentBgm = 6
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom6:
+		if m.CurrentBgm != 7 {
+			m.CurrentBgm = 7
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageEnd:
 	}
 	log.Printf("game stage:%v\n", s)
@@ -1086,6 +1111,11 @@ func (m *Match) gameStage(dt time.Duration) {
 		return
 	}
 	switch m.Stage {
+	case READY:
+		if m.CurrentBgm != 1 {
+			m.CurrentBgm = 1
+			m.bgmPlay(m.CurrentBgm)
+		}
 	case StageRoom1:
 		if m.livingRoom.DoorMirror == DoorOpen {
 			m.room1Animation()
@@ -1263,9 +1293,9 @@ func (m *Match) updateStage() {
 
 func (m *Match) reset() {
 	m.initHardwareData()
-	m.initHardware()
-	m.Stage = StageRoom1
+	m.Stage = READY
 	m.TotalTime = 0
+	m.CurrentBgm = 0
 	log.Println("game reset success!")
 }
 
@@ -2908,7 +2938,7 @@ func (m *Match) bgmPlay(bgm int) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("mp3_ctrl")
 	sendMsg.Set("music", strconv.Itoa(bgm))
-	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "B-1"}
+	addr := InboxAddress{InboxAddressTypeMusicArduino, "B-1"}
 	m.srv.sendToOne(sendMsg, addr)
 
 }

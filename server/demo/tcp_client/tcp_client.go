@@ -8,18 +8,21 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "localhost:4000")
+	conn, err := net.Dial("tcp", "192.168.1.5:5000")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 	ch := make(chan string, 1)
-	ch <- "[UR]0000[ID]TCPTester[MD]00"
-	go read(conn, ch)
+	//go read(conn, ch)
 	go write(conn, ch)
+	ch1 := make(chan string, 1)
+	go writeHeart(conn, ch1)
+	go writech1(ch1)
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
@@ -27,16 +30,23 @@ func main() {
 		var s string
 		switch text {
 		case "0":
-			m := map[string]string{"cmd": "upload_score", "score": "A"}
+			//m := map[string]string{"cmd": "upload_score", "score": "A"}
+			m := map[string]string{"cmd": "init"}
 			b, err := json.Marshal(m)
 			if err != nil {
 				log.Println("got error:", err.Error())
 			}
 			s = string(b)
 		case "1":
-			s = "[UR]100000000111111"
+			//s = "[UR]100000000111111"
+			m := map[string]string{"cmd": "gameStart"}
+			b, err := json.Marshal(m)
+			if err != nil {
+				log.Println("got error:", err.Error())
+			}
+			s = string(b)
 		case "2":
-			m := map[string]string{"cmd": "confirm_btn"}
+			m := map[string]string{"cmd": "nextStep"}
 			b, _ := json.Marshal(m)
 			s = string(b)
 		case "3":
@@ -46,6 +56,7 @@ func main() {
 		}
 		ch <- s
 	}
+
 }
 
 func read(conn net.Conn, ch chan string) {
@@ -85,5 +96,21 @@ func write(conn net.Conn, ch chan string) {
 	for {
 		s := <-ch
 		fmt.Fprintf(conn, "<"+s+">")
+	}
+}
+
+func writeHeart(conn net.Conn, ch chan string) {
+	for {
+		s := <-ch
+		fmt.Fprintf(conn, "<"+s+">")
+	}
+}
+
+func writech1(ch1 chan string) {
+	dt := 500 * time.Millisecond
+	tickChan := time.Tick(dt)
+	for {
+		ch1 <- "[ID]Admin"
+		<-tickChan
 	}
 }
