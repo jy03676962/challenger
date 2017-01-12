@@ -2,7 +2,7 @@
 #Room1
 FakeBooks = [ 1, 5, 8, 10, 13]#正确的假书编号
 FakeAnimationTime = 3000.0
-CandlesColor = [ 4, 5, 6, 7, 8, 9]#正确的颜色编号
+CandlesColor = [ 6, 8, 4, 4, 8, 7]#正确的颜色编号
 Constellations = ["crt", "cam", "boo", "mon", "lac"]#正确的星座名字
 ElementSymbol = [1, 2, 3, 4, 5, 6]
 Room2OpenDoorDelayTime = 10000.0
