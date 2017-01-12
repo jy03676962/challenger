@@ -63,7 +63,7 @@ type Match struct {
 
 func NewMatch(s *Srv) *Match {
 	m := Match{}
-	m.Stage = READY
+	m.Stage = StageRoom4
 	m.CurrentBgm = 0
 	m.srv = s
 	m.opt = GetOptions()
@@ -422,13 +422,13 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 			status := msg.GetStr("P")
 			if status != m.magicLab.Stands[0].Power {
-				power := make([]map[string]string, 1)
+				m.magicLab.Stands[0].Power = status
+				power := make([]map[string]string, 0)
 				power = append(power, map[string]string{"power_type": "1", "status": status})
 				m.srv.powerStatus(power)
 				if status == "2" {
 					m.magicLab.Stands[0].IsPowerful = true
 				}
-				m.magicLab.Stands[0].Power = status
 			}
 		case "R-4-2":
 			if !m.magicLab.Stands[1].IsPowerOn || m.magicLab.Stands[1].IsPowerful {
@@ -436,7 +436,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 			status := msg.GetStr("P")
 			if status != m.magicLab.Stands[1].Power {
-				power := make([]map[string]string, 1)
+				m.magicLab.Stands[1].Power = status
+				power := make([]map[string]string, 0)
 				power = append(power, map[string]string{"power_type": "2", "status": status})
 				m.srv.powerStatus(power)
 				if status == "2" {
@@ -449,7 +450,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 			status := msg.GetStr("P")
 			if status != m.magicLab.Stands[2].Power {
-				power := make([]map[string]string, 1)
+				m.magicLab.Stands[2].Power = status
+				power := make([]map[string]string, 0)
 				power = append(power, map[string]string{"power_type": "3", "status": status})
 				m.srv.powerStatus(power)
 				if status == "2" {
@@ -462,7 +464,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 			status := msg.GetStr("P")
 			if status != m.magicLab.Stands[3].Power {
-				power := make([]map[string]string, 1)
+				m.magicLab.Stands[3].Power = status
+				power := make([]map[string]string, 0)
 				power = append(power, map[string]string{"power_type": "4", "status": status})
 				m.srv.powerStatus(power)
 				if status == "2" {
@@ -470,34 +473,20 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-4-5":
-			sendMsg := NewInboxMessage()
-			sendMsg.SetCmd("magic_table")
 			if msg.GetStr("U") == "1" {
-				if m.magicLab.Table.IsUseful != true {
-					sendMsg.Set("useful", "0")
-				}
+				m.magicLab.Table.IsUseful = true
 			} else {
-				if m.magicLab.Table.IsUseful != false {
-					sendMsg.Set("useful", "1")
-				}
+				m.magicLab.Table.IsUseful = false
 			}
 			if msg.GetStr("F") == "1" {
-				if m.magicLab.Table.IsFinish != true {
-					sendMsg.Set("finish", "0")
-				}
+				m.magicLab.Table.IsFinish = true
 			} else {
-				if m.magicLab.Table.IsFinish != false {
-					sendMsg.Set("finish", "1")
-				}
-			}
-			if len(sendMsg.Data) > 2 {
-				m.srv.sendToOne(sendMsg, addr)
+				m.magicLab.Table.IsFinish = false
 			}
 			m.magicLab.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
-			if !m.magicLab.InAnimation && m.magicLab.MagicWords != 0 {
-				m.dealMagicWords(m.stairRoom, m.stairRoom.MagicWords)
+			if m.magicLab.MagicWords != 0 {
+				m.dealMagicWords(m.magicLab, m.magicLab.MagicWords)
 			}
-
 		case "R-4-6":
 			sendMsg := NewInboxMessage()
 			if msg.GetStr("ST") == "1" {
@@ -987,7 +976,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case StageRoom4:
 			m.magicLab.Step++
-			if m.magicLab.Step < 4 {
+			if m.magicLab.Step < 5 {
 				log.Println("jump 1 step,current step magicLab :", m.magicLab.Step)
 			} else {
 				m.setStage(StageRoom5)
@@ -1086,6 +1075,7 @@ func (m *Match) gameStage(dt time.Duration) {
 				m.library.Step = 3
 			}
 		} else if m.library.Step == 3 {
+			m.library.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom2, dt)
 		}
 	case StageRoom3:
@@ -1123,8 +1113,8 @@ func (m *Match) gameStage(dt time.Duration) {
 				}
 			}
 		} else if m.stairRoom.Step == 3 {
-			m.endingAnimation(StageRoom3, dt)
 			m.stairRoom.DoorExit = DoorOpen
+			m.endingAnimation(StageRoom3, dt)
 		}
 	case StageRoom4:
 		if m.magicLab.Step == 1 {
@@ -1132,25 +1122,23 @@ func (m *Match) gameStage(dt time.Duration) {
 				m.magicTableAnimation(StageRoom4)
 				m.magicLab.Step = 2
 				log.Println("all magic stands launch!")
+				m.magicLab.Table.IsUseful = true
+
 			}
 		} else if m.magicLab.Step == 2 {
 			if m.ensureMagicStandsPowerFul() {
 				m.magicLab.Table.IsFinish = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("useful", "1")
-				sendMsg.Set("finish", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-5"}
-				m.srv.sendToOne(sendMsg, addr)
 				m.magicLab.Step = 3
 				log.Println("all magic stands poweful!")
-
 			}
 		} else if m.magicLab.Step == 3 {
 			if m.magicLab.Table.IsDestroyed {
-				m.endingAnimation(StageRoom4, dt)
-				m.magicLab.DoorExit = DoorOpen
+				m.magicLab.Step = 4
+				log.Println("magic table destroyed!")
 			}
+		} else if m.magicLab.Step == 4 {
+			m.magicLab.DoorExit = DoorOpen
+			m.endingAnimation(StageRoom4, dt)
 		}
 	case StageRoom5:
 		if m.starTower.Step == 1 {
@@ -1304,6 +1292,8 @@ func (m *Match) fakeBooksAnimation(dt time.Duration) {
 						{InboxAddressTypeRoomArduinoDevice, "R-2-7"},
 						{InboxAddressTypeRoomArduinoDevice, "R-2-8"},
 					}
+					m.library.MagicBooksLightStatus[0] = false
+					m.library.MagicBooksLightStatus[1] = false
 					sendMsg := NewInboxMessage()
 					sendMsg.SetCmd("magic_book")
 					sendMsg.Set("status", "0")
@@ -1762,7 +1752,6 @@ func (m *Match) ensureCandlesColor() bool {
 	return true
 }
 
-//room4
 func (m *Match) ensureMagicStandsPowerOn() bool {
 	for _, v := range m.magicLab.Stands {
 		if !v.IsPowerOn {
@@ -3144,14 +3133,6 @@ func (m *Match) magicTableAnimation(s string) {
 		addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-3-7"}
 		m.srv.sendToOne(sendMsg, addr)
 	case StageRoom4:
-		m.magicLab.Table.IsUseful = true
-		sendMsg := NewInboxMessage()
-		sendMsg.SetCmd("magic_table")
-		sendMsg.Set("useful", "1")
-		sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-		sendMsg.Set("InAnimation", "1")
-		addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-5"}
-		m.srv.sendToOne(sendMsg, addr)
 	case StageRoom5:
 	case StageRoom6:
 		time.Sleep(6 * time.Second)
@@ -3188,6 +3169,8 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg.SetCmd("magic_book")
 		sendMsg.Set("status", "0")
 		m.srv.send(sendMsg, addrs)
+		m.library.MagicBooksLightStatus[0] = false
+		m.library.MagicBooksLightStatus[1] = false
 
 		m.srv.fakeBooksControl("0", "0", "R-2-9")
 		m.srv.fakeBooksControl("0", "0", "R-2-10")
@@ -3220,7 +3203,6 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		sendMsg1.Set("time", strconv.FormatFloat(m.opt.Room2OpenDoorDelayTime, 'f', 0, 64))
 		addr1 := InboxAddress{InboxAddressTypeDoorArduino, "D-2"}
 		m.srv.sendToOne(sendMsg1, addr1)
-		m.library.DoorExit = DoorOpen
 		log.Println("room2 finish!")
 	case StageRoom3:
 		m.srv.stairRoomCandlesCtrl("0", "R-3-1")
@@ -3237,6 +3219,7 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		m.srv.sendToOne(sendMsg, addr)
 		log.Println("room3 finish!")
 	case StageRoom4:
+		m.magicLab.DeskLight = false
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("book_desk")
 		sendMsg1.Set("status", "0")
@@ -3444,14 +3427,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("status", "0")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
 			m.srv.sendToOne(sendMsg, addr)
-		} else if m.magicLab.Table.IsUseful && !m.magicLab.Table.IsDestroyed {
-			switch magicWords {
-			case 3:
-				if m.magicLab.Table.IsFinish {
-					m.magicLab.Table.IsDestroyed = true
-				}
-			}
-		} else if magicWords == 4 {
+		} else if magicWords == 4 && !m.magicLab.Table.IsUseful {
 			if m.magicLab.Stands[0].IsPowerOn {
 				return
 			}
@@ -3460,7 +3436,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-1"}
 			m.srv.sendToOne(sendMsg, addr)
-		} else if magicWords == 5 {
+		} else if magicWords == 5 && !m.magicLab.Table.IsUseful {
 			if m.magicLab.Stands[1].IsPowerOn {
 				return
 			}
@@ -3469,7 +3445,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-2"}
 			m.srv.sendToOne(sendMsg, addr)
-		} else if magicWords == 6 {
+		} else if magicWords == 6 && !m.magicLab.Table.IsUseful {
 			if m.magicLab.Stands[2].IsPowerOn {
 				return
 			}
@@ -3478,7 +3454,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-3"}
 			m.srv.sendToOne(sendMsg, addr)
-		} else if magicWords == 7 {
+		} else if magicWords == 7 && !m.magicLab.Table.IsUseful {
 			if m.magicLab.Stands[3].IsPowerOn {
 				return
 			}
@@ -3487,6 +3463,13 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 			sendMsg.Set("useful", "1")
 			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-4"}
 			m.srv.sendToOne(sendMsg, addr)
+		} else if m.magicLab.Table.IsUseful {
+			switch magicWords {
+			case 3:
+				if m.magicLab.Table.IsFinish {
+					m.magicLab.Table.IsDestroyed = true
+				}
+			}
 		}
 		m.magicLab.MagicWords = 0
 	case *Room5:

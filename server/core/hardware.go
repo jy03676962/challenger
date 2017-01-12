@@ -243,11 +243,13 @@ func NewRoom4() *Room4 {
 	r4.Table.IsFinish = false
 	r4.Table.IsUseful = false
 	r4.Table.IsDestroyed = false
+	r4.Step = 1
 	return &r4
 }
 
 func NewRoom5() *Room5 {
 	r5 := Room5{}
+	r5.Step = 1
 	r5.Bgm = 0
 	r5.CurrentConstellationLight = 0
 	r5.ConstellationSymbol = map[string]bool{
