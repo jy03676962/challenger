@@ -162,6 +162,8 @@ type MatchOptions struct {
 	Room3OpenDoorDelayTime float64
 	Room4OpenDoorDelayTime float64
 	Room5OpenDoorDelayTime float64
+	Room6LaunchDelayTime   float64
+	Room6LastTime          float64 //献祭仪式后的剩余时间
 }
 
 type ScoreInfo [4]map[string]interface{}

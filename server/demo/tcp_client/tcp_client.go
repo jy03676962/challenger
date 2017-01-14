@@ -50,7 +50,15 @@ func main() {
 			b, _ := json.Marshal(m)
 			s = string(b)
 		case "3":
-			m := map[string]string{"cmd": "confirm_init_score"}
+			m := map[string]string{"cmd": "nextStar"}
+			b, _ := json.Marshal(m)
+			s = string(b)
+		case "4":
+			m := map[string]string{"cmd": "addStar"}
+			b, _ := json.Marshal(m)
+			s = string(b)
+		default:
+			m := map[string]string{"cmd": text}
 			b, _ := json.Marshal(m)
 			s = string(b)
 		}

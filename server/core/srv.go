@@ -26,6 +26,7 @@ type Srv struct {
 	match            *Match
 	adminMode        AdminMode
 	isSimulator      bool
+	starNum          int
 }
 
 func NewSrv(isSimulator bool) *Srv {
@@ -37,6 +38,7 @@ func NewSrv(isSimulator bool) *Srv {
 	s.aDict = make(map[string]*ArduinoController)
 	s.adminMode = AdminModeNormal
 	s.initArduinoControllers()
+	s.starNum = 1
 	return &s
 }
 
@@ -193,6 +195,41 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		if s.match != nil {
 			s.match.OnMatchCmdArrived(msg)
 		}
+	case "goodEnding":
+		if s.match != nil {
+			s.match.endRoom.Ending = 1
+		}
+	case "badEnding":
+		if s.match != nil {
+			s.match.endRoom.Ending = 2
+		}
+	case "gameOver":
+		sendMsg := NewInboxMessage()
+		sendMsg.SetCmd("mode_change")
+		sendMsg.Set("mode", "0")
+		s.sends(sendMsg, InboxAddressTypeRoomArduinoDevice)
+
+		openDoor := NewInboxMessage()
+		openDoor.SetCmd("door_ctrl")
+		openDoor.Set("status", "1")
+		openDoor.Set("time", "200")
+		s.sends(openDoor, InboxAddressTypeDoorArduino)
+
+		closeMusic := NewInboxMessage()
+		closeMusic.SetCmd("mp3_ctrl")
+		closeMusic.Set("music", "0")
+		s.sends(closeMusic, InboxAddressTypeMusicArduino)
+		if s.match != nil {
+			s.match.setStage(StageEnd)
+		}
+	case "nextStar":
+		if s.match != nil {
+			//s.match.dealStar(s.starNum)
+			//s.match.broadSymbolToArduino(1)
+			s.match.bgmPlay(s.starNum)
+		}
+	case "addStar":
+		s.starNum++
 	}
 }
 

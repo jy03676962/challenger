@@ -93,6 +93,7 @@ type Room6 struct {
 	CurrentSymbol    int
 	PowerPoint       map[int]int
 	PowerPointUseful [6]int
+	PowerPointFull   [6]bool
 	Candles          map[int]int //第二个int代表颜色
 	CandleMode       int
 	WaterLight       bool
@@ -100,6 +101,12 @@ type Room6 struct {
 	DoorExit         int
 	Step             int
 	Bgm              int
+	LaunchDelayTime  float64
+	LaunchStep       int
+	Ending           int //goodending 1 badending 2
+	LastTime         float64
+	CurrentCandle    int
+	CandleTime       float64
 }
 
 type ExitRoom struct {
@@ -296,6 +303,7 @@ func NewRoom5() *Room5 {
 
 func NewRoom6() *Room6 {
 	r6 := Room6{}
+	r6.Step = 1
 	r6.Bgm = 0
 	r6.CurrentSymbol = 0
 	r6.DoorExit = 0
@@ -316,14 +324,17 @@ func NewRoom6() *Room6 {
 	for i := 0; i < 6; i++ {
 		r6.PowerPointUseful[i] = 0
 	}
+	for i := 0; i < 6; i++ {
+		r6.PowerPointFull[i] = false
+	}
 	r6.WaterLight = false
 	r6.PowerPoint = map[int]int{
+		0: 0,
 		1: 0,
 		2: 0,
 		3: 0,
 		4: 0,
 		5: 0,
-		6: 0,
 	}
 	r6.Table = MagicTable{}
 	r6.Table.ButtonStatus = map[int]int{
@@ -334,5 +345,10 @@ func NewRoom6() *Room6 {
 		5: 0,
 		6: 0,
 	}
+	r6.LaunchStep = 1
+	r6.Ending = 0
+	r6.LastTime = 0
+	r6.CurrentCandle = 0
+	r6.CandleTime = 0
 	return &r6
 }

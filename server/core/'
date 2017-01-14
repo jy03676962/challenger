@@ -63,7 +63,7 @@ type Match struct {
 
 func NewMatch(s *Srv) *Match {
 	m := Match{}
-	m.Stage = READY
+	m.Stage = StageRoom6
 	m.CurrentBgm = 0
 	m.srv = s
 	m.opt = GetOptions()
@@ -130,11 +130,6 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		id := msg.GetStr("ID")
 		addr := InboxAddress{att(id), id}
 		switch id {
-		case "B-1":
-			mp3, _ := strconv.Atoi(msg.GetStr("MP3"))
-			if mp3 != m.CurrentBgm {
-				m.bgmPlay(m.CurrentBgm)
-			}
 		case "L-1":
 			isChange := false
 			sendMsg := NewInboxMessage()
@@ -524,6 +519,137 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 
 				}
 			}
+		case "R-5-1":
+			//c := []rune(msg.GetStr("L"))
+			//lights := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("star_led")
+			//for k, v := range c {
+			//if v == '1' {
+			//if !m.starTower.ConstellationLight[k] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k),
+			//"status":  "0",
+			//})
+			//}
+			//} else {
+			//if m.starTower.ConstellationLight[k] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k),
+			//"status":  "1",
+			//})
+
+			//}
+			//}
+			//}
+			//if len(lights) > 0 {
+			//sendMsg.Set("light", lights)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
+		case "R-5-2":
+			//c := []rune(msg.GetStr("L"))
+			//lights := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("star_led")
+			//for k, v := range c {
+			//if v == '1' {
+			//if !m.starTower.ConstellationLight[k+9] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 9),
+			//"status":  "0",
+			//})
+			//}
+			//} else {
+			//if m.starTower.ConstellationLight[k+9] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 9),
+			//"status":  "1",
+			//})
+			//}
+			//}
+			//}
+			//if len(lights) > 0 {
+			//sendMsg.Set("light", lights)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
+		case "R-5-3":
+			//c := []rune(msg.GetStr("L"))
+			//lights := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("star_led")
+			//for k, v := range c {
+			//if v == '1' {
+			//if !m.starTower.ConstellationLight[k+18] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 18),
+			//"status":  "0",
+			//})
+			//}
+			//} else {
+			//if m.starTower.ConstellationLight[k+18] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 18),
+			//"status":  "1",
+			//})
+			//}
+			//}
+			//}
+			//if len(lights) > 0 {
+			//sendMsg.Set("light", lights)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
+		case "R-5-4":
+			//c := []rune(msg.GetStr("L"))
+			//lights := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("star_led")
+			//for k, v := range c {
+			//if v == '1' {
+			//if !m.starTower.ConstellationLight[k+23] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 23),
+			//"status":  "0",
+			//})
+			//}
+			//} else {
+			//if m.starTower.ConstellationLight[k+23] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 23),
+			//"status":  "1",
+			//})
+			//}
+			//}
+			//}
+			//if len(lights) > 0 {
+			//sendMsg.Set("light", lights)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
+		case "R-5-5":
+			//c := []rune(msg.GetStr("L"))
+			//lights := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("star_led")
+			//for k, v := range c {
+			//if v == '1' {
+			//if !m.starTower.ConstellationLight[k+29] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 29),
+			//"status":  "0",
+			//})
+			//}
+			//} else {
+			//if m.starTower.ConstellationLight[k+29] {
+			//lights = append(lights, map[string]string{
+			//"light_n": strconv.Itoa(k + 29),
+			//"status":  "1",
+			//})
+			//}
+			//}
+			//}
+			//if len(lights) > 0 {
+			//sendMsg.Set("light", lights)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-5-6":
 			if msg.GetStr("U") == "1" {
 				m.starTower.Table.IsUseful = true
@@ -589,100 +715,155 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				}
 			}
 		case "R-6-1":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[0] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[0] = ty
-				m.endRoom.PowerPointFull[0] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			log.Println(msg)
+			if useful != m.endRoom.PowerPointUseful[0] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[0])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[0] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
+				addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
+				m.srv.sendToOne(sendMsg1, addr1)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[0] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-2":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[1] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[1] = ty
-				m.endRoom.PowerPointFull[1] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[1] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[1])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[1] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+				m.srv.sendToOne(sendMsg1, addr)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[1] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-3":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[2] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[2] = ty
-				m.endRoom.PowerPointFull[2] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[2] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[2])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[2] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+				m.srv.sendToOne(sendMsg1, addr)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[2] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-4":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[3] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[3] = ty
-				m.endRoom.PowerPointFull[3] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[3] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[3])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[3] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+				m.srv.sendToOne(sendMsg1, addr)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[3] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-5":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[4] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[4] = ty
-				m.endRoom.PowerPointFull[4] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[4] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[4])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[4] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+				m.srv.sendToOne(sendMsg1, addr)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[4] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-6":
-			status := msg.GetStr("ST")
-			if status == "3" && !m.endRoom.PowerPointFull[5] {
-				ty, _ := strconv.Atoi(msg.GetStr("TY"))
-				m.endRoom.PowerPoint[5] = ty
-				m.endRoom.PowerPointFull[5] = true
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("power_done", "1")
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("power_point")
+			ty, _ := strconv.Atoi(msg.GetStr("TY"))
+			if ty != m.endRoom.CurrentSymbol {
+				sendMsg.Set("type_power", strconv.Itoa(m.endRoom.CurrentSymbol))
+			}
+			useful, _ := strconv.Atoi(msg.GetStr("U"))
+			if useful != m.endRoom.PowerPointUseful[5] {
+				sendMsg.Set("useful", m.endRoom.PowerPointUseful[5])
+			}
+			power, _ := strconv.Atoi(msg.GetStr("F"))
+			if power == m.endRoom.CurrentSymbol && power != 0 {
+				m.endRoom.PowerPoint[5] = m.endRoom.CurrentSymbol
+				sendMsg1 := NewInboxMessage()
+				sendMsg1.SetCmd("magic_table")
+				sendMsg1.Set("power_done", "1")
 				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
-				m.broadSymbolToArduino(0)
+				m.srv.sendToOne(sendMsg1, addr)
 				m.endRoom.CurrentSymbol = 0
-			} else if status == "1" {
-				m.endRoom.PowerPointFull[5] = false
+				m.broadSymbolToArduino(0)
+			}
+			if len(sendMsg.Data) > 1 {
+				m.srv.sendToOne(sendMsg, addr)
 			}
 		case "R-6-7":
 			sendMsg := NewInboxMessage()
@@ -717,15 +898,36 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			if len(sendMsg.Data) > 2 {
 				m.srv.sendToOne(sendMsg, addr)
 			}
-			if m.endRoom.Table.IsUseful {
+			if !m.endRoom.Table.IsUseful {
 				cs, _ := strconv.Atoi(msg.GetStr("TY"))
-				if cs != m.endRoom.CurrentSymbol && cs != 0 {
+				if cs != m.endRoom.CurrentSymbol {
 					m.endRoom.CurrentSymbol = cs
 					m.broadSymbolToArduino(m.endRoom.CurrentSymbol)
 				}
 			}
 			m.endRoom.MagicWords, _ = strconv.Atoi(msg.GetStr("W"))
 			m.dealMagicWords(m.endRoom, m.endRoom.MagicWords)
+		case "R-6-8":
+			// candleMode := msg.GetStr("mode")
+			//if candleMode != "1" {
+			//return
+			//}
+			//c := []rune(msg.GetStr("C"))
+			//candles := make([]map[string]string, 0)
+			//sendMsg := NewInboxMessage()
+			//sendMsg.SetCmd("led_candle")
+			//for k, v := range c {
+			//if int(v-'0') != m.endRoom.Candles[k] {
+			//candles = append(candles, map[string]string{
+			//"candle": strconv.Itoa(k),
+			//"color":  strconv.Itoa(m.endRoom.Candles[k]),
+			//})
+			//}
+			//}
+			//if len(candles) > 0 {
+			//sendMsg.Set("candle", candles)
+			//m.srv.sendToOne(sendMsg, addr)
+			//}
 		case "R-6-9":
 			return
 			sendMsg := NewInboxMessage()
@@ -838,10 +1040,11 @@ func (m *Match) setStage(s string) {
 			m.CurrentBgm = 7
 			m.bgmPlay(m.CurrentBgm)
 		}
+		//if m.CurrentBgm != 8 {
+		//m.CurrentBgm = 8
+		//m.bgmPlay(8)
+		//}
 	case StageEnd:
-		if m.endRoom.Ending == 0 {
-			m.bgmPlay(0)
-		}
 	}
 	log.Printf("game stage:%v\n", s)
 	m.Stage = s
@@ -886,7 +1089,7 @@ func (m *Match) gameStage(dt time.Duration) {
 	case StageRoom3:
 		if m.stairRoom.Step == 1 {
 			if m.ensureCandlesPoweroff() {
-				m.magicTableAnimation(StageRoom3, dt)
+				m.magicTableAnimation(StageRoom3)
 				m.stairRoom.Step = 2
 				log.Println("all candles off!")
 			}
@@ -924,7 +1127,7 @@ func (m *Match) gameStage(dt time.Duration) {
 	case StageRoom4:
 		if m.magicLab.Step == 1 {
 			if m.ensureMagicStandsPowerOn() {
-				m.magicTableAnimation(StageRoom4, dt)
+				m.magicTableAnimation(StageRoom4)
 				m.magicLab.Step = 2
 				log.Println("all magic stands launch!")
 				m.magicLab.Table.IsUseful = true
@@ -973,78 +1176,37 @@ func (m *Match) gameStage(dt time.Duration) {
 			//log.Println("room 6 step 1 finish!")
 			//}
 		} else if m.endRoom.Step == 2 {
-			sec := dt.Seconds()
 			//if m.exitRoom.ButtonNextStage { //endroom 数据维护需要锁
-			if m.CurrentBgm != 8 {
-				m.bgmPlay(8) //bgm
-				m.CurrentBgm = 8
-			}
 			if !m.endRoom.Table.IsUseful {
-				m.magicTableAnimation(StageRoom6, dt)
-				m.endRoom.LastTime = m.opt.Room6LastTime / 1000
-				m.endRoom.CandleTime = m.opt.Room6LastTime / 7
-				m.endRoom.CurrentCandle = 0
-			} else {
-				m.endRoom.LastTime = math.Max(m.endRoom.LastTime-sec, 0)
-				if m.endRoom.LastTime == 0 {
-					m.endRoom.Ending = 2
-					m.endRoom.Step = 3
-				} else {
-					m.endRoom.CandleTime -= sec * 1000
-					if m.endRoom.CandleTime <= 0 {
-						if m.endRoom.CurrentCandle < 7 {
-							sendMsg := NewInboxMessage()
-							sendMsg.SetCmd("led_candle")
-							sendMsg.Set("mode", "1")
-							candles := make([]map[string]string, 0)
-							candles = append(candles, map[string]string{"candle_n": strconv.Itoa(m.endRoom.CurrentCandle), "color": "0"})
-							sendMsg.Set("candles", candles)
-							addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
-							m.srv.sendToOne(sendMsg, addr)
-							m.endRoom.CandleTime = m.opt.Room6LastTime / 7
-							m.endRoom.CurrentCandle++
-						}
-					}
-				}
-				if m.ensureElementSymbol() {
-					sendMsg := NewInboxMessage()
-					sendMsg.SetCmd("power_point")
-					sendMsg.Set("mode", "1")
-					addrs := []InboxAddress{
-						{InboxAddressTypeRoomArduinoDevice, "R-6-1"},
-						{InboxAddressTypeRoomArduinoDevice, "R-6-2"},
-						{InboxAddressTypeRoomArduinoDevice, "R-6-3"},
-						{InboxAddressTypeRoomArduinoDevice, "R-6-4"},
-						{InboxAddressTypeRoomArduinoDevice, "R-6-5"},
-						{InboxAddressTypeRoomArduinoDevice, "R-6-6"},
-					}
-					m.srv.send(sendMsg, addrs)
-					m.endRoom.Step = 3
-					m.endRoom.Ending = 1
-				}
+				m.bgmPlay(8) //bgm
+				m.magicTableAnimation(StageRoom6)
+				m.endRoom.Table.IsUseful = true
 			}
+			//m.endRoom.Step = 3
+			//m.endRoom.NextStep = 3
+			//}
 		} else if m.endRoom.Step == 3 {
-			if m.endRoom.Ending == 1 {
-				if m.CurrentBgm != 9 {
-					m.bgmPlay(9) //bgm
-					m.CurrentBgm = 9
-				}
-				//log.Println("good ending!")
-			} else if m.endRoom.Ending == 2 {
-				if m.CurrentBgm != 10 {
-					m.bgmPlay(10) //bgm
-					m.CurrentBgm = 10
-				}
-				//log.Println("bad ending!")
+			if m.ensureElementSymbol() {
+				//m.endRoom.Table.IsFinish = true
+				//} else {
+				//m.endRoom.Table.IsFinish = false
+				//}
+				//if m.endRoom.Table.IsFinish && m.endRoom.NextStep == 4 {
+				//m.endRoom.Table.IsDestroyed = true
+				log.Println("room 6 step 3 finish!")
 			}
 		} else if m.endRoom.Step == 4 {
-			if m.CurrentBgm != 11 && m.endRoom.Ending == 1 {
-				m.CurrentBgm = 11
-				m.bgmPlay(m.CurrentBgm)
-			}
-			m.endRoom.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom6, dt)
+			m.endRoom.DoorExit = DoorOpen
 		}
+	case StageEnd:
+		sendMsg := NewInboxMessage()
+		sendMsg.SetCmd("door_ctrl")
+		sendMsg.Set("status", "1")
+		sendMsg.Set("time", m.opt.Room2OpenDoorDelayTime)
+		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
+		m.srv.sendToOne(sendMsg, addr)
+
 	}
 	m.updateStage()
 }
@@ -1086,8 +1248,7 @@ func (m *Match) reset() {
 	m.initHardwareData()
 	m.Stage = READY
 	m.TotalTime = 0
-	m.CurrentBgm = 1
-	m.bgmPlay(m.CurrentBgm)
+	m.CurrentBgm = 0
 	log.Println("game reset success!")
 }
 
@@ -2987,7 +3148,6 @@ func (m *Match) broadSymbolToArduino(symbol int) {
 	sendMsg.Set("useful", "1")
 	sendMsg.Set("type_power", strconv.Itoa(symbol))
 	m.srv.send(sendMsg, addrs)
-	log.Println("board symbol:", symbol)
 }
 
 func (m *Match) ensureElementSymbol() bool {
@@ -3015,71 +3175,57 @@ func (m *Match) magicTableAnimation(s string, dt time.Duration) {
 	case StageRoom4:
 	case StageRoom5:
 	case StageRoom6:
+		//time.Sleep(6 * time.Second)
 		if !m.endRoom.InAnimation {
 			m.endRoom.LaunchDelayTime = m.opt.Room6LaunchDelayTime / 1000
-			m.endRoom.LaunchStep = 1
-			m.endRoom.InAnimation = true
 		}
+		m.library.FakeAnimationTime = math.Max(m.library.FakeAnimationTime-sec, 0)
 		m.endRoom.LaunchDelayTime = math.Max(m.endRoom.LaunchDelayTime-sec, 0)
 		if m.endRoom.LaunchDelayTime == 0 {
-			switch m.endRoom.LaunchStep {
-			case 1:
-				sendMsg := NewInboxMessage()
-				sendMsg.SetCmd("magic_table")
-				sendMsg.Set("useful", "1")
-				sendMsg.Set("InAnimation", "1")
-				sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
-				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
-				m.srv.sendToOne(sendMsg, addr)
+			sendMsg := NewInboxMessage()
+			sendMsg.SetCmd("magic_table")
+			sendMsg.Set("useful", "1")
+			sendMsg.Set("InAnimation", "1")
+			sendMsg.Set("time", strconv.FormatFloat(GetOptions().FakeAnimationTime, 'f', 0, 64))
+			addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
 
-				m.endRoom.LightStatus = true
-				sendMsg2 := NewInboxMessage()
-				sendMsg2.SetCmd("water_light")
-				sendMsg2.Set("status", "1")
-				addr2 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-9"}
-				m.srv.sendToOne(sendMsg2, addr2)
-
-				m.endRoom.PowerPointUseful[0] = 1
-				m.endRoom.PowerPointUseful[1] = 1
-				m.endRoom.PowerPointUseful[2] = 1
-				m.endRoom.PowerPointUseful[3] = 1
-				m.endRoom.PowerPointUseful[4] = 1
-				m.endRoom.PowerPointUseful[5] = 1
-				sendMsg3 := NewInboxMessage()
-				sendMsg3.SetCmd("power_point")
-				sendMsg3.Set("useful", "1")
-				sendMsg3.Set("powerMode", "0")
-				sendMsg3.Set("type_power", "0")
-				addrs := []InboxAddress{
-					{InboxAddressTypeRoomArduinoDevice, "R-6-1"},
-					{InboxAddressTypeRoomArduinoDevice, "R-6-2"},
-					{InboxAddressTypeRoomArduinoDevice, "R-6-3"},
-					{InboxAddressTypeRoomArduinoDevice, "R-6-4"},
-					{InboxAddressTypeRoomArduinoDevice, "R-6-5"},
-					{InboxAddressTypeRoomArduinoDevice, "R-6-6"},
-				}
-				m.srv.send(sendMsg3, addrs)
-				m.endRoom.LaunchStep = 2
-				m.endRoom.LaunchDelayTime = 3
-				log.Println("launch table")
-			case 2:
-				sendMsg1 := NewInboxMessage()
-				sendMsg1.SetCmd("led_candle")
-				sendMsg1.Set("mode", "1")
-				candles := make([]map[string]string, 0)
-				for i := 0; i < 7; i++ {
-					candle := map[string]string{"candle_n": strconv.Itoa(i), "color": "1"}
-					candles = append(candles, candle)
-				}
-				sendMsg1.Set("candles", candles)
-				addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
-				m.srv.sendToOne(sendMsg1, addr1)
-				m.endRoom.Table.IsUseful = true
-				m.endRoom.InAnimation = false
-				log.Println("launch candles")
-			}
-
+			m.srv.sendToOne(sendMsg, addr)
+			m.endRoom.LightStatus = true
+			sendMsg2 := NewInboxMessage()
+			sendMsg2.SetCmd("water_light")
+			sendMsg2.Set("status", "1")
+			addr2 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-9"}
+			m.srv.sendToOne(sendMsg2, addr2)
 		}
+
+		//time.Sleep(3 * time.Second)
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("led_candle")
+		sendMsg1.Set("mode", "2")
+		addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
+		m.srv.sendToOne(sendMsg1, addr1)
+
+		m.endRoom.PowerPointUseful[0] = 1
+		m.endRoom.PowerPointUseful[1] = 1
+		m.endRoom.PowerPointUseful[2] = 1
+		m.endRoom.PowerPointUseful[3] = 1
+		m.endRoom.PowerPointUseful[4] = 1
+		m.endRoom.PowerPointUseful[5] = 1
+		sendMsg3 := NewInboxMessage()
+		sendMsg3.SetCmd("power_point")
+		sendMsg3.Set("useful", "1")
+		sendMsg3.Set("powerMode", "0")
+		sendMsg3.Set("type_power", "0")
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-6-1"},
+			{InboxAddressTypeRoomArduinoDevice, "R-6-2"},
+			{InboxAddressTypeRoomArduinoDevice, "R-6-3"},
+			{InboxAddressTypeRoomArduinoDevice, "R-6-4"},
+			{InboxAddressTypeRoomArduinoDevice, "R-6-5"},
+			{InboxAddressTypeRoomArduinoDevice, "R-6-6"},
+		}
+		m.srv.send(sendMsg3, addrs)
+		log.Println("lanunch table")
 	}
 }
 
@@ -3309,21 +3455,18 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		m.srv.sendToOne(sendMsg2, addr2)
 		log.Println("room5 finish!")
 	case StageRoom6:
-		m.endRoom.Table.IsDestroyed = true
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("magic_table")
 		sendMsg.Set("destroyed", "1")
 		addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
 		m.srv.sendToOne(sendMsg, addr)
 
-		m.endRoom.CandleMode = 0
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("led_candle")
 		sendMsg1.Set("mode", "0")
 		addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
 		m.srv.sendToOne(sendMsg1, addr1)
 
-		m.endRoom.WaterLight = false
 		sendMsg2 := NewInboxMessage()
 		sendMsg2.SetCmd("water_light")
 		sendMsg2.Set("status", "0")
@@ -3332,10 +3475,9 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 
 		sendMsg3 := NewInboxMessage()
 		sendMsg3.SetCmd("door_ctrl")
-		sendMsg3.Set("status", "1")
 		addr3 := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
 		m.srv.sendToOne(sendMsg3, addr3)
-		log.Println("endroom finish!")
+		log.Println("game over!")
 	}
 }
 
