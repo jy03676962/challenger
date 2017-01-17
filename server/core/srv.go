@@ -132,6 +132,22 @@ func (s *Srv) handleMatchEvent(evt MatchEvent) {
 }
 
 func (s *Srv) handleInboxMessage(msg *InboxMessage) {
+	if msg.RemoveAddress != nil && msg.RemoveAddress.Type.IsArduinoControllerType() {
+		id := msg.RemoveAddress.String()
+		if controller := s.aDict[id]; controller != nil {
+			controller.Online = false
+		}
+		//s.sendMsgs("removeTCP", msg.RemoveAddress, InboxAddressTypeArduinoTestDevice)
+	}
+
+	if msg.AddAddress != nil && msg.AddAddress.Type.IsArduinoControllerType() {
+		if controller := s.aDict[msg.AddAddress.String()]; controller != nil {
+			controller.Online = true
+		} else {
+			log.Printf("Warning: get arduino connection not belong to list:%v\n", msg.AddAddress.String())
+		}
+		//s.sendMsgs("addTCP", msg.AddAddress, InboxAddressTypeArduinoTestDevice)
+	}
 	if msg.Address == nil {
 		log.Printf("message has no address:%v\n", msg.Data)
 		return
@@ -181,14 +197,30 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		am.SetCmd("mode_change")
 		am.Set("mode", mode)
 		log.Printf("send mode change:%v\n", mode)
-	case "queryArduinoList":
+	case "queryGameInfo":
+		msg1 := NewInboxMessage()
+		msg1.SetCmd("GameInfo")
 		arduinolist := make([]ArduinoController, len(s.aDict))
 		i := 0
 		for _, controller := range s.aDict {
 			arduinolist[i] = *controller
 			i += 1
 		}
-		s.sendMsg("ArduinoList", arduinolist, msg.Address.ID, msg.Address.Type)
+		msg1.Set("ArduinoList", arduinolist)
+		if s.match != nil {
+			msg1.Set("CurrentTime", s.match.TotalTime)
+			msg1.Set("CurrentRoom", s.match.Stage)
+			msg1.Set("CurrentStep", s.match.Step)
+		} else {
+			msg1.Set("CurrentTime", 0.00)
+			msg1.Set("CurrentRoom", "nostart")
+			msg1.Set("CurrentStep", 0)
+		}
+		msg1.Set("TotalTime", GetOptions().TotalTime)
+		//log.Println(msg)
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(msg1, addr)
+		//s.sendMsg("ArduinoList", arduinolist, msg.Address.ID, msg.Address.Type)
 	case "stopMatch":
 		s.match.OnMatchCmdArrived(msg)
 	case "nextStep":
@@ -197,11 +229,15 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		}
 	case "goodEnding":
 		if s.match != nil {
+			s.match.endRoom.Step = 3
 			s.match.endRoom.Ending = 1
+			log.Println("game set goodEnding")
 		}
 	case "badEnding":
 		if s.match != nil {
+			s.match.endRoom.Step = 3
 			s.match.endRoom.Ending = 2
+			log.Println("game set badEnding")
 		}
 	case "gameOver":
 		sendMsg := NewInboxMessage()
@@ -222,6 +258,7 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		if s.match != nil {
 			s.match.setStage(StageEnd)
 		}
+	case "endGame":
 	case "nextStar":
 		if s.match != nil {
 			//s.match.dealStar(s.starNum)
@@ -321,6 +358,7 @@ func (s *Srv) initArduinoControllers() {
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
+	log.Println(GetOptions().RoomArduino)
 }
 
 func (s *Srv) bgmControl(music string) {

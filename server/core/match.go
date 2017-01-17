@@ -24,12 +24,12 @@ const (
 
 const (
 	READY      = "ready"
-	StageRoom1 = "going-r1"
-	StageRoom2 = "going-r2"
-	StageRoom3 = "going-r3"
-	StageRoom4 = "going-r4"
-	StageRoom5 = "going-r5"
-	StageRoom6 = "going-r6"
+	StageRoom1 = "room1"
+	StageRoom2 = "room2"
+	StageRoom3 = "room3"
+	StageRoom4 = "room4"
+	StageRoom5 = "room5"
+	StageRoom6 = "room6"
 	StageEnd   = "end"
 )
 
@@ -44,6 +44,7 @@ type Match struct {
 	srv *Srv
 
 	Stage             string
+	Step              int
 	TotalTime         float64
 	OpenDoorDelayTime float64
 	CurrentBgm        int
@@ -91,12 +92,8 @@ func (m *Match) Run() {
 	dt := 10 * time.Millisecond
 	tickChan := time.Tick(dt)
 	for {
-		m.TotalTime += dt.Seconds()
 		<-tickChan
 		m.handleInputs()
-		if m.Stage == StageEnd {
-			break
-		}
 		m.gameStage(dt)
 
 	}
@@ -852,13 +849,22 @@ func (m *Match) gameStage(dt time.Duration) {
 		log.Println("game stage error!")
 		return
 	}
+	if m.Stage != READY {
+		if m.Stage == StageRoom6 && m.endRoom.Step != 1 {
+			m.TotalTime = m.endRoom.LastTime
+		} else {
+			m.TotalTime += dt.Seconds()
+		}
+	}
 	switch m.Stage {
 	case READY:
+		m.Step = 0
 		if m.CurrentBgm != 1 {
 			m.CurrentBgm = 1
 			m.bgmPlay(m.CurrentBgm)
 		}
 	case StageRoom1:
+		m.Step = 0
 		if m.livingRoom.DoorMirror == DoorOpen {
 			m.room1Animation()
 			log.Println("room 1 finish!")
@@ -872,6 +878,7 @@ func (m *Match) gameStage(dt time.Duration) {
 					m.fakeBooksErrorAnimation(dt)
 				}
 			}
+			m.Step = 1
 		} else if m.library.Step == 2 {
 			if m.library.Table.IsFinish {
 				log.Println("magic table finish!")
@@ -879,9 +886,11 @@ func (m *Match) gameStage(dt time.Duration) {
 			if m.library.Table.IsDestroyed {
 				m.library.Step = 3
 			}
+			m.Step = 2
 		} else if m.library.Step == 3 {
 			m.library.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom2, dt)
+			m.Step = 3
 		}
 	case StageRoom3:
 		if m.stairRoom.Step == 1 {
@@ -890,6 +899,7 @@ func (m *Match) gameStage(dt time.Duration) {
 				m.stairRoom.Step = 2
 				log.Println("all candles off!")
 			}
+			m.Step = 1
 		} else if m.stairRoom.Step == 2 {
 			if m.ensureCandlesColor() {
 				if !m.stairRoom.Table.IsFinish {
@@ -917,12 +927,15 @@ func (m *Match) gameStage(dt time.Duration) {
 					log.Println("some canldes color wrong!")
 				}
 			}
+			m.Step = 2
 		} else if m.stairRoom.Step == 3 {
 			m.stairRoom.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom3, dt)
+			m.Step = 3
 		}
 	case StageRoom4:
 		if m.magicLab.Step == 1 {
+			m.Step = 1
 			if m.ensureMagicStandsPowerOn() {
 				m.magicTableAnimation(StageRoom4, dt)
 				m.magicLab.Step = 2
@@ -931,33 +944,39 @@ func (m *Match) gameStage(dt time.Duration) {
 
 			}
 		} else if m.magicLab.Step == 2 {
+			m.Step = 2
 			if m.ensureMagicStandsPowerFul() {
 				m.magicLab.Table.IsFinish = true
 				m.magicLab.Step = 3
 				log.Println("all magic stands poweful!")
 			}
 		} else if m.magicLab.Step == 3 {
+			m.Step = 3
 			if m.magicLab.Table.IsDestroyed {
 				m.magicLab.Step = 4
 				log.Println("magic table destroyed!")
 			}
 		} else if m.magicLab.Step == 4 {
+			m.Step = 4
 			m.magicLab.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom4, dt)
 		}
 	case StageRoom5:
 		if m.starTower.Step == 1 {
+			m.Step = 1
 			if m.starTower.Table.IsUseful {
 				m.starTower.Step = 2
 				log.Println("magic table is useful!!")
 			}
 		} else if m.starTower.Step == 2 {
+			m.Step = 2
 			if m.ensureConstellationSymbol() || m.starTower.Table.IsFinish {
 				m.starTower.Table.IsFinish = true
 				m.starTower.Step = 3
 				log.Println("constellation right!")
 			}
 		} else if m.starTower.Step == 3 {
+			m.Step = 3
 			if m.starTower.Table.IsDestroyed && m.starTower.Table.IsFinish {
 				m.starTower.DoorExit = DoorOpen
 				m.starTower.DoorMagicRod = DoorOpen
@@ -967,12 +986,14 @@ func (m *Match) gameStage(dt time.Duration) {
 		}
 	case StageRoom6:
 		if m.endRoom.Step == 1 {
+			m.Step = 1
 			//if m.endRoom.NextStep == 2 {
 			//m.amMagicAnimation()
 			//m.endRoom.Step = 2
 			//log.Println("room 6 step 1 finish!")
 			//}
 		} else if m.endRoom.Step == 2 {
+			m.Step = 2
 			sec := dt.Seconds()
 			//if m.exitRoom.ButtonNextStage { //endroom 数据维护需要锁
 			if m.CurrentBgm != 8 {
@@ -986,24 +1007,25 @@ func (m *Match) gameStage(dt time.Duration) {
 				m.endRoom.CurrentCandle = 0
 			} else {
 				m.endRoom.LastTime = math.Max(m.endRoom.LastTime-sec, 0)
-				if m.endRoom.LastTime == 0 {
-					m.endRoom.Ending = 2
-					m.endRoom.Step = 3
-				} else {
-					m.endRoom.CandleTime -= sec * 1000
-					if m.endRoom.CandleTime <= 0 {
-						if m.endRoom.CurrentCandle < 7 {
-							sendMsg := NewInboxMessage()
-							sendMsg.SetCmd("led_candle")
-							sendMsg.Set("mode", "1")
-							candles := make([]map[string]string, 0)
-							candles = append(candles, map[string]string{"candle_n": strconv.Itoa(m.endRoom.CurrentCandle), "color": "0"})
-							sendMsg.Set("candles", candles)
-							addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
-							m.srv.sendToOne(sendMsg, addr)
-							m.endRoom.CandleTime = m.opt.Room6LastTime / 7
-							m.endRoom.CurrentCandle++
-						}
+				m.endRoom.CandleTime -= sec * 1000
+				leftTime := int(m.endRoom.CandleTime) / 1000
+				if leftTime <= 0 {
+					if m.endRoom.CurrentCandle < 7 {
+						log.Println("current candle off", m.endRoom.CurrentCandle)
+						sendMsg := NewInboxMessage()
+						sendMsg.SetCmd("led_candle")
+						sendMsg.Set("mode", "1")
+						candles := make([]map[string]string, 0)
+						candles = append(candles, map[string]string{"candle_n": strconv.Itoa(m.endRoom.CurrentCandle), "color": "0"})
+						sendMsg.Set("candles", candles)
+						addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
+						m.srv.sendToOne(sendMsg, addr)
+						m.endRoom.CandleTime = m.opt.Room6LastTime / 7
+						m.endRoom.CurrentCandle++
+					} else {
+						m.endRoom.Ending = 2
+						m.endRoom.Step = 3
+						log.Println("bad ending!")
 					}
 				}
 				if m.ensureElementSymbol() {
@@ -1021,29 +1043,47 @@ func (m *Match) gameStage(dt time.Duration) {
 					m.srv.send(sendMsg, addrs)
 					m.endRoom.Step = 3
 					m.endRoom.Ending = 1
+					log.Println("good ending!")
 				}
 			}
 		} else if m.endRoom.Step == 3 {
-			if m.endRoom.Ending == 1 {
+			m.Step = 3
+			if m.endRoom.Ending == 1 { //goodending
 				if m.CurrentBgm != 9 {
 					m.bgmPlay(9) //bgm
 					m.CurrentBgm = 9
+					m.endingAnimation(StageRoom6, dt)
 				}
-				//log.Println("good ending!")
-			} else if m.endRoom.Ending == 2 {
+			} else if m.endRoom.Ending == 2 { //badending
 				if m.CurrentBgm != 10 {
 					m.bgmPlay(10) //bgm
 					m.CurrentBgm = 10
+					m.endingAnimation(StageRoom6, dt)
 				}
-				//log.Println("bad ending!")
 			}
 		} else if m.endRoom.Step == 4 {
+			m.Step = 4
 			if m.CurrentBgm != 11 && m.endRoom.Ending == 1 {
 				m.CurrentBgm = 11
 				m.bgmPlay(m.CurrentBgm)
+				m.endRoom.WaterLight = false
+				sendMsg2 := NewInboxMessage()
+				sendMsg2.SetCmd("water_light")
+				sendMsg2.Set("status", "0")
+				addr2 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-9"}
+				m.srv.sendToOne(sendMsg2, addr2)
 			}
+		}
+	case StageEnd:
+		m.Step = 0
+		if m.endRoom.DoorExit != DoorOpen {
 			m.endRoom.DoorExit = DoorOpen
-			m.endingAnimation(StageRoom6, dt)
+			sendMsg3 := NewInboxMessage()
+			sendMsg3.SetCmd("door_ctrl")
+			sendMsg3.Set("status", "1")
+			addr3 := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
+			m.srv.sendToOne(sendMsg3, addr3)
+			log.Println("game over!")
 		}
 	}
 	m.updateStage()
@@ -1079,12 +1119,14 @@ func (m *Match) updateStage() {
 		if m.endRoom.DoorExit == DoorOpen {
 			m.setStage(StageEnd)
 		}
+	case StageEnd:
 	}
 }
 
 func (m *Match) reset() {
 	m.initHardwareData()
 	m.Stage = READY
+	m.Step = 0
 	m.TotalTime = 0
 	m.CurrentBgm = 1
 	m.bgmPlay(m.CurrentBgm)
@@ -3019,6 +3061,7 @@ func (m *Match) magicTableAnimation(s string, dt time.Duration) {
 			m.endRoom.LaunchDelayTime = m.opt.Room6LaunchDelayTime / 1000
 			m.endRoom.LaunchStep = 1
 			m.endRoom.InAnimation = true
+			log.Println("magic table will launch!")
 		}
 		m.endRoom.LaunchDelayTime = math.Max(m.endRoom.LaunchDelayTime-sec, 0)
 		if m.endRoom.LaunchDelayTime == 0 {
@@ -3309,6 +3352,14 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		m.srv.sendToOne(sendMsg2, addr2)
 		log.Println("room5 finish!")
 	case StageRoom6:
+		if m.endRoom.Ending == 1 { //good
+			m.endRoom.CandleMode = 0
+			sendMsg1 := NewInboxMessage()
+			sendMsg1.SetCmd("led_candle")
+			sendMsg1.Set("mode", "0")
+			addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
+			m.srv.sendToOne(sendMsg1, addr1)
+		}
 		m.endRoom.Table.IsDestroyed = true
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("magic_table")
@@ -3316,26 +3367,6 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-7"}
 		m.srv.sendToOne(sendMsg, addr)
 
-		m.endRoom.CandleMode = 0
-		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("led_candle")
-		sendMsg1.Set("mode", "0")
-		addr1 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
-		m.srv.sendToOne(sendMsg1, addr1)
-
-		m.endRoom.WaterLight = false
-		sendMsg2 := NewInboxMessage()
-		sendMsg2.SetCmd("water_light")
-		sendMsg2.Set("status", "0")
-		addr2 := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-9"}
-		m.srv.sendToOne(sendMsg2, addr2)
-
-		sendMsg3 := NewInboxMessage()
-		sendMsg3.SetCmd("door_ctrl")
-		sendMsg3.Set("status", "1")
-		addr3 := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
-		m.srv.sendToOne(sendMsg3, addr3)
-		log.Println("endroom finish!")
 	}
 }
 
