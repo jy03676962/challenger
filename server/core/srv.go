@@ -185,11 +185,21 @@ func (s *Srv) handlePostGameMessage(msg *InboxMessage) {
 func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	switch msg.GetCmd() {
 	case "init":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+
 		if s.match != nil {
 			s.match.reset()
 		}
-		s.sendMsg("init", nil, msg.Address.ID, msg.Address.Type)
+		//s.sendMsg("init", nil, msg.Address.ID, msg.Address.Type)
 	case "gameStart":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+
 		s.startNewMatch()
 	case "arduinoModeChange":
 		mode := strconv.Itoa(int(ArduinoMode(msg.Get("mode").(float64))))
@@ -224,6 +234,11 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	case "stopMatch":
 		s.match.OnMatchCmdArrived(msg)
 	case "nextStep":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+
 		if s.match != nil {
 			s.match.OnMatchCmdArrived(msg)
 		}
@@ -240,6 +255,11 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 			log.Println("game set badEnding")
 		}
 	case "gameOver":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+
 		sendMsg := NewInboxMessage()
 		sendMsg.SetCmd("mode_change")
 		sendMsg.Set("mode", "0")
@@ -258,7 +278,24 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		if s.match != nil {
 			s.match.setStage(StageEnd)
 		}
-	case "endGame":
+	case "completed":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+		log.Println("completed!")
+	case "launch":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+		log.Println("launch!")
+	case "lightOff":
+		sendMsg1 := NewInboxMessage()
+		sendMsg1.SetCmd("success")
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
+		log.Println("lightOff!")
 	case "nextStar":
 		if s.match != nil {
 			//s.match.dealStar(s.starNum)
@@ -358,7 +395,6 @@ func (s *Srv) initArduinoControllers() {
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
-	log.Println(GetOptions().RoomArduino)
 }
 
 func (s *Srv) bgmControl(music string) {
