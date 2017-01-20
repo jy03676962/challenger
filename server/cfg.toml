@@ -1,6 +1,6 @@
 #Timerift
 #Room1
-FakeBooks = [ 1, 5, 8, 10, 13]#正确的假书编号
+FakeBooks = [ 1, 2, 5, 9, 13]#正确的假书编号
 FakeAnimationTime = 3000.0
 CandlesColor = [ 6, 8, 4, 4, 8, 7]#正确的颜色编号
 Constellations = ["crt", "cam", "boo", "mon", "lac"]#正确的星座名字
@@ -10,8 +10,8 @@ Room3OpenDoorDelayTime = 10000.0
 Room4OpenDoorDelayTime = 10000.0
 Room5OpenDoorDelayTime = 10000.0
 Room6LaunchDelayTime = 6000.0
-Room6LastTime = 60000.0
-TotalTime = 4200.0
+Room6LastTime = 840000.0 #ms
+TotalTime = 4200.0 #4200秒，70min
 
 arenaWidth = 8 # 场地长
 arenaHeight = 6 # 场地高
@@ -309,6 +309,7 @@ musicArduino = [
 ]
 
 doorArduino = [
+"D-0",
 "D-1",
 "D-2",
 "D-3",

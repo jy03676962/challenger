@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strconv"
 
 	"golang.org/x/net/websocket"
 )
@@ -26,7 +25,6 @@ type Srv struct {
 	match            *Match
 	adminMode        AdminMode
 	isSimulator      bool
-	starNum          int
 }
 
 func NewSrv(isSimulator bool) *Srv {
@@ -38,7 +36,6 @@ func NewSrv(isSimulator bool) *Srv {
 	s.aDict = make(map[string]*ArduinoController)
 	s.adminMode = AdminModeNormal
 	s.initArduinoControllers()
-	s.starNum = 1
 	return &s
 }
 
@@ -186,27 +183,28 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	switch msg.GetCmd() {
 	case "init":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
-		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
-		s.sendToOne(sendMsg1, addr)
-
 		if s.match != nil {
 			s.match.reset()
+			sendMsg1.SetCmd("reset success!")
+		} else {
+			sendMsg1.SetCmd("game has'n started,can't reset the game")
 		}
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
 		//s.sendMsg("init", nil, msg.Address.ID, msg.Address.Type)
 	case "gameStart":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
+		sendMsg1.SetCmd("start game")
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(sendMsg1, addr)
-
-		s.startNewMatch()
-	case "arduinoModeChange":
-		mode := strconv.Itoa(int(ArduinoMode(msg.Get("mode").(float64))))
-		am := NewInboxMessage()
-		am.SetCmd("mode_change")
-		am.Set("mode", mode)
-		log.Printf("send mode change:%v\n", mode)
+		if s.match == nil {
+			s.startNewMatch()
+			s.match.setStage(StageRoom1)
+			log.Println("create new match")
+		} else {
+			s.match.setStage(StageRoom1)
+			log.Println("start game")
+		}
 	case "queryGameInfo":
 		msg1 := NewInboxMessage()
 		msg1.SetCmd("GameInfo")
@@ -219,11 +217,19 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		msg1.Set("ArduinoList", arduinolist)
 		if s.match != nil {
 			msg1.Set("CurrentTime", s.match.TotalTime)
-			msg1.Set("CurrentRoom", s.match.Stage)
-			msg1.Set("CurrentStep", s.match.Step)
+			if s.match.Stage == StageRoom6 && s.match.endRoom.Step == 3 {
+				if s.match.endRoom.Ending == 1 {
+					msg1.Set("CurrentRoom", "Good Ending!")
+				} else {
+					msg1.Set("CurrentRoom", "Bad Ending!")
+				}
+			} else {
+				msg1.Set("CurrentRoom", s.match.Stage)
+				msg1.Set("CurrentStep", s.match.Step)
+			}
 		} else {
 			msg1.Set("CurrentTime", 0.00)
-			msg1.Set("CurrentRoom", "nostart")
+			msg1.Set("CurrentRoom", "has'n started!")
 			msg1.Set("CurrentStep", 0)
 		}
 		msg1.Set("TotalTime", GetOptions().TotalTime)
@@ -231,32 +237,18 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(msg1, addr)
 		//s.sendMsg("ArduinoList", arduinolist, msg.Address.ID, msg.Address.Type)
-	case "stopMatch":
-		s.match.OnMatchCmdArrived(msg)
 	case "nextStep":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
-		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
-		s.sendToOne(sendMsg1, addr)
-
 		if s.match != nil {
 			s.match.OnMatchCmdArrived(msg)
+			sendMsg1.SetCmd("next success!")
+		} else {
+			sendMsg1.SetCmd("game has'n started,can't reset the game")
 		}
-	case "goodEnding":
-		if s.match != nil {
-			s.match.endRoom.Step = 3
-			s.match.endRoom.Ending = 1
-			log.Println("game set goodEnding")
-		}
-	case "badEnding":
-		if s.match != nil {
-			s.match.endRoom.Step = 3
-			s.match.endRoom.Ending = 2
-			log.Println("game set badEnding")
-		}
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr)
 	case "gameOver":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(sendMsg1, addr)
 
@@ -276,34 +268,56 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		closeMusic.Set("music", "0")
 		s.sends(closeMusic, InboxAddressTypeMusicArduino)
 		if s.match != nil {
+			sendMsg1.SetCmd("game over successs")
 			s.match.setStage(StageEnd)
+		} else {
+			sendMsg1.SetCmd("game has'n started!")
 		}
 	case "completed":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
+		log.Println("completed!")
+		if s.match != nil {
+			if s.match.Stage == StageRoom6 && s.match.endRoom.Step == 4 {
+				s.match.setStage(StageEnd)
+				sendMsg1.SetCmd("game over!")
+			} else {
+				sendMsg1.SetCmd("condition mismatch!")
+			}
+		} else {
+			sendMsg1.SetCmd("game has'n started!")
+		}
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(sendMsg1, addr)
-		log.Println("completed!")
 	case "launch":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
+		log.Println("launch!")
+		if s.match != nil {
+			if s.match.Stage == StageRoom6 && s.match.endRoom.Step == 1 {
+				s.match.endRoom.Step = 2
+				sendMsg1.SetCmd("launch success!")
+			} else {
+				sendMsg1.SetCmd("condition mismatch!")
+			}
+		} else {
+			sendMsg1.SetCmd("game has'n started!")
+		}
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(sendMsg1, addr)
-		log.Println("launch!")
 	case "lightOff":
 		sendMsg1 := NewInboxMessage()
-		sendMsg1.SetCmd("success")
+		log.Println("lightOff!")
+		if s.match != nil {
+			if s.match.Stage == StageRoom6 && s.match.endRoom.Step == 3 {
+				s.match.endRoom.Step = 4
+				sendMsg1.SetCmd("light off success!")
+			} else {
+				sendMsg1.SetCmd("condition mismatch!")
+			}
+		} else {
+			sendMsg1.SetCmd("game has'n started!")
+		}
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
 		s.sendToOne(sendMsg1, addr)
-		log.Println("lightOff!")
-	case "nextStar":
-		if s.match != nil {
-			//s.match.dealStar(s.starNum)
-			//s.match.broadSymbolToArduino(1)
-			s.match.bgmPlay(s.starNum)
-		}
-	case "addStar":
-		s.starNum++
 	}
 }
 

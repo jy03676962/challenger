@@ -760,40 +760,47 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 		case StageRoom1:
 			m.setStage(StageRoom2)
 		case StageRoom2:
-			m.library.Step++
-			if m.library.Step < 4 {
-				log.Println("jump 1 step,current step library :", m.library.Step)
-			} else {
-				m.setStage(StageRoom3)
-			}
+			//m.library.Step++
+			// if m.library.Step < 4 {
+			//log.Println("jump 1 step,current step library :", m.library.Step)
+			//} else {
+			//m.setStage(StageRoom3)
+			//}
+			m.library.Step = 3
 		case StageRoom3:
-			m.stairRoom.Step++
-			if m.stairRoom.Step < 4 {
-				log.Println("jump 1 step,current step: stariRoom ", m.stairRoom.Step)
-			} else {
-				m.setStage(StageRoom4)
-			}
+			//m.stairRoom.Step++
+			// if m.stairRoom.Step < 4 {
+			//log.Println("jump 1 step,current step: stariRoom ", m.stairRoom.Step)
+			//} else {
+			//m.setStage(StageRoom4)
+			//}
+			m.stairRoom.Step = 3
 		case StageRoom4:
-			m.magicLab.Step++
-			if m.magicLab.Step < 5 {
-				log.Println("jump 1 step,current step magicLab :", m.magicLab.Step)
-			} else {
-				m.setStage(StageRoom5)
-			}
+			// m.magicLab.Step++
+			//if m.magicLab.Step < 5 {
+			//log.Println("jump 1 step,current step magicLab :", m.magicLab.Step)
+			//} else {
+			//m.setStage(StageRoom5)
+			//}
+			m.magicLab.Step = 4
 		case StageRoom5:
-			m.starTower.Step++
-			if m.starTower.Step < 4 {
-				log.Println("jump 1 step,current step starTower :", m.starTower.Step)
-			} else {
-				m.setStage(StageRoom6)
-			}
+			//m.starTower.Step++
+			//if m.starTower.Step < 4 {
+			//log.Println("jump 1 step,current step starTower :", m.starTower.Step)
+			//} else {
+			//m.setStage(StageRoom6)
+			//}
+			m.starTower.Table.IsFinish = true
+			m.starTower.Table.IsDestroyed = true
+			m.starTower.Step = 3
 		case StageRoom6:
-			m.endRoom.Step++
-			if m.endRoom.Step < 5 {
-				log.Println("jump 1 step,current step endRoom :", m.endRoom.Step)
-			} else {
-				m.setStage(StageEnd)
-			}
+			//m.endRoom.Step++
+			//if m.endRoom.Step < 5 {
+			//log.Println("jump 1 step,current step endRoom :", m.endRoom.Step)
+			//} else {
+			//m.setStage(StageEnd)
+			//}
+			m.setStage(StageEnd)
 		}
 	} else if cmd == "init" {
 		m.reset()
@@ -852,7 +859,7 @@ func (m *Match) gameStage(dt time.Duration) {
 	if m.Stage != READY {
 		if m.Stage == StageRoom6 && m.endRoom.Step != 1 {
 			m.TotalTime = m.endRoom.LastTime
-		} else {
+		} else if m.Stage != StageEnd {
 			m.TotalTime += dt.Seconds()
 		}
 	}
@@ -1063,10 +1070,17 @@ func (m *Match) gameStage(dt time.Duration) {
 			}
 		} else if m.endRoom.Step == 4 {
 			m.Step = 4
-			if m.CurrentBgm != 11 && m.endRoom.Ending == 1 {
+			if m.CurrentBgm != 11 {
 				m.CurrentBgm = 11
 				m.bgmPlay(m.CurrentBgm)
 				m.endRoom.WaterLight = false
+
+				sendMsg := NewInboxMessage()
+				sendMsg.SetCmd("led_candle")
+				sendMsg.Set("light_status", "0")
+				addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-6-8"}
+
+				m.srv.sendToOne(sendMsg, addr)
 				sendMsg2 := NewInboxMessage()
 				sendMsg2.SetCmd("water_light")
 				sendMsg2.Set("status", "0")
@@ -3406,90 +3420,150 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.srv.fakeBooksControl("2", "1", "R-2-9")
 					m.library.FakeBooks[1] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-9")
+					m.library.FakeBooks[1] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 5:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-10")
 					m.library.FakeBooks[2] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-10")
+					m.library.FakeBooks[2] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 6:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-11")
 					m.library.FakeBooks[3] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-11")
+					m.library.FakeBooks[3] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 7:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-12")
 					m.library.FakeBooks[4] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-12")
+					m.library.FakeBooks[4] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 8:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-13")
 					m.library.FakeBooks[5] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-13")
+					m.library.FakeBooks[5] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 9:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-14")
 					m.library.FakeBooks[6] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-14")
+					m.library.FakeBooks[6] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 10:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-15")
 					m.library.FakeBooks[7] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-15")
+					m.library.FakeBooks[7] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 11:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-16")
 					m.library.FakeBooks[8] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-16")
+					m.library.FakeBooks[8] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 12:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-17")
 					m.library.FakeBooks[9] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("1", "2", "R-2-17")
+					m.library.FakeBooks[9] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 13:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-18")
 					m.library.FakeBooks[10] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-18")
+					m.library.FakeBooks[10] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 14:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-19")
 					m.library.FakeBooks[11] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-19")
+					m.library.FakeBooks[11] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 15:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-20")
 					m.library.FakeBooks[12] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-20")
+					m.library.FakeBooks[12] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 16:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-21")
 					m.library.FakeBooks[13] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-21")
+					m.library.FakeBooks[13] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 17:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-22")
 					m.library.FakeBooks[14] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-22")
+					m.library.FakeBooks[14] = false
+					m.library.CurrentFakeBookLight--
 				}
 			case 18:
 				if !m.library.Table.IsUseful && !m.library.FakeBooks[magicWords-3] {
 					m.srv.fakeBooksControl("2", "1", "R-2-23")
 					m.library.FakeBooks[15] = true
 					m.library.CurrentFakeBookLight++
+				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
+					m.srv.fakeBooksControl("2", "1", "R-2-23")
+					m.library.FakeBooks[15] = false
+					m.library.CurrentFakeBookLight--
 				}
 			}
 		}
