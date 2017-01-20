@@ -95,7 +95,6 @@ func (m *Match) Run() {
 		<-tickChan
 		m.handleInputs()
 		m.gameStage(dt)
-
 	}
 }
 
@@ -215,12 +214,6 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 				m.livingRoom.DoorWardrobe = DoorOpen
 			} else {
 				m.livingRoom.DoorWardrobe = DoorClose
-			}
-		case "R-1-2":
-			if msg.GetStr("ST") == "1" {
-				m.livingRoom.CandleStatus = 1
-			} else {
-				m.livingRoom.CandleStatus = 0
 			}
 		case "R-1-3":
 			if msg.GetStr("ST") == "1" {
@@ -887,9 +880,6 @@ func (m *Match) gameStage(dt time.Duration) {
 			}
 			m.Step = 1
 		} else if m.library.Step == 2 {
-			if m.library.Table.IsFinish {
-				log.Println("magic table finish!")
-			}
 			if m.library.Table.IsDestroyed {
 				m.library.Step = 3
 			}
@@ -1103,7 +1093,7 @@ func (m *Match) gameStage(dt time.Duration) {
 			doorMsg.SetCmd("door_ctrl")
 			doorMsg.Set("useful", "0")
 			addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
-			s.sendToOne(sendMsg1, addr)
+			m.srv.sendToOne(doorMsg, addr)
 		}
 	}
 	m.updateStage()
@@ -3517,7 +3507,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[10] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-18")
+					m.srv.fakeBooksControl("1", "2", "R-2-18")
 					m.library.FakeBooks[10] = false
 					m.library.CurrentFakeBookLight--
 				}
@@ -3527,7 +3517,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[11] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-19")
+					m.srv.fakeBooksControl("1", "2", "R-2-19")
 					m.library.FakeBooks[11] = false
 					m.library.CurrentFakeBookLight--
 				}
@@ -3537,7 +3527,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[12] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-20")
+					m.srv.fakeBooksControl("1", "2", "R-2-20")
 					m.library.FakeBooks[12] = false
 					m.library.CurrentFakeBookLight--
 				}
@@ -3547,7 +3537,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[13] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-21")
+					m.srv.fakeBooksControl("1", "2", "R-2-21")
 					m.library.FakeBooks[13] = false
 					m.library.CurrentFakeBookLight--
 				}
@@ -3557,7 +3547,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[14] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-22")
+					m.srv.fakeBooksControl("1", "2", "R-2-22")
 					m.library.FakeBooks[14] = false
 					m.library.CurrentFakeBookLight--
 				}
@@ -3567,7 +3557,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 					m.library.FakeBooks[15] = true
 					m.library.CurrentFakeBookLight++
 				} else if !m.library.Table.IsUseful && m.library.FakeBooks[magicWords-3] {
-					m.srv.fakeBooksControl("2", "1", "R-2-23")
+					m.srv.fakeBooksControl("1", "2", "R-2-23")
 					m.library.FakeBooks[15] = false
 					m.library.CurrentFakeBookLight--
 				}

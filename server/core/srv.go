@@ -195,8 +195,8 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	case "gameStart":
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("start game")
-		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
-		s.sendToOne(sendMsg1, addr)
+		addr1 := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(sendMsg1, addr1)
 		if s.match == nil {
 			s.startNewMatch()
 			s.match.setStage(StageRoom1)
@@ -209,7 +209,7 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 		doorMsg.SetCmd("door_ctrl")
 		doorMsg.Set("useful", "1")
 		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
-		s.sendToOne(sendMsg1, addr)
+		s.sendToOne(doorMsg, addr)
 
 	case "queryGameInfo":
 		msg1 := NewInboxMessage()
@@ -256,6 +256,13 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	case "gameOver":
 		sendMsg1 := NewInboxMessage()
 		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		if s.match != nil {
+			sendMsg1.SetCmd("game over successs")
+			s.match.setStage(StageEnd)
+			s.match.CurrentBgm = 1
+		} else {
+			sendMsg1.SetCmd("game has'n started!")
+		}
 		s.sendToOne(sendMsg1, addr)
 
 		sendMsg := NewInboxMessage()
@@ -271,14 +278,8 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 
 		closeMusic := NewInboxMessage()
 		closeMusic.SetCmd("mp3_ctrl")
-		closeMusic.Set("music", "0")
+		closeMusic.Set("music", "1")
 		s.sends(closeMusic, InboxAddressTypeMusicArduino)
-		if s.match != nil {
-			sendMsg1.SetCmd("game over successs")
-			s.match.setStage(StageEnd)
-		} else {
-			sendMsg1.SetCmd("game has'n started!")
-		}
 	case "completed":
 		sendMsg1 := NewInboxMessage()
 		log.Println("completed!")
