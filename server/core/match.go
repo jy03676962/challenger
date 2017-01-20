@@ -1098,6 +1098,12 @@ func (m *Match) gameStage(dt time.Duration) {
 			addr3 := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
 			m.srv.sendToOne(sendMsg3, addr3)
 			log.Println("game over!")
+
+			doorMsg := NewInboxMessage()
+			doorMsg.SetCmd("door_ctrl")
+			doorMsg.Set("useful", "0")
+			addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
+			s.sendToOne(sendMsg1, addr)
 		}
 	}
 	m.updateStage()

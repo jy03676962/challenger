@@ -205,6 +205,12 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 			s.match.setStage(StageRoom1)
 			log.Println("start game")
 		}
+		doorMsg := NewInboxMessage()
+		doorMsg.SetCmd("door_ctrl")
+		doorMsg.Set("useful", "1")
+		addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
+		s.sendToOne(sendMsg1, addr)
+
 	case "queryGameInfo":
 		msg1 := NewInboxMessage()
 		msg1.SetCmd("GameInfo")
