@@ -1006,8 +1006,8 @@ func (m *Match) gameStage(dt time.Duration) {
 				m.endRoom.LastTime = math.Max(m.endRoom.LastTime-sec, 0)
 				m.endRoom.CandleTime -= sec * 1000
 				leftTime := int(m.endRoom.CandleTime) / 1000
-				if leftTime <= 0 {
-					if m.endRoom.CurrentCandle < 7 {
+				if m.endRoom.CurrentCandle < 7 {
+					if leftTime <= 0 {
 						log.Println("current candle off", m.endRoom.CurrentCandle)
 						sendMsg := NewInboxMessage()
 						sendMsg.SetCmd("led_candle")
@@ -1019,11 +1019,11 @@ func (m *Match) gameStage(dt time.Duration) {
 						m.srv.sendToOne(sendMsg, addr)
 						m.endRoom.CandleTime = m.opt.Room6LastTime / 7
 						m.endRoom.CurrentCandle++
-					} else {
-						m.endRoom.Ending = 2
-						m.endRoom.Step = 3
-						log.Println("bad ending!")
 					}
+				} else {
+					m.endRoom.Ending = 2
+					m.endRoom.Step = 3
+					log.Println("bad ending!")
 				}
 				if m.ensureElementSymbol() {
 					sendMsg := NewInboxMessage()
