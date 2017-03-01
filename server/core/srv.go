@@ -260,6 +260,11 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 			sendMsg1.SetCmd("game over successs")
 			s.match.setStage(StageEnd)
 			s.match.CurrentBgm = 1
+			s.match.library.DoorExit = 1
+			s.match.stairRoom.DoorExit = 1
+			s.match.magicLab.DoorExit = 1
+			s.match.starTower.DoorExit = 1
+			s.match.endRoom.DoorExit = 1
 		} else {
 			sendMsg1.SetCmd("game has'n started!")
 		}

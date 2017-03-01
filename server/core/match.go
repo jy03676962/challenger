@@ -499,19 +499,19 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "D-4":
 			sendMsg := NewInboxMessage()
+			log.Println("server:", m.magicLab.DoorExit)
+			log.Println("arudino:", msg.GetStr("ST"))
 			if msg.GetStr("ST") == "1" {
 				if m.magicLab.DoorExit != DoorOpen {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "0")
 					m.srv.sendToOne(sendMsg, addr)
-
 				}
 			} else {
 				if m.magicLab.DoorExit != DoorClose {
 					sendMsg.SetCmd("door_ctrl")
 					sendMsg.Set("status", "1")
 					m.srv.sendToOne(sendMsg, addr)
-
 				}
 			}
 		case "R-5-6":
@@ -837,7 +837,8 @@ func (m *Match) setStage(s string) {
 		}
 	case StageEnd:
 		if m.endRoom.Ending == 0 {
-			m.bgmPlay(0)
+			m.CurrentBgm = 0
+			m.bgmPlay(m.CurrentBgm)
 		}
 	}
 	log.Printf("game stage:%v\n", s)
@@ -871,7 +872,7 @@ func (m *Match) gameStage(dt time.Duration) {
 		}
 	case StageRoom2:
 		if m.library.Step == 1 {
-			if m.fakeActNum() == 5 {
+			if m.fakeActNum() >= 5 {
 				if m.ensureFakeBooks() {
 					m.fakeBooksAnimation(dt)
 				} else {
@@ -1088,12 +1089,6 @@ func (m *Match) gameStage(dt time.Duration) {
 			addr3 := InboxAddress{InboxAddressTypeDoorArduino, "D-6"}
 			m.srv.sendToOne(sendMsg3, addr3)
 			log.Println("game over!")
-
-			doorMsg := NewInboxMessage()
-			doorMsg.SetCmd("door_ctrl")
-			doorMsg.Set("useful", "0")
-			addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
-			m.srv.sendToOne(doorMsg, addr)
 		}
 	}
 	m.updateStage()
@@ -1140,6 +1135,12 @@ func (m *Match) reset() {
 	m.TotalTime = 0
 	m.CurrentBgm = 1
 	m.bgmPlay(m.CurrentBgm)
+
+	doorMsg := NewInboxMessage()
+	doorMsg.SetCmd("door_ctrl")
+	doorMsg.Set("useful", "0")
+	addr := InboxAddress{InboxAddressTypeDoorArduino, "D-0"}
+	m.srv.sendToOne(doorMsg, addr)
 	log.Println("game reset success!")
 }
 
