@@ -9,14 +9,14 @@ type InboxAddressType int
 const (
 	InboxAddressTypeUnknown            = 0
 	InboxAddressTypeAdminDevice        = 1 // 管理员屏幕
-	InboxAddressTypeRoomArduinoDevice  = 2 // 房间Arduino
+	InboxAddressTypeGameArduinoDevice  = 2 // 房间Arduino
 	InboxAddressTypeLightArduinoDevice = 3 // 环境灯光Arduino
 	InboxAddressTypeMusicArduino       = 4 // music arduino
 	InboxAddressTypeDoorArduino        = 5 // door arduino
 )
 
 func (t InboxAddressType) IsArduinoControllerType() bool {
-	return t == InboxAddressTypeRoomArduinoDevice || t == InboxAddressTypeLightArduinoDevice ||
+	return t == InboxAddressTypeGameArduinoDevice || t == InboxAddressTypeLightArduinoDevice ||
 		t == InboxAddressTypeMusicArduino || t == InboxAddressTypeDoorArduino
 }
 

@@ -80,7 +80,14 @@ func (tcp *InboxTcpConnection) ReadJSON(v *InboxMessage) error {
 		json.Unmarshal(b[:len(b)-1], &v.Data)
 	} else { // parse heart beat frame
 		parseTcpHB(string(b[:len(b)-1]), v)
-		v.SetCmd("hb")
+		//v.SetCmd("hb")
+		infoType := v.GetStr("TYPE")
+		if infoType != "" {
+			v.SetCmd(infoType)
+		} else {
+			v.SetCmd("unknown")
+		}
+		//v.SetCmd("hb")
 		if id := v.GetStr("ID"); id != "" && tcp.id != id {
 			v.AddAddress = &InboxAddress{at(id), id}
 			v.Address = v.AddAddress
@@ -97,7 +104,7 @@ func at(id string) InboxAddressType {
 	if id == "" {
 		return InboxAddressTypeUnknown
 	} else if strings.HasPrefix(id, "R") {
-		return InboxAddressTypeRoomArduinoDevice
+		return InboxAddressTypeGameArduinoDevice
 	} else if strings.HasPrefix(id, "L") {
 		return InboxAddressTypeLightArduinoDevice
 	} else if strings.HasPrefix(id, "B") {

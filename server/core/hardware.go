@@ -3,352 +3,208 @@ package core
 import "log"
 
 var _ = log.Printf
-
-type EntranceRoom struct {
-	TouchMode  bool //1可用，0不可用
-	DoorStatus int  //1上锁，0解锁
-	LightStar  int
-	Bgm        int
+type LoginInfo struct {
+	PlayerNum int
+	PlayerCardInfo map[int]string
 }
 
-//会客室
-type Room1 struct {
-	MagicWords    int
-	DoorMirror    int
-	DoorWardrobe  int  //衣柜门
-	CandleStatus  int  //蜡烛
-	CrystalStatus int  //水晶
-	LightStatus   bool //照明灯
-	Bgm           int
+//占卜
+type Adivainacion struct {
+	GameId     int
+	Card_ID    string
+	Time_start string
+	Time_end   string
 }
 
-//图书馆
-type Room2 struct {
-	InAnimation           bool
-	MagicWords            int
-	Table                 MagicTable
-	FakeBooks             map[int]bool //假书no.? 是否开
-	CurrentFakeBookLight  int          //已经点亮的假书
-	AnimationFakeBooks    bool
-	MagicBooksLightStatus [2]bool //射灯开关
-	DoorExit              int
-	LightStatus           bool
-	Step                  int
-	Bgm                   int
-	FakeAnimationTime     float64 //假书延迟时间
-	FakeAnimationStep     int
-	CandleDelay           float64
-	CandleMode            int
+func (game * Adivainacion)Reset()  {
+	game.GameId = 0
+	game.Card_ID = ""
+	game.Time_start = ""
+	game.Time_end = ""
 }
 
-//楼梯间
-type Room3 struct {
-	InAnimation    bool
-	MagicWords     int
-	Table          MagicTable
-	Candles        map[int]int
-	DoorExit       int
-	LightStatus    bool
-	LightExitStair bool
-	Step           int
-	Bgm            int
+//六连
+type Bang struct {
+	GameId      int
+	Card_ID     string
+	Time_start  string
+	Time_end    string
+	Point_round map[int]int //设定为3局map[局数]分数
 }
 
-//魔法研究室
-type Room4 struct {
-	InAnimation bool
-	MagicWords  int
-	Table       MagicTable
-	Stands      [4]MagicStands //魔法座台
-	DeskLight   bool
-	LightStatus bool
-	DoorExit    int
-	Step        int
-	Bgm         int
+func (game * Bang)Reset()  {
+	game.GameId = 0
+	game.Card_ID = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	for k,_ := range game.Point_round {
+		delete(game.Point_round,k)
+	}
 }
 
-//观星阁楼
-type Room5 struct {
-	InAnimation               bool
-	MagicWords                int
-	Table                     MagicTable
-	ConstellationSymbol       map[string]bool //星座符号
-	ConstellationLight        [37]int
-	ConstellationLed          [33]int
-	CurrentConstellationLight int //正在亮的星座
-	LightWall                 bool
-	LightStatus               bool
-	DoorExit                  int
-	DoorMagicRod              int
-	Step                      int
-	Bgm                       int
+//走格子
+type Follow struct {
+	GameId     int
+	Card_ID1   string
+	Card_ID2   string
+	Time_start string
+	Time_end   string
+	Last_round int
+}
+
+func (game * Follow)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	game.Last_round = 0
+}
+
+//新人走廊
+type Greeting struct {
+	GameId     int
+	Card_ID1   string
+	Card_ID2   string
+	Time_start string
+	Time_end   string
+}
+
+func (game * Greeting)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+}
+
+//午时已到
+type Highnoon struct {
+	GameId          int
+	Card_ID1        string
+	Card_ID2        string
+	Time_start      string
+	Time_end        string
+	Result_round_1p map[int]float64 //共7局 map[7]0.617 float代表开枪时间
+	Result_round_2p map[int]float64 //共7局 map[7]0.617 float代表开枪时间
+}
+
+func (game * Highnoon)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	for k,_ := range game.Result_round_1p {
+		delete(game.Result_round_1p,k)
+	}
+	for k,_ := range game.Result_round_2p {
+		delete(game.Result_round_2p,k)
+	}
+}
+
+//寻宝
+type Hunter struct {
+	GameId           int
+	Card_ID1         string
+	Card_ID2         string
+	Time_start       string
+	Time_end         string
+	Time_firstButton string
+	Box_ID           int
+}
+
+func (game * Hunter)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	game.Time_firstButton = ""
+	game.Box_ID = 0
+}
+
+//寻宝所分配的场地保箱
+type HunterBox struct {
+	Box_ID        int
+	Time_build    string
+	Time_validity string
+	Card_ID1      string
+	Card_ID2      string
+	Box_status    int //0代表未开启，1代表开启
+	IsAssigned    bool
+}
+
+//射箭
+type Marksman struct {
+	GameId      int
+	Card_ID1    string
+	Card_ID2    string
+	Time_start  string
+	Time_end    string
+	Point_left  int
+	Point_right int
+}
+
+func (game * Marksman)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	game.Point_left = 0
+	game.Point_right = 0
+}
+
+//挖矿
+type Miner struct {
+	GameId     int
+	Card_ID1   string
+	Card_ID2   string
+	Time_start string
+	Time_end   string
+}
+
+func (game * Miner)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+}
+
+//默契牢笼
+type Privity struct {
+	GameId       int
+	Card_ID1     string
+	Card_ID2     string
+	Time_start   string
+	Time_end     string
+	Num_question int
+	Num_right    int
+}
+
+func (game * Privity)Reset()  {
+	game.GameId = 0
+	game.Card_ID1 = ""
+	game.Card_ID2 = ""
+	game.Time_start = ""
+	game.Time_end = ""
+	game.Num_question = 0
+	game.Num_right = 0
 }
 
 //献祭房间
-type Room6 struct {
-	InAnimation      bool
-	MagicWords       int
-	Table            MagicTable
-	NextStep         int
-	CurrentSymbol    int
-	PowerPoint       map[int]int
-	PowerPointUseful [6]int
-	PowerPointFull   [6]bool
-	Candles          map[int]int //第二个int代表颜色
-	CandleMode       int
-	WaterLight       bool
-	LightStatus      bool
-	DoorExit         int
-	Step             int
-	Bgm              int
-	LaunchDelayTime  float64
-	LaunchStep       int
-	Ending           int //goodending 1 badending 2
-	LastTime         float64
-	CurrentCandle    int
-	CandleTime       float64
+type Russian struct {
+	GameId     int
+	Card_ID    string
+	Time_start string
+	Time_end   string
 }
 
-type ExitRoom struct {
-	LightStar       int
-	Bgm             int
-	ButtonNextStage bool
-}
-
-//法阵
-type MagicTable struct {
-	CurrentAngle float64
-	MarkAngle    float64     //标记初始位置
-	ButtonStatus map[int]int "30"
-	IsUseful     bool
-	IsDestroyed  bool
-	IsFinish     bool //可以被摧毁
-}
-
-//魔法座台
-type MagicStands struct {
-	Power      string
-	IsPowerOn  bool
-	IsPowerful bool
-}
-
-func NewEntranceRoom() *EntranceRoom {
-	eR := EntranceRoom{}
-	eR.Bgm = 0
-	eR.DoorStatus = 0
-	eR.LightStar = 0
-	eR.TouchMode = false
-	return &eR
-}
-
-func NewExitRoom() *ExitRoom {
-	exR := ExitRoom{}
-	exR.Bgm = 0
-	exR.ButtonNextStage = false
-	exR.LightStar = 0
-	return &exR
-}
-
-func NewRoom1() *Room1 {
-	r1 := Room1{}
-	r1.Bgm = 0
-	r1.CandleStatus = 0
-	r1.CrystalStatus = 0
-	r1.DoorMirror = 0
-	r1.DoorWardrobe = 0
-	r1.LightStatus = false
-	return &r1
-}
-
-func NewRoom2() *Room2 {
-	r2 := Room2{}
-	r2.AnimationFakeBooks = false
-	r2.Bgm = 0
-	r2.DoorExit = 0
-	r2.FakeBooks = map[int]bool{
-		1:  false,
-		2:  false,
-		3:  false,
-		4:  false,
-		5:  false,
-		6:  false,
-		7:  false,
-		8:  false,
-		9:  false,
-		10: false,
-		11: false,
-		12: false,
-		13: false,
-		14: false,
-		15: false,
-	}
-	r2.CurrentFakeBookLight = 0
-	r2.InAnimation = false
-	r2.LightStatus = false
-	r2.MagicBooksLightStatus[0] = false
-	r2.MagicBooksLightStatus[1] = false
-	r2.MagicWords = 0
-	r2.Table = MagicTable{}
-	r2.Table.ButtonStatus = map[int]int{
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-		5: 0,
-		6: 0,
-	}
-	r2.Table.CurrentAngle = 0
-	r2.Table.IsFinish = false
-	r2.Table.IsUseful = false
-	r2.Table.IsDestroyed = false
-	r2.Step = 1
-	r2.FakeAnimationTime = GetOptions().FakeAnimationTime
-	r2.FakeAnimationStep = 0
-	r2.CandleDelay = 0
-	r2.CandleMode = 0
-	return &r2
-}
-
-func NewRoom3() *Room3 {
-	r3 := Room3{}
-	r3.Bgm = 0
-	r3.Candles = map[int]int{
-		0: 1,
-		1: 1,
-		2: 1,
-		3: 1,
-		4: 1,
-		5: 1,
-	}
-	r3.DoorExit = 0
-	r3.InAnimation = false
-	r3.LightStatus = false
-	r3.LightExitStair = false
-	r3.MagicWords = 0
-	r3.Table = MagicTable{}
-	r3.Table.IsFinish = false
-	r3.Table.IsUseful = false
-	r3.Table.IsDestroyed = false
-	r3.Step = 1
-	return &r3
-}
-
-func NewRoom4() *Room4 {
-	r4 := Room4{}
-	r4.Bgm = 0
-	r4.DoorExit = 0
-	r4.InAnimation = false
-	r4.DeskLight = false
-	r4.LightStatus = false
-	r4.MagicWords = 0
-	for i := 0; i < 4; i++ {
-		r4.Stands[i].IsPowerful = false
-		r4.Stands[i].IsPowerOn = false
-		r4.Stands[i].Power = "0"
-	}
-	r4.Table = MagicTable{}
-	r4.Table.IsFinish = false
-	r4.Table.IsUseful = false
-	r4.Table.IsDestroyed = false
-	r4.Step = 1
-	return &r4
-}
-
-func NewRoom5() *Room5 {
-	r5 := Room5{}
-	r5.Step = 1
-	r5.Bgm = 0
-	r5.CurrentConstellationLight = 0
-	r5.ConstellationSymbol = map[string]bool{
-		"sct": false,
-		"vol": false,
-		"phe": false,
-		"crt": false,
-		"can": false,
-		"cam": false,
-		"boo": false,
-		"mon": false,
-		"cap": false,
-		"gru": false,
-		"lyr": false,
-		"crv": false,
-		"lac": false,
-		"leo": false,
-		"aur": false,
-	}
-	for i := 0; i < 37; i++ {
-		r5.ConstellationLight[i] = 0
-	}
-	for i := 0; i < 33; i++ {
-		r5.ConstellationLed[0] = 0
-	}
-	r5.DoorExit = 0
-	r5.DoorMagicRod = 0
-	r5.InAnimation = false
-	r5.LightStatus = false
-	r5.MagicWords = 0
-	r5.LightWall = false
-	r5.Table = MagicTable{}
-	r5.Table.ButtonStatus = map[int]int{
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-	}
-	r5.Table.IsFinish = false
-	r5.Table.IsUseful = false
-	r5.Table.IsDestroyed = false
-	return &r5
-}
-
-func NewRoom6() *Room6 {
-	r6 := Room6{}
-	r6.Step = 1
-	r6.Bgm = 0
-	r6.CurrentSymbol = 0
-	r6.DoorExit = 0
-	r6.InAnimation = false
-	r6.LightStatus = false
-	r6.MagicWords = 0
-	r6.NextStep = 0
-	r6.CandleMode = 0
-	r6.Candles = map[int]int{
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-		5: 0,
-		6: 0,
-		7: 0,
-	}
-	for i := 0; i < 6; i++ {
-		r6.PowerPointUseful[i] = 0
-	}
-	for i := 0; i < 6; i++ {
-		r6.PowerPointFull[i] = false
-	}
-	r6.WaterLight = false
-	r6.PowerPoint = map[int]int{
-		0: 0,
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-		5: 0,
-	}
-	r6.Table = MagicTable{}
-	r6.Table.ButtonStatus = map[int]int{
-		1: 0,
-		2: 0,
-		3: 0,
-		4: 0,
-		5: 0,
-		6: 0,
-	}
-	r6.LaunchStep = 1
-	r6.Ending = 0
-	r6.LastTime = 0
-	r6.CurrentCandle = 0
-	r6.CandleTime = 0
-	return &r6
+func (game * Russian)Reset()  {
+	game.GameId = 0
+	game.Card_ID = ""
+	game.Time_start = ""
+	game.Time_end = ""
 }
