@@ -16,7 +16,8 @@ type HttpRequest struct {
 	params    map[string]string
 	client    *http.Client
 	arduinoId string //个别arduino的命令需要转发该id
-	cardId string//票务请求需要知道cardId与ticketId的对应关系
+	cardId    string //票务请求需要知道cardId与ticketId的对应关系
+	opration  string
 }
 
 func NewHttpRequest(s *Srv) *HttpRequest {
@@ -27,21 +28,21 @@ func NewHttpRequest(s *Srv) *HttpRequest {
 	return &request
 }
 
-func (r *HttpRequest)SetCardId(cardId string)  {
+func (r *HttpRequest) SetCardId(cardId string) {
 	r.cardId = cardId
 }
 
-func (r *HttpRequest)GetCardId() string {
-	return r.cardId
-}
+//func (r *HttpRequest) GetCardId() string {
+//	return r.cardId
+//}
 
-func (r *HttpRequest)SetArduinoId(arduinoId string)  {
+func (r *HttpRequest) SetArduinoId(arduinoId string) {
 	r.arduinoId = arduinoId
 }
 
-func (r *HttpRequest)GetArduinoId() string {
-	return r.arduinoId
-}
+//func (r *HttpRequest) GetArduinoId() string {
+//	return r.arduinoId
+//}
 
 func (r *HttpRequest) SetApi(api string) {
 	r.api = api
@@ -83,6 +84,9 @@ func (r *HttpRequest) DoGet() {
 				if r.arduinoId != "" {
 					hr.ArduinoId = r.arduinoId
 				}
+				if r.cardId != "" {
+					hr.CardId = r.cardId
+				}
 				r.s.OnHttpRequest(&hr)
 			}
 		}
@@ -119,6 +123,9 @@ func (r *HttpRequest) DoPost() {
 				hr.Api = r.api
 				if r.arduinoId != "" {
 					hr.ArduinoId = r.arduinoId
+				}
+				if r.cardId != "" {
+					hr.CardId = r.cardId
 				}
 				r.s.OnHttpRequest(&hr)
 			}

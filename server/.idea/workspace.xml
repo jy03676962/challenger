@@ -18,21 +18,62 @@
       <file leaf-file-name="main.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="261">
+            <state relative-caret-position="322">
               <caret line="39" column="43" lean-forward="true" selection-start-line="39" selection-start-column="43" selection-end-line="39" selection-end-column="43" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="srv.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="srv.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/srv.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="415">
-              <caret line="177" column="36" lean-forward="true" selection-start-line="177" selection-start-column="36" selection-end-line="177" selection-end-column="36" />
+            <state relative-caret-position="411">
+              <caret line="269" column="36" lean-forward="true" selection-start-line="269" selection-start-column="36" selection-end-line="269" selection-end-column="36" />
               <folding>
-                <element signature="e#14#75#0" expanded="true" />
+                <element signature="e#14#116#0" expanded="true" />
+                <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="match_options.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/match_options.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="275">
+              <caret line="150" column="19" lean-forward="false" selection-start-line="150" selection-start-column="8" selection-end-line="150" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="inbox_address.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/inbox_address.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="11" column="8" lean-forward="false" selection-start-line="11" selection-start-column="8" selection-end-line="11" selection-end-column="8" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="inbox_connection.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/inbox_connection.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="220" column="47" lean-forward="true" selection-start-line="220" selection-start-column="47" selection-end-line="220" selection-end-column="47" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="inbox_message.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/inbox_message.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="6" column="5" lean-forward="false" selection-start-line="6" selection-start-column="5" selection-end-line="6" selection-end-column="5" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -40,8 +81,8 @@
       <file leaf-file-name="hardware.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/hardware.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="74">
-              <caret line="5" column="14" lean-forward="false" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
+            <state relative-caret-position="-4884">
+              <caret line="8" column="28" lean-forward="false" selection-start-line="8" selection-start-column="28" selection-end-line="8" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -50,18 +91,18 @@
       <file leaf-file-name="http_response.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/http_response.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="46" lean-forward="true" selection-start-line="15" selection-start-column="46" selection-end-line="15" selection-end-column="46" />
+            <state relative-caret-position="60">
+              <caret line="4" column="8" lean-forward="false" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="http_request.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="http_request.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/http_request.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="147">
-              <caret line="18" column="51" lean-forward="false" selection-start-line="18" selection-start-column="51" selection-end-line="18" selection-end-column="51" />
+            <state relative-caret-position="266">
+              <caret line="38" column="22" lean-forward="false" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -83,11 +124,20 @@
       <find>httpResChan</find>
       <find>handleHttpMessage</find>
       <find>TicketCheck</find>
+      <find>match</find>
+      <find>=</find>
+      <find>resetGame</find>
+      <find>RoomArduino</find>
+      <find>Receive htb</find>
+      <find>uploadGameInfo</find>
+      <find>arduinoId</find>
+      <find>adivainacion</find>
     </findStrings>
     <replaceStrings>
       <replace>&quot;</replace>
       <replace>:</replace>
       <replace>InboxAddressTypeGameArduinoDevice</replace>
+      <replace>=&amp;</replace>
     </replaceStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -95,12 +145,12 @@
       <list>
         <option value="$PROJECT_DIR$/core/match.go" />
         <option value="$PROJECT_DIR$/core/inbox_address.go" />
-        <option value="$PROJECT_DIR$/core/inbox_connection.go" />
         <option value="$PROJECT_DIR$/main.go" />
-        <option value="$PROJECT_DIR$/core/http_response.go" />
-        <option value="$PROJECT_DIR$/core/srv.go" />
-        <option value="$PROJECT_DIR$/core/hardware.go" />
+        <option value="$PROJECT_DIR$/core/inbox_connection.go" />
         <option value="$PROJECT_DIR$/core/http_request.go" />
+        <option value="$PROJECT_DIR$/core/hardware.go" />
+        <option value="$PROJECT_DIR$/core/srv.go" />
+        <option value="$PROJECT_DIR$/core/http_response.go" />
       </list>
     </option>
   </component>
@@ -331,7 +381,8 @@
         <state relative-caret-position="2280">
           <caret line="158" column="43" lean-forward="true" selection-start-line="158" selection-start-column="43" selection-end-line="158" selection-end-column="43" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -349,7 +400,8 @@
         <state relative-caret-position="330">
           <caret line="28" column="30" lean-forward="false" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -367,7 +419,8 @@
         <state relative-caret-position="420">
           <caret line="28" column="30" lean-forward="false" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -385,7 +438,8 @@
         <state relative-caret-position="420">
           <caret line="28" column="30" lean-forward="false" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -403,7 +457,8 @@
         <state relative-caret-position="420">
           <caret line="28" column="30" lean-forward="false" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -421,7 +476,8 @@
         <state relative-caret-position="330">
           <caret line="28" column="30" lean-forward="true" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
         </state>
       </provider>
@@ -444,33 +500,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/inbox_connection.go">
+    <entry file="file://$PROJECT_DIR$/core/inbox.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="83" column="34" lean-forward="false" selection-start-line="83" selection-start-column="34" selection-end-line="83" selection-end-column="34" />
+        <state relative-caret-position="270">
+          <caret line="21" column="13" lean-forward="false" selection-start-line="21" selection-start-column="5" selection-end-line="21" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/builtin/builtin.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="70" column="5" lean-forward="false" selection-start-line="70" selection-start-column="5" selection-end-line="70" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/inbox_message.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="25" column="1" lean-forward="true" selection-start-line="25" selection-start-column="1" selection-end-line="25" selection-end-column="1" />
+        <state relative-caret-position="60">
+          <caret line="6" column="5" lean-forward="false" selection-start-line="6" selection-start-column="5" selection-end-line="6" selection-end-column="5" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
+        <state relative-caret-position="322">
           <caret line="39" column="43" lean-forward="true" selection-start-line="39" selection-start-column="43" selection-end-line="39" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/inbox_connection.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="220" column="47" lean-forward="true" selection-start-line="220" selection-start-column="47" selection-end-line="220" selection-end-column="47" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/match_options.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2159">
-          <caret line="28" column="17" lean-forward="true" selection-start-line="28" selection-start-column="17" selection-end-line="28" selection-end-column="17" />
+        <state relative-caret-position="275">
+          <caret line="150" column="19" lean-forward="false" selection-start-line="150" selection-start-column="8" selection-end-line="150" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cfg.toml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1621">
+          <caret line="114" column="10" lean-forward="false" selection-start-line="114" selection-start-column="10" selection-end-line="114" selection-end-column="10" />
           <folding />
         </state>
       </provider>
@@ -483,45 +564,38 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/inbox.go">
+    <entry file="file://$PROJECT_DIR$/core/http_request.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="21" column="13" lean-forward="false" selection-start-line="21" selection-start-column="5" selection-end-line="21" selection-end-column="13" />
+        <state relative-caret-position="266">
+          <caret line="38" column="22" lean-forward="false" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/hardware.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="74">
-          <caret line="5" column="14" lean-forward="false" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
+        <state relative-caret-position="-4884">
+          <caret line="8" column="28" lean-forward="false" selection-start-line="8" selection-start-column="28" selection-end-line="8" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/http_response.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="8" lean-forward="false" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/srv.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="415">
-          <caret line="177" column="36" lean-forward="true" selection-start-line="177" selection-start-column="36" selection-end-line="177" selection-end-column="36" />
+        <state relative-caret-position="411">
+          <caret line="269" column="36" lean-forward="true" selection-start-line="269" selection-start-column="36" selection-end-line="269" selection-end-column="36" />
           <folding>
-            <element signature="e#14#75#0" expanded="true" />
+            <element signature="e#14#116#0" expanded="true" />
+            <marker date="1496219549000" expanded="true" signature="8978:9062" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/http_response.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="46" lean-forward="true" selection-start-line="15" selection-start-column="46" selection-end-line="15" selection-end-column="46" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/http_request.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="147">
-          <caret line="18" column="51" lean-forward="false" selection-start-line="18" selection-start-column="51" selection-end-line="18" selection-end-column="51" />
-          <folding />
         </state>
       </provider>
     </entry>

@@ -85,7 +85,7 @@ func (tcp *InboxTcpConnection) ReadJSON(v *InboxMessage) error {
 		if infoType != "" {
 			v.SetCmd(infoType)
 		} else {
-			v.SetCmd("unknown")
+			v.SetCmd(UnKnown)
 		}
 		//v.SetCmd("hb")
 		if id := v.GetStr("ID"); id != "" && tcp.id != id {

@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "192.168.1.5:5000")
+	conn, err := net.Dial("tcp", "localhost:4000")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -38,13 +38,13 @@ func main() {
 			}
 			s = string(b)
 		case "1":
-			//s = "[UR]100000000111111"
-			m := map[string]string{"cmd": "gameStart"}
-			b, err := json.Marshal(m)
-			if err != nil {
-				log.Println("got error:", err.Error())
-			}
-			s = string(b)
+			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484EBAF95B4EB0[AR]1"
+			//m := map[string]string{"cmd": "gameStart"}
+			//b, err := json.Marshal(m)
+			//if err != nil {
+			//log.Println("got error:", err.Error())
+			//}
+			//s = string(b)
 		case "2":
 			m := map[string]string{"cmd": "nextStep"}
 			b, _ := json.Marshal(m)
@@ -118,7 +118,7 @@ func writech1(ch1 chan string) {
 	dt := 500 * time.Millisecond
 	tickChan := time.Tick(dt)
 	for {
-		ch1 <- "[ID]Admin"
+		ch1 <- "[ID]R-1-1[TYPE]0"
 		<-tickChan
 	}
 }

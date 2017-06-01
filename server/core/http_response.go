@@ -1,9 +1,9 @@
 package core
 
 const (
-	api                       = ""
-	AuthorityGet              = api + "1"
-	GameDataAdivinacionCreate = api + "2"
+	api                       = "http://172.16.10.7/gsaleapi/"
+	AuthorityGet              = api + "card_list.php"
+	GameDataAdivinacionCreate = api + "gamedata_adivinacion.php"
 	GameDataAdivinacionModify = api + "3"
 	GameDataBangCreate        = api + "4"
 	GameDataBangModify        = api + "5"
@@ -32,5 +32,6 @@ const (
 type HttpResponse struct {
 	Data      string
 	Api       string
-	ArduinoId string
+	ArduinoId string //该消息收到后应该反馈的arduinoID
+	CardId    string //请求该消息的CardId
 }

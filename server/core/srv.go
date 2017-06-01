@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"golang.org/x/net/websocket"
+	"strconv"
+	"golang.org/x/net/html/atom"
 )
 
 type AdminMode int
@@ -38,9 +40,20 @@ type Srv struct {
 	mChan            chan MatchEvent
 	httpResChan      chan *HttpResponse
 	aDict            map[string]*ArduinoController
-	match            *Match
-	adminMode        AdminMode
-	isSimulator      bool
+	//match            *Match
+	adminMode   AdminMode
+	isSimulator bool
+	//--------game info------------
+	adivainacion *Adivainacion
+	bang         *Bang
+	follow       *Follow
+	greeting     *Greeting
+	highnoon     *Highnoon
+	hunter       *Hunter
+	marksman     *Marksman
+	miner        *Miner
+	privity      *Privity
+	russian      *Russian
 }
 
 func NewSrv(isSimulator bool) *Srv {
@@ -53,6 +66,7 @@ func NewSrv(isSimulator bool) *Srv {
 	s.aDict = make(map[string]*ArduinoController)
 	s.adminMode = AdminModeNormal
 	s.initArduinoControllers()
+	s.initGameInfo()
 	return &s
 }
 
@@ -150,6 +164,7 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	case AuthorityGet:
 		arduinoId := httpRes.ArduinoId
 		res := httpRes.Data
+
 		log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
 	case GameDataAdivinacionCreate:
 	case GameDataAdivinacionModify:
@@ -230,45 +245,62 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 	cmd := msg.GetCmd()
 	switch cmd {
 	case UnKnown:
-		log.Println(msg.Get("ID"), "send UnKnown cmd!")
+		log.Println(msg.GetStr("ID"), "send UnKnown cmd!")
 	case Hbt:
-		log.Println("Receive htb:", msg.Get("ID"))
+		//log.Println("Receive htb:", msg.GetStr("ID"))
 	case GameStartForward:
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
-		arduino := msg.Get("ARDUINO")
+		admin := msg.GetStr("ADMIN")
+		//gameId := msg.GetStr("GAME")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "start and forward to ", arduino, "! operator:", admin)
 	case GameStart:
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
+		admin := msg.GetStr("ADMIN")
+		//gameId := msg.GetStr("GAME")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Game:", gameId, "start! operator:", admin)
 	case GameEndForward:
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
-		arduino := msg.Get("ARDUINO")
+		admin := msg.GetStr("ADMIN")
+		//gameId := msg.GetStr("GAME")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "end and forward to ", arduino, "! operator:", admin)
 	case GameEnd:
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
-		log.Println("Game:", gameId, "end! operator:", admin)
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		s.adivainacion.Time_end = "20170527 18:37"
+		s.uploadGameInfo(msg,gameId)
+		log.Println("Game:", gameId, "end!")
 	case GameData:
-		gameId := msg.Get("GAME")
+		//gameId := msg.GetStr("GAME")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Receive Game:", gameId, "'s data!")
 	case AuthorityCheck:
-		//arduinoId := msg.Get("ID") //创建request的时候需要放入
-		cardId := msg.Get("CARD_ID")
-		authorityId := msg.Get("AR")
-		log.Println("Get the card:", cardId, "  AuthrorityId:", authorityId)
+		arduinoId := msg.GetStr("ID") //创建request的时候需要放入
+		cardId := msg.GetStr("CARD_ID")
+		authorityId := msg.GetStr("AR")
+		log.Println("Get the card:", cardId, "  AuthrorityId:", authorityId, " ArduinoId:", arduinoId)
+		request := NewHttpRequest(s)
+		request.SetApi(AuthorityGet)
+		request.SetCardId(cardId)
+		request.SetArduinoId(arduinoId)
+		params := make(map[string]string)
+		//params["card_Uid"] = "00FF0FF000FFCF4D54B110484EBAF95B4EB0"
+		params["card_Uid"] = cardId
+		//params["op"] = "get_user_authid"
+		params["op"] = "validate_authid"
+		request.SetParams(params)
+		request.DoGet()
 	case TicketGet:
 		//arduinoId := msg.Get("ID") //创建request的时候需要放入
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
-		cardId := msg.Get("CARD_ID")
+		admin := msg.GetStr("ADMIN")
+		//gameId := msg.GetStr("GAME")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		cardId := msg.GetStr("CARD_ID")
 		log.Println("Ticket Get：  CardId:", cardId, "GameId:", gameId, " Admin:", admin)
 	case BoxStatus:
-		admin := msg.Get("ADMIN")
-		boxId := msg.Get("BOX_ID")
-		boxStatus := msg.Get("ST")
+		admin := msg.GetStr("ADMIN")
+		boxId := msg.GetStr("BOX_ID")
+		boxStatus := msg.GetStr("ST")
 		switch boxStatus {
 		case "0":
 			log.Println("Box:", boxId, "has'n been opened by player!")
@@ -278,9 +310,9 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 			log.Println("Box:", boxId, "has been reset by admin:", admin, "!")
 		}
 	case ResetGame:
-		admin := msg.Get("ADMIN")
-		gameId := msg.Get("GAME")
-		resetGame(gameId)
+		admin := msg.GetStr("ADMIN")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		s.resetGame(gameId)
 		log.Println("Admin:", admin, " reset the game:", gameId, "!")
 	}
 }
@@ -305,11 +337,11 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	}
 }
 
-func (s *Srv) startNewMatch() {
-	m := NewMatch(s)
-	s.match = m
-	go m.Run()
-}
+//func (s *Srv) startNewMatch() {
+//	m := NewMatch(s)
+//	s.match = m
+//	go m.Run()
+//}
 
 func (s *Srv) sendMsg(cmd string, data interface{}, id string, t InboxAddressType) {
 	addr := InboxAddress{t, id}
@@ -395,6 +427,19 @@ func (s *Srv) initArduinoControllers() {
 	}
 }
 
+func (s *Srv) initGameInfo() {
+	s.adivainacion = NewAdivainacion()
+	s.bang = NewBang()
+	s.follow = NewFollow()
+	s.greeting = NewGreeting()
+	s.highnoon = NewHighnoon()
+	s.hunter = NewHunter()
+	s.marksman = NewMarksman()
+	s.miner = NewMiner()
+	s.privity = NewPrivity()
+	s.russian = NewRussian()
+}
+
 func (s *Srv) bgmControl(music string) {
 	msg := NewInboxMessage()
 	msg.SetCmd("mp3_ctrl")
@@ -402,8 +447,53 @@ func (s *Srv) bgmControl(music string) {
 	s.sends(msg, InboxAddressTypeMusicArduino)
 }
 
-func resetGame(gameId string)  {
+func (s *Srv) resetGame(gameId int) {
 	switch gameId {
-	
-	}	
+	case ID_Russian:
+		s.russian.Reset()
+	case ID_Adivainacion:
+		s.adivainacion.Reset()
+	case ID_Bang:
+		s.bang.Reset()
+	case ID_Follow:
+		s.follow.Reset()
+	case ID_Greeting:
+		s.greeting.Reset()
+	case ID_Highnoon:
+		s.highnoon.Reset()
+	case ID_Hunter:
+		s.hunter.Reset()
+	case ID_Marksman:
+		s.marksman.Reset()
+	case ID_Miner:
+		s.miner.Reset()
+	case ID_Privity:
+		s.privity.Reset()
+	}
+}
+
+func (s *Srv)uploadGameInfo(msg *InboxMessage,gameId int){
+	arduinoId := msg.GetStr("ID")
+	params := make(map[string]string)
+	request := NewHttpRequest(s)
+	switch gameId {
+	case ID_Russian:
+	case ID_Adivainacion:
+		request.SetApi(GameDataAdivinacionCreate)
+		params["card_ID"] = s.adivainacion.LoginInfo.PlayerCardInfo["1p"]
+		params["time_start"] = s.adivainacion.Time_start
+		params["time_end"] = s.adivainacion.Time_end
+		params["op"] = "set_adivinacion"
+	case ID_Bang:
+	case ID_Follow:
+	case ID_Greeting:
+	case ID_Highnoon:
+	case ID_Hunter:
+	case ID_Marksman:
+	case ID_Miner:
+	case ID_Privity:
+	}
+	request.SetArduinoId(arduinoId)
+	request.SetParams(params)
+	request.DoPost()
 }
