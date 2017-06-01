@@ -7,17 +7,18 @@ import (
 	"net/url"
 	"strings"
 
+	"encoding/json"
 	"github.com/labstack/echo"
 )
 
 type HttpRequest struct {
-	s         *Srv
-	api       string
-	params    map[string]string
-	client    *http.Client
-	arduinoId string //个别arduino的命令需要转发该id
-	cardId    string //票务请求需要知道cardId与ticketId的对应关系
-	opration  string
+	s      *Srv
+	api    string
+	params map[string]string
+	client *http.Client
+	msg    *InboxMessage
+	//arduinoId string //个别arduino的命令需要转发该id
+	//cardId    string //票务请求需要知道cardId与ticketId的对应关系
 }
 
 func NewHttpRequest(s *Srv) *HttpRequest {
@@ -28,17 +29,17 @@ func NewHttpRequest(s *Srv) *HttpRequest {
 	return &request
 }
 
-func (r *HttpRequest) SetCardId(cardId string) {
-	r.cardId = cardId
+func (r *HttpRequest) SetMsg(msg *InboxMessage) {
+	r.msg = msg
 }
 
-//func (r *HttpRequest) GetCardId() string {
-//	return r.cardId
+//func (r *HttpRequest) GetMsg() *InboxMessage {
+//	return r.msg
 //}
 
-func (r *HttpRequest) SetArduinoId(arduinoId string) {
-	r.arduinoId = arduinoId
-}
+//func (r *HttpRequest) SetArduinoId(arduinoId string) {
+//	r.arduinoId = arduinoId
+//}
 
 //func (r *HttpRequest) GetArduinoId() string {
 //	return r.arduinoId
@@ -78,16 +79,18 @@ func (r *HttpRequest) DoGet() {
 		if response != nil {
 			if response.StatusCode == 200 {
 				body, _ := ioutil.ReadAll(response.Body)
-				hr := HttpResponse{}
+				hr := NewHttpResponse()
 				hr.Data = string(body)
+				hr.Msg = r.msg
+				json.Unmarshal(body, &hr.JsonData)
 				hr.Api = r.api
-				if r.arduinoId != "" {
-					hr.ArduinoId = r.arduinoId
-				}
-				if r.cardId != "" {
-					hr.CardId = r.cardId
-				}
-				r.s.OnHttpRequest(&hr)
+				//if r.arduinoId != "" {
+				//	hr.ArduinoId = r.arduinoId
+				//}
+				//if r.cardId != "" {
+				//	hr.CardId = r.cardId
+				//}
+				r.s.OnHttpRequest(hr)
 			}
 		}
 	}()
@@ -118,16 +121,18 @@ func (r *HttpRequest) DoPost() {
 		if response != nil {
 			if response.StatusCode == 200 {
 				body, _ := ioutil.ReadAll(response.Body)
-				hr := HttpResponse{}
+				hr := NewHttpResponse()
 				hr.Data = string(body)
+				json.Unmarshal(body, &hr.JsonData)
 				hr.Api = r.api
-				if r.arduinoId != "" {
-					hr.ArduinoId = r.arduinoId
-				}
-				if r.cardId != "" {
-					hr.CardId = r.cardId
-				}
-				r.s.OnHttpRequest(&hr)
+				hr.Msg = r.msg
+				//if r.arduinoId != "" {
+				//	hr.ArduinoId = r.arduinoId
+				//}
+				//if r.cardId != "" {
+				//	hr.CardId = r.cardId
+				//}
+				r.s.OnHttpRequest(hr)
 			}
 		}
 	}()

@@ -30,8 +30,34 @@ const (
 )
 
 type HttpResponse struct {
-	Data      string
-	Api       string
-	ArduinoId string //该消息收到后应该反馈的arduinoID
-	CardId    string //请求该消息的CardId
+	Data     string
+	JsonData map[string]interface{}
+	Api      string
+	Msg      *InboxMessage
+	//ArduinoId string //该消息收到后应该反馈的arduinoID
+	//CardId    string //请求该消息的CardId
+}
+
+func NewHttpResponse() *HttpResponse {
+	res := HttpResponse{}
+	res.JsonData = make(map[string]interface{})
+	return &res
+}
+
+func (res *HttpResponse) Get(key string) interface{} {
+	if v, ok := res.JsonData[key]; ok {
+		return v
+	}
+	return nil
+}
+
+func (res *HttpResponse) Set(key string, value interface{}) {
+	res.JsonData[key] = value
+}
+
+func (res *HttpResponse) GetStr(key string) string {
+	if v, ok := res.JsonData[key]; ok {
+		return v.(string)
+	}
+	return ""
 }

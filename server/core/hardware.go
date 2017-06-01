@@ -5,16 +5,16 @@ import "log"
 var _ = log.Printf
 
 const (
-	ID_Russian = iota //轮盘赌
-	ID_Adivainacion //占卜
-	ID_Bang //6连
-	ID_Follow //走格子
-	ID_Greeting //新人走廊
-	ID_Highnoon //午时已到
-	ID_Hunter //寻宝
-	ID_Marksman //射箭
-	ID_Miner //挖矿
-	ID_Privity //默契牢笼
+	ID_Russian      = iota //轮盘赌
+	ID_Adivainacion        //占卜
+	ID_Bang                //6连
+	ID_Follow              //走格子
+	ID_Greeting            //新人走廊
+	ID_Highnoon            //午时已到
+	ID_Hunter              //寻宝
+	ID_Marksman            //射箭
+	ID_Miner               //挖矿
+	ID_Privity             //默契牢笼
 )
 
 type LoginInfo struct {
@@ -60,7 +60,7 @@ type Bang struct {
 	Card_ID     string
 	Time_start  string
 	Time_end    string
-	Point_round map[int]int //设定为3局map[局数]分数
+	Point_round map[int]string //设定为3局map[局数]分数
 	LoginInfo   *LoginInfo
 }
 
@@ -96,7 +96,7 @@ type Follow struct {
 	Card_ID2   string
 	Time_start string
 	Time_end   string
-	Last_round int
+	Last_round string
 	LoginInfo  *LoginInfo
 }
 
@@ -114,7 +114,7 @@ func (game *Follow) Reset() {
 	game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
-	game.Last_round = 0
+	game.Last_round = ""
 	game.LoginInfo.PlayerNum = 0
 	for k, _ := range game.LoginInfo.PlayerCardInfo {
 		delete(game.LoginInfo.PlayerCardInfo, k)
@@ -164,8 +164,8 @@ type Highnoon struct {
 	Card_ID2        string
 	Time_start      string
 	Time_end        string
-	Result_round_1p map[int]float64 //共7局 map[7]0.617 float代表开枪时间
-	Result_round_2p map[int]float64 //共7局 map[7]0.617 float代表开枪时间
+	Result_round_1p map[int]string //共7局 map[7]0.617 float代表开枪时间
+	Result_round_2p map[int]string //共7局 map[7]0.617 float代表开枪时间
 	LoginInfo       *LoginInfo
 }
 
@@ -253,8 +253,8 @@ type Marksman struct {
 	Card_ID2    string
 	Time_start  string
 	Time_end    string
-	Point_left  int
-	Point_right int
+	Point_left  string
+	Point_right string
 	LoginInfo   *LoginInfo
 }
 
@@ -272,8 +272,8 @@ func (game *Marksman) Reset() {
 	game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
-	game.Point_left = 0
-	game.Point_right = 0
+	game.Point_left = ""
+	game.Point_right = ""
 	game.LoginInfo.PlayerNum = 0
 	for k, _ := range game.LoginInfo.PlayerCardInfo {
 		delete(game.LoginInfo.PlayerCardInfo, k)
@@ -323,8 +323,8 @@ type Privity struct {
 	Card_ID2     string
 	Time_start   string
 	Time_end     string
-	Num_question int
-	Num_right    int
+	Num_question string
+	Num_right    string
 	LoginInfo    *LoginInfo
 }
 
@@ -342,8 +342,8 @@ func (game *Privity) Reset() {
 	game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
-	game.Num_question = 0
-	game.Num_right = 0
+	game.Num_question = ""
+	game.Num_right = ""
 	game.LoginInfo.PlayerNum = 0
 	for k, _ := range game.LoginInfo.PlayerCardInfo {
 		delete(game.LoginInfo.PlayerCardInfo, k)

@@ -7,7 +7,10 @@ import (
 
 	"golang.org/x/net/websocket"
 	"strconv"
-	"golang.org/x/net/html/atom"
+	//"golang.org/x/net/html/atom"
+	//"regexp"
+	"math"
+	"time"
 )
 
 type AdminMode int
@@ -162,10 +165,9 @@ func (s *Srv) OnHttpRequest(msg *HttpResponse) {
 func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	switch httpRes.Api {
 	case AuthorityGet:
-		arduinoId := httpRes.ArduinoId
-		res := httpRes.Data
-
-		log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
+		//arduinoId := httpRes.ArduinoId
+		//res := httpRes.Data
+		//log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
 	case GameDataAdivinacionCreate:
 	case GameDataAdivinacionModify:
 	case GameDataBangCreate:
@@ -190,7 +192,12 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	case GameDataRussianModify:
 	case TicketUse:
 	case TicketCheck:
-		arduinoId := httpRes.ArduinoId
+		arduinoId := httpRes.Msg.GetStr("ID")
+		gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
+		ticketId := httpRes.Get("ticket_game_id").(int)
+		if ticketId != -1 {
+			s.loginGame(strconv.Itoa(ticketId), gameId, httpRes.Msg)
+		}
 		res := httpRes.Data
 		log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
 	}
@@ -254,26 +261,30 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "start and forward to ", arduino, "! operator:", admin)
+		s.gameStart(gameId, msg)
 	case GameStart:
 		admin := msg.GetStr("ADMIN")
 		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Game:", gameId, "start! operator:", admin)
+		s.gameStart(gameId, msg)
 	case GameEndForward:
 		admin := msg.GetStr("ADMIN")
 		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "end and forward to ", arduino, "! operator:", admin)
+		s.gameEnd(gameId)
 	case GameEnd:
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
-		s.adivainacion.Time_end = "20170527 18:37"
-		s.uploadGameInfo(msg,gameId)
+		s.gameEnd(gameId)
+		s.uploadGameInfo(msg, gameId)
 		log.Println("Game:", gameId, "end!")
 	case GameData:
 		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Receive Game:", gameId, "'s data!")
+		s.uploadGameInfo(msg, gameId)
 	case AuthorityCheck:
 		arduinoId := msg.GetStr("ID") //创建request的时候需要放入
 		cardId := msg.GetStr("CARD_ID")
@@ -281,22 +292,33 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		log.Println("Get the card:", cardId, "  AuthrorityId:", authorityId, " ArduinoId:", arduinoId)
 		request := NewHttpRequest(s)
 		request.SetApi(AuthorityGet)
-		request.SetCardId(cardId)
-		request.SetArduinoId(arduinoId)
+		//request.SetCardId(cardId)
+		//request.SetArduinoId(arduinoId)
 		params := make(map[string]string)
 		//params["card_Uid"] = "00FF0FF000FFCF4D54B110484EBAF95B4EB0"
 		params["card_Uid"] = cardId
 		//params["op"] = "get_user_authid"
 		params["op"] = "validate_authid"
 		request.SetParams(params)
+		request.SetMsg(msg)
 		request.DoGet()
 	case TicketGet:
-		//arduinoId := msg.Get("ID") //创建request的时候需要放入
+		//arduinoId := msg.GetStr("ID") //创建request的时候需要放入
 		admin := msg.GetStr("ADMIN")
-		//gameId := msg.GetStr("GAME")
-		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		gameId := msg.GetStr("GAME")
 		cardId := msg.GetStr("CARD_ID")
 		log.Println("Ticket Get：  CardId:", cardId, "GameId:", gameId, " Admin:", admin)
+		request := NewHttpRequest(s)
+		request.SetApi(TicketCheck)
+		//request.SetCardId(cardId)
+		//request.SetArduinoId(arduinoId)
+		params := make(map[string]string)
+		params["card_Uid"] = cardId
+		params["game_ID"] = gameId
+		params["op"] = "get_ticket_game_id"
+		request.SetParams(params)
+		request.SetMsg(msg)
+		request.DoGet()
 	case BoxStatus:
 		admin := msg.GetStr("ADMIN")
 		boxId := msg.GetStr("BOX_ID")
@@ -447,6 +469,142 @@ func (s *Srv) bgmControl(music string) {
 	s.sends(msg, InboxAddressTypeMusicArduino)
 }
 
+func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
+	cardId := msg.GetStr("CARD_ID")
+	switch gameId {
+	case ID_Russian:
+		if s.russian.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.russian.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.russian.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Adivainacion:
+		if s.adivainacion.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Bang:
+		if s.bang.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.bang.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.bang.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Follow:
+		if s.follow.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.follow.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.follow.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Greeting:
+		if s.greeting.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.greeting.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.greeting.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Highnoon:
+		if s.highnoon.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.highnoon.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.highnoon.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Hunter:
+		if s.hunter.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.hunter.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.hunter.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Marksman:
+		if s.marksman.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.marksman.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.marksman.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Miner:
+		if s.miner.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.miner.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.miner.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	case ID_Privity:
+		if s.privity.LoginInfo.PlayerCardInfo["1p"] != "" {
+			s.privity.LoginInfo.PlayerCardInfo["1p"] = cardId
+			s.privity.LoginInfo.CardTicketInfo[cardId] = ticketId
+		} else {
+			s.privity.LoginInfo.PlayerCardInfo["2p"] = cardId
+			s.privity.LoginInfo.CardTicketInfo[cardId] = ticketId
+		}
+	}
+}
+
+func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
+	switch gameId {
+	case ID_Russian:
+		s.russian.Time_start = currentTime()
+	case ID_Adivainacion:
+		s.adivainacion.Time_start = currentTime()
+	case ID_Bang:
+		s.bang.Time_start = currentTime()
+	case ID_Follow:
+		s.follow.Time_start = currentTime()
+	case ID_Greeting:
+		s.greeting.Time_start = currentTime()
+	case ID_Highnoon:
+		s.highnoon.Time_start = currentTime()
+	case ID_Hunter:
+		s.hunter.Time_start = currentTime()
+	case ID_Marksman:
+		s.marksman.Time_start = currentTime()
+	case ID_Miner:
+		s.miner.Time_start = currentTime()
+	case ID_Privity:
+		s.privity.Time_start = currentTime()
+	}
+}
+
+func (s *Srv) gameEnd(gameId int) {
+	switch gameId {
+	case ID_Russian:
+		s.russian.Time_end = currentTime()
+	case ID_Adivainacion:
+		s.adivainacion.Time_end = currentTime()
+	case ID_Bang:
+		s.bang.Time_end = currentTime()
+	case ID_Follow:
+		s.follow.Time_end = currentTime()
+	case ID_Greeting:
+		s.greeting.Time_end = currentTime()
+	case ID_Highnoon:
+		s.highnoon.Time_end = currentTime()
+	case ID_Hunter:
+		s.hunter.Time_end = currentTime()
+	case ID_Marksman:
+		s.marksman.Time_end = currentTime()
+	case ID_Miner:
+		s.miner.Time_end = currentTime()
+	case ID_Privity:
+		s.privity.Time_end = currentTime()
+	}
+}
+
 func (s *Srv) resetGame(gameId int) {
 	switch gameId {
 	case ID_Russian:
@@ -472,12 +630,18 @@ func (s *Srv) resetGame(gameId int) {
 	}
 }
 
-func (s *Srv)uploadGameInfo(msg *InboxMessage,gameId int){
-	arduinoId := msg.GetStr("ID")
+func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
+	//arduinoId := msg.GetStr("ID")
 	params := make(map[string]string)
 	request := NewHttpRequest(s)
 	switch gameId {
 	case ID_Russian:
+		request.SetApi(GameDataRussianCreate)
+		params["card_ID1"] = s.russian.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.russian.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.russian.Time_start
+		params["time_end"] = s.russian.Time_end
+		params["op"] = "set_russian"
 	case ID_Adivainacion:
 		request.SetApi(GameDataAdivinacionCreate)
 		params["card_ID"] = s.adivainacion.LoginInfo.PlayerCardInfo["1p"]
@@ -485,15 +649,92 @@ func (s *Srv)uploadGameInfo(msg *InboxMessage,gameId int){
 		params["time_end"] = s.adivainacion.Time_end
 		params["op"] = "set_adivinacion"
 	case ID_Bang:
+		request.SetApi(GameDataBangCreate)
+		params["card_ID"] = s.bang.LoginInfo.PlayerCardInfo["1p"]
+		params["time_start"] = s.bang.Time_start
+		params["time_end"] = s.bang.Time_end
+		params["point_round1"] = s.bang.Point_round[1]
+		params["point_round2"] = s.bang.Point_round[2]
+		params["point_round3"] = s.bang.Point_round[3]
+		params["op"] = "set_bang"
 	case ID_Follow:
+		request.SetApi(GameDataFollowCreate)
+		params["card_ID1"] = s.follow.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.follow.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.follow.Time_start
+		params["time_end"] = s.follow.Time_end
+		params["last_round"] = s.follow.Last_round
+		params["op"] = "set_follow"
 	case ID_Greeting:
+		request.SetApi(GameDataGreetingCreate)
+		params["card_ID1"] = s.greeting.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.greeting.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.greeting.Time_start
+		params["time_end"] = s.greeting.Time_end
+		params["op"] = "set_greeting"
 	case ID_Highnoon:
+		request.SetApi(GameDataHighnoonCreate)
+		params["card_ID1"] = s.highnoon.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.highnoon.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.highnoon.Time_start
+		params["time_end"] = s.highnoon.Time_end
+		params["1p_result_round1"] = s.highnoon.Result_round_1p[1]
+		params["2p_result_round1"] = s.highnoon.Result_round_2p[1]
+		params["1p_result_round2"] = s.highnoon.Result_round_1p[2]
+		params["2p_result_round2"] = s.highnoon.Result_round_2p[2]
+		params["1p_result_round3"] = s.highnoon.Result_round_1p[3]
+		params["2p_result_round3"] = s.highnoon.Result_round_2p[3]
+		params["1p_result_round4"] = s.highnoon.Result_round_1p[4]
+		params["2p_result_round4"] = s.highnoon.Result_round_2p[4]
+		params["1p_result_round5"] = s.highnoon.Result_round_1p[5]
+		params["2p_result_round5"] = s.highnoon.Result_round_2p[5]
+		params["1p_result_round6"] = s.highnoon.Result_round_1p[6]
+		params["2p_result_round6"] = s.highnoon.Result_round_2p[6]
+		params["1p_result_round7"] = s.highnoon.Result_round_1p[7]
+		params["2p_result_round7"] = s.highnoon.Result_round_2p[7]
+		params["op"] = "set_highnoon"
 	case ID_Hunter:
+		request.SetApi(GameDataHunterCreate)
+		params["card_ID1"] = s.hunter.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.hunter.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.hunter.Time_start
+		params["time_end"] = s.hunter.Time_end
+		params["time_firstbutton"] = s.hunter.Time_firstButton
+		params["box_ID"] = strconv.Itoa(s.hunter.Box_ID)
+		params["op"] = "set_hunter"
 	case ID_Marksman:
+		request.SetApi(GameDataMarksmanCreate)
+		params["card_ID1"] = s.marksman.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.marksman.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.marksman.Time_start
+		params["time_end"] = s.marksman.Time_end
+		params["point_left"] = s.marksman.Point_left
+		params["point_right"] = s.marksman.Point_right
+		params["op"] = "set_marksman"
 	case ID_Miner:
+		request.SetApi(GameDataMinerCreate)
+		params["card_ID1"] = s.miner.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.miner.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.miner.Time_start
+		params["time_end"] = s.miner.Time_end
+		params["op"] = "set_miner"
 	case ID_Privity:
+		request.SetApi(GameDataPrivityCreate)
+		params["card_ID1"] = s.privity.LoginInfo.PlayerCardInfo["1p"]
+		params["card_ID2"] = s.privity.LoginInfo.PlayerCardInfo["2p"]
+		params["time_start"] = s.privity.Time_start
+		params["time_end"] = s.privity.Time_end
+		params["number_question"] = s.privity.Num_question
+		params["number_right"] = s.privity.Num_right
+		params["op"] = "set_privity"
 	}
-	request.SetArduinoId(arduinoId)
+	//request.SetArduinoId(arduinoId)
+	request.SetMsg(msg)
 	request.SetParams(params)
 	request.DoPost()
+}
+
+func currentTime() string {
+	tm := time.Now().Format("2006-01-02 15:04:05")
+	return tm
 }
