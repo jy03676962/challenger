@@ -26,7 +26,7 @@ type LoginInfo struct {
 //占卜
 type Adivainacion struct {
 	GameId     int
-	Card_ID    string
+	//Card_ID    string
 	Time_start string
 	Time_end   string
 	LoginInfo  *LoginInfo
@@ -42,7 +42,7 @@ func NewAdivainacion() *Adivainacion {
 }
 
 func (game *Adivainacion) Reset() {
-	game.Card_ID = ""
+	//game.Card_ID = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -57,7 +57,7 @@ func (game *Adivainacion) Reset() {
 //六连
 type Bang struct {
 	GameId      int
-	Card_ID     string
+	//Card_ID     string
 	Time_start  string
 	Time_end    string
 	Point_round map[int]string //设定为3局map[局数]分数
@@ -74,7 +74,7 @@ func NewBang() *Bang {
 }
 
 func (game *Bang) Reset() {
-	game.Card_ID = ""
+	//game.Card_ID = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	for k, _ := range game.Point_round {
@@ -92,8 +92,8 @@ func (game *Bang) Reset() {
 //走格子
 type Follow struct {
 	GameId     int
-	Card_ID1   string
-	Card_ID2   string
+	//Card_ID1   string
+	//Card_ID2   string
 	Time_start string
 	Time_end   string
 	Last_round string
@@ -110,8 +110,8 @@ func NewFollow() *Follow {
 }
 
 func (game *Follow) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Last_round = ""
@@ -127,8 +127,8 @@ func (game *Follow) Reset() {
 //新人走廊
 type Greeting struct {
 	GameId     int
-	Card_ID1   string
-	Card_ID2   string
+	//Card_ID1   string
+	//Card_ID2   string
 	Time_start string
 	Time_end   string
 	LoginInfo  *LoginInfo
@@ -144,8 +144,8 @@ func NewGreeting() *Greeting {
 }
 
 func (game *Greeting) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -160,8 +160,8 @@ func (game *Greeting) Reset() {
 //午时已到
 type Highnoon struct {
 	GameId          int
-	Card_ID1        string
-	Card_ID2        string
+	//Card_ID1        string
+	//Card_ID2        string
 	Time_start      string
 	Time_end        string
 	Result_round_1p map[int]string //共7局 map[7]0.617 float代表开枪时间
@@ -179,8 +179,8 @@ func NewHighnoon() *Highnoon {
 }
 
 func (game *Highnoon) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	for k, _ := range game.Result_round_1p {
@@ -201,8 +201,8 @@ func (game *Highnoon) Reset() {
 //寻宝
 type Hunter struct {
 	GameId           int
-	Card_ID1         string
-	Card_ID2         string
+	//Card_ID1         string
+	//Card_ID2         string
 	Time_start       string
 	Time_end         string
 	Time_firstButton string
@@ -220,8 +220,8 @@ func NewHunter() *Hunter {
 }
 
 func (game *Hunter) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Time_firstButton = ""
@@ -249,8 +249,8 @@ type HunterBox struct {
 //射箭
 type Marksman struct {
 	GameId      int
-	Card_ID1    string
-	Card_ID2    string
+	//Card_ID1    string
+	//Card_ID2    string
 	Time_start  string
 	Time_end    string
 	Point_left  string
@@ -268,8 +268,8 @@ func NewMarksman() *Marksman {
 }
 
 func (game *Marksman) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Point_left = ""
@@ -286,8 +286,8 @@ func (game *Marksman) Reset() {
 //挖矿
 type Miner struct {
 	GameId     int
-	Card_ID1   string
-	Card_ID2   string
+	//Card_ID1   string
+	//Card_ID2   string
 	Time_start string
 	Time_end   string
 	LoginInfo  *LoginInfo
@@ -303,8 +303,8 @@ func NewMiner() *Miner {
 }
 
 func (game *Miner) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -319,8 +319,8 @@ func (game *Miner) Reset() {
 //默契牢笼
 type Privity struct {
 	GameId       int
-	Card_ID1     string
-	Card_ID2     string
+	//Card_ID1     string
+	//Card_ID2     string
 	Time_start   string
 	Time_end     string
 	Num_question string
@@ -338,8 +338,8 @@ func NewPrivity() *Privity {
 }
 
 func (game *Privity) Reset() {
-	game.Card_ID1 = ""
-	game.Card_ID2 = ""
+	//game.Card_ID1 = ""
+	//game.Card_ID2 = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Num_question = ""
@@ -356,7 +356,7 @@ func (game *Privity) Reset() {
 //献祭房间
 type Russian struct {
 	GameId     int
-	Card_ID    string
+	//Card_ID    string
 	Time_start string
 	Time_end   string
 	LoginInfo  *LoginInfo
@@ -372,7 +372,7 @@ func NewRussian() *Russian {
 }
 
 func (game *Russian) Reset() {
-	game.Card_ID = ""
+	//game.Card_ID = ""
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
