@@ -21,11 +21,12 @@ type LoginInfo struct {
 	PlayerNum      int
 	PlayerCardInfo map[string]string //1p:cardId
 	CardTicketInfo map[string]string //cardId:ticketId
+	IsUploadInfo   bool
 }
 
 //占卜
 type Adivainacion struct {
-	GameId     int
+	GameId int
 	//Card_ID    string
 	Time_start string
 	Time_end   string
@@ -43,6 +44,7 @@ func NewAdivainacion() *Adivainacion {
 
 func (game *Adivainacion) Reset() {
 	//game.Card_ID = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -56,7 +58,7 @@ func (game *Adivainacion) Reset() {
 
 //六连
 type Bang struct {
-	GameId      int
+	GameId int
 	//Card_ID     string
 	Time_start  string
 	Time_end    string
@@ -75,6 +77,7 @@ func NewBang() *Bang {
 
 func (game *Bang) Reset() {
 	//game.Card_ID = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	for k, _ := range game.Point_round {
@@ -91,7 +94,7 @@ func (game *Bang) Reset() {
 
 //走格子
 type Follow struct {
-	GameId     int
+	GameId int
 	//Card_ID1   string
 	//Card_ID2   string
 	Time_start string
@@ -112,6 +115,7 @@ func NewFollow() *Follow {
 func (game *Follow) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Last_round = ""
@@ -126,7 +130,7 @@ func (game *Follow) Reset() {
 
 //新人走廊
 type Greeting struct {
-	GameId     int
+	GameId int
 	//Card_ID1   string
 	//Card_ID2   string
 	Time_start string
@@ -146,6 +150,7 @@ func NewGreeting() *Greeting {
 func (game *Greeting) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -159,7 +164,7 @@ func (game *Greeting) Reset() {
 
 //午时已到
 type Highnoon struct {
-	GameId          int
+	GameId int
 	//Card_ID1        string
 	//Card_ID2        string
 	Time_start      string
@@ -181,6 +186,7 @@ func NewHighnoon() *Highnoon {
 func (game *Highnoon) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	for k, _ := range game.Result_round_1p {
@@ -200,7 +206,7 @@ func (game *Highnoon) Reset() {
 
 //寻宝
 type Hunter struct {
-	GameId           int
+	GameId int
 	//Card_ID1         string
 	//Card_ID2         string
 	Time_start       string
@@ -222,6 +228,7 @@ func NewHunter() *Hunter {
 func (game *Hunter) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Time_firstButton = ""
@@ -248,7 +255,7 @@ type HunterBox struct {
 
 //射箭
 type Marksman struct {
-	GameId      int
+	GameId int
 	//Card_ID1    string
 	//Card_ID2    string
 	Time_start  string
@@ -270,6 +277,7 @@ func NewMarksman() *Marksman {
 func (game *Marksman) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Point_left = ""
@@ -285,7 +293,7 @@ func (game *Marksman) Reset() {
 
 //挖矿
 type Miner struct {
-	GameId     int
+	GameId int
 	//Card_ID1   string
 	//Card_ID2   string
 	Time_start string
@@ -305,6 +313,7 @@ func NewMiner() *Miner {
 func (game *Miner) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.LoginInfo.PlayerNum = 0
@@ -318,7 +327,7 @@ func (game *Miner) Reset() {
 
 //默契牢笼
 type Privity struct {
-	GameId       int
+	GameId int
 	//Card_ID1     string
 	//Card_ID2     string
 	Time_start   string
@@ -340,6 +349,7 @@ func NewPrivity() *Privity {
 func (game *Privity) Reset() {
 	//game.Card_ID1 = ""
 	//game.Card_ID2 = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
 	game.Num_question = ""
@@ -355,11 +365,13 @@ func (game *Privity) Reset() {
 
 //献祭房间
 type Russian struct {
-	GameId     int
+	GameId int
 	//Card_ID    string
-	Time_start string
-	Time_end   string
-	LoginInfo  *LoginInfo
+	Time_start     string
+	Time_end       string
+	Desk_num       string
+	Bullet_trigger string
+	LoginInfo      *LoginInfo
 }
 
 func NewRussian() *Russian {
@@ -373,8 +385,11 @@ func NewRussian() *Russian {
 
 func (game *Russian) Reset() {
 	//game.Card_ID = ""
+	game.LoginInfo.IsUploadInfo = false
 	game.Time_start = ""
 	game.Time_end = ""
+	game.Desk_num = ""
+	game.Bullet_trigger = ""
 	game.LoginInfo.PlayerNum = 0
 	for k, _ := range game.LoginInfo.PlayerCardInfo {
 		delete(game.LoginInfo.PlayerCardInfo, k)

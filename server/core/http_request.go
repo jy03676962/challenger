@@ -109,7 +109,8 @@ func (r *HttpRequest) DoPost() {
 		for k, v := range r.params {
 			p.Set(k, v)
 		}
-		log.Println(p)
+		log.Println("request httpAddr:", r.api)
+		log.Println("parmas:", p)
 		request, _ := http.NewRequest(echo.POST, r.api, strings.NewReader(p.Encode()))
 		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
 		response, _ := r.client.Do(request)
