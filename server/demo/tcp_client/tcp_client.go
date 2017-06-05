@@ -38,7 +38,7 @@ func main() {
 			}
 			s = string(b)
 		case "1":
-			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484EBAF95B4EB0[AR]1"
+			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]1"
 			//m := map[string]string{"cmd": "gameStart"}
 			//b, err := json.Marshal(m)
 			//if err != nil {
@@ -46,13 +46,15 @@ func main() {
 			//}
 			//s = string(b)
 		case "2":
-			m := map[string]string{"cmd": "nextStep"}
-			b, _ := json.Marshal(m)
-			s = string(b)
+			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]100"
+			//m := map[string]string{"cmd": "nextStep"}
+			//b, _ := json.Marshal(m)
+			//s = string(b)
 		case "3":
-			m := map[string]string{"cmd": "nextStar"}
-			b, _ := json.Marshal(m)
-			s = string(b)
+			//m := map[string]string{"cmd": "nextStar"}
+			//b, _ := json.Marshal(m)
+			//s = string(b)
+			s = "[ID]R-1-1[TYPE]4[GAME]0"
 		case "4":
 			m := map[string]string{"cmd": "addStar"}
 			b, _ := json.Marshal(m)

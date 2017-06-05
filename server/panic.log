@@ -1,0 +1,11 @@
+panic: interface conversion: interface {} is nil, not bool
+
+goroutine 5 [running]:
+challenger/server/core.(*Srv).handleHttpMessage(0xc420122090, 0xc420170420)
+	/Users/PacifyKing/Documents/gopath/src/challenger/server/core/srv.go:212 +0x2cf
+challenger/server/core.(*Srv).mainLoop(0xc420122090)
+	/Users/PacifyKing/Documents/gopath/src/challenger/server/core/srv.go:94 +0x118
+challenger/server/core.(*Srv).Run(0xc420122090, 0x1355e61, 0xe, 0x1355e6f, 0xe, 0x1355fe0, 0xf)
+	/Users/PacifyKing/Documents/gopath/src/challenger/server/core/srv.go:80 +0x9b
+created by main.main
+	/Users/PacifyKing/Documents/gopath/src/challenger/server/main.go:93 +0x66a
