@@ -2,7 +2,7 @@ package core
 
 const (
 	api                       = "http://172.16.10.7/gsaleapi/"
-	AuthorityGet              = api + "card_list.php"
+	AuthorityGet              = api + "authority_list.php"
 	GameDataAdivinacionCreate = api + "gamedata_adivinacion.php"
 	GameDataAdivinacionModify = api + "14.php"
 	GameDataBangCreate        = api + "gamedata_bang.php"
@@ -25,8 +25,8 @@ const (
 	GameDataPrivityModify     = api + "23.php"
 	GameDataRussianCreate     = api + "gamedata_russian.php"
 	GameDataRussianModify     = api + "24.php"
-	TicketUse                 = api + "game_ticket.php"
-	TicketCheck               = api + "25"
+	TicketUse                 = api + "ticket_update.php"
+	TicketCheck               = api + "ticket_game.php"
 )
 
 type HttpResponse struct {

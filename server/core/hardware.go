@@ -69,6 +69,7 @@ type Bang struct {
 func NewBang() *Bang {
 	game := Bang{}
 	game.GameId = ID_Bang
+	game.Point_round = make(map[int]string)
 	game.LoginInfo = &LoginInfo{}
 	game.LoginInfo.PlayerCardInfo = make(map[string]string)
 	game.LoginInfo.CardTicketInfo = make(map[string]string)
@@ -177,6 +178,12 @@ type Highnoon struct {
 func NewHighnoon() *Highnoon {
 	game := Highnoon{}
 	game.GameId = ID_Highnoon
+	game.Result_round_1p = make(map[int]string)
+	game.Result_round_2p = make(map[int]string)
+	for i := 1; i < 8; i++ {
+		game.Result_round_1p[i] = "0"
+		game.Result_round_2p[i] = "0"
+	}
 	game.LoginInfo = &LoginInfo{}
 	game.LoginInfo.PlayerCardInfo = make(map[string]string)
 	game.LoginInfo.CardTicketInfo = make(map[string]string)
@@ -190,10 +197,12 @@ func (game *Highnoon) Reset() {
 	game.Time_start = ""
 	game.Time_end = ""
 	for k, _ := range game.Result_round_1p {
-		delete(game.Result_round_1p, k)
+		//delete(game.Result_round_1p, k)
+		game.Result_round_1p[k] = "0"
 	}
 	for k, _ := range game.Result_round_2p {
-		delete(game.Result_round_2p, k)
+		//delete(game.Result_round_2p, k)
+		game.Result_round_2p[k] = "0"
 	}
 	game.LoginInfo.PlayerNum = 0
 	for k, _ := range game.LoginInfo.PlayerCardInfo {

@@ -10,8 +10,8 @@ import (
 	//"golang.org/x/net/html/atom"
 	//"regexp"
 	//"math"
-	"fmt"
 	"time"
+	"reflect"
 )
 
 type AdminMode int
@@ -164,6 +164,7 @@ func (s *Srv) OnHttpRequest(msg *HttpResponse) {
 
 //http msg type
 func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
+	log.Println("data server res:", httpRes.JsonData)
 	switch httpRes.Api {
 	case GameDataAdivinacionCreate:
 		fallthrough
@@ -208,7 +209,6 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	case GameDataRussianCreate:
 		fallthrough
 	case GameDataRussianModify:
-		log.Println("data server res:", httpRes.JsonData)
 		if res, ok := httpRes.Get("return").(bool); ok {
 			gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
 			if !res {
@@ -217,12 +217,15 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		}
 	case AuthorityGet:
 		if res, ok := httpRes.Get("return").(bool); ok {
-			fmt.Println("authority:", res)
 			arduinoId := httpRes.Msg.GetStr("ID")
 			addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
 			msg := NewInboxMessage()
 			msg.SetCmd("authority_check")
-			msg.Set("return", res)
+			if res {
+				msg.Set("return", "true")
+			} else {
+				msg.Set("return", "false")
+			}
 			s.sendToOne(msg, addr)
 		}
 	case TicketUse:
@@ -236,12 +239,25 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	case TicketCheck:
 		arduinoId := httpRes.Msg.GetStr("ID")
 		gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
-		ticketId := httpRes.Get("ticket_game_id").(int)
-		if ticketId != -1 {
-			s.loginGame(strconv.Itoa(ticketId), gameId, httpRes.Msg)
+		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+		msg := NewInboxMessage()
+		msg.SetCmd("ticket_check")
+		if ticketId, ok := httpRes.Get("id").(float64); ok {
+			if ticketId != -1 {
+				log.Println(ticketId,gameId)
+				s.loginGame(strconv.FormatFloat(ticketId,'f',0,64), gameId, httpRes.Msg)
+				msg.Set("return", "true")
+				log.Println("it has ticket!")
+			} else {
+				msg.Set("return", "false")
+				log.Println("it has'n ticket!")
+			}
+		} else {
+			log.Println("ticketId is'n int!",reflect.TypeOf(ticketId),"ticketId:",ticketId)
 		}
 		res := httpRes.Data
 		log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
+		s.sendToOne(msg, addr)
 	}
 }
 
@@ -296,7 +312,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 	case UnKnown:
 		log.Println(msg.GetStr("ID"), "send UnKnown cmd!")
 	case Hbt:
-		//log.Println("Receive htb:", msg.GetStr("ID"))
+		//log.Println("Receive htb:", msg.GetStr("ID"),msg.GetStr("CARD_ID"))
 	case GameStartForward:
 		admin := msg.GetStr("ADMIN")
 		//gameId := msg.GetStr("GAME")
@@ -512,6 +528,7 @@ func (s *Srv) bgmControl(music string) {
 }
 
 func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
+	log.Println("login:",msg)
 	cardId := msg.GetStr("CARD_ID")
 	switch gameId {
 	case ID_Russian:
@@ -762,49 +779,51 @@ func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 	case ID_Russian:
 		s.russian.LoginInfo.IsUploadInfo = true
 		s.russian.Time_start = currentTime()
-		s.russian.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.russian.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.russian.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.russian.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.russian.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.russian.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+		s.russian.Bullet_trigger = "3"
+		s.russian.Desk_num = "5"
 	case ID_Adivainacion:
 		s.adivainacion.LoginInfo.IsUploadInfo = true
 		s.adivainacion.Time_start = currentTime()
-		s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.adivainacion.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.adivainacion.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 	case ID_Bang:
 		s.bang.LoginInfo.IsUploadInfo = true
 		s.bang.Time_start = currentTime()
-		s.bang.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.bang.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.bang.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.bang.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.bang.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.bang.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.bang.Point_round[1] = "6"
 		s.bang.Point_round[2] = "5"
 		s.bang.Point_round[3] = "4"
 	case ID_Follow:
 		s.follow.LoginInfo.IsUploadInfo = true
 		s.follow.Time_start = currentTime()
-		s.follow.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.follow.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.follow.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.follow.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.follow.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.follow.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.follow.Last_round = "10"
 	case ID_Greeting:
 		s.greeting.LoginInfo.IsUploadInfo = true
 		s.greeting.Time_start = currentTime()
-		s.greeting.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.greeting.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.greeting.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.greeting.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.greeting.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.greeting.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 	case ID_Highnoon:
 		s.highnoon.LoginInfo.IsUploadInfo = true
 		s.highnoon.Time_start = currentTime()
-		s.highnoon.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.highnoon.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.highnoon.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.highnoon.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.highnoon.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.highnoon.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.highnoon.Result_round_1p[1] = "0.11"
 		s.highnoon.Result_round_2p[1] = "0.12"
 		s.highnoon.Result_round_1p[2] = "0.21"
@@ -817,39 +836,38 @@ func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 		s.highnoon.Result_round_2p[5] = "0.52"
 		s.highnoon.Result_round_1p[6] = "0.61"
 		s.highnoon.Result_round_2p[6] = "0.62"
-		s.highnoon.Result_round_1p[7] = ""
-		s.highnoon.Result_round_2p[7] = ""
 	case ID_Hunter:
 		s.hunter.LoginInfo.IsUploadInfo = true
 		s.hunter.Time_start = currentTime()
-		s.hunter.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.hunter.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.hunter.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.hunter.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.hunter.Time_firstButton = "5"
+		s.hunter.Box_ID = 1
 	case ID_Marksman:
 		s.marksman.LoginInfo.IsUploadInfo = true
 		s.marksman.Time_start = currentTime()
-		s.marksman.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.marksman.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.marksman.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.marksman.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.marksman.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.marksman.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.marksman.Point_right = "10"
 		s.marksman.Point_left = "20"
 	case ID_Miner:
 		s.miner.LoginInfo.IsUploadInfo = true
 		s.miner.Time_start = currentTime()
-		s.miner.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.miner.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.miner.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.miner.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.miner.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.miner.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 	case ID_Privity:
 		s.privity.LoginInfo.IsUploadInfo = true
 		s.privity.Time_start = currentTime()
-		s.privity.LoginInfo.PlayerCardInfo["1p"] = "cardId1"
-		s.privity.LoginInfo.CardTicketInfo["cardId1"] = "ticketId1"
-		s.privity.LoginInfo.PlayerCardInfo["2p"] = "cardId2"
-		s.privity.LoginInfo.CardTicketInfo["cardId2"] = "ticketId2"
+		s.privity.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+		s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+		s.privity.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+		s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 		s.privity.Num_right = "10"
 		s.privity.Num_question = "20"
 	}
@@ -996,6 +1014,8 @@ func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
 		params["card_ID2"] = s.russian.LoginInfo.PlayerCardInfo["2p"]
 		params["time_start"] = s.russian.Time_start
 		params["time_end"] = s.russian.Time_end
+		params["desk_no"] = s.russian.Desk_num
+		params["bullet_trigger"] = s.russian.Bullet_trigger
 		params["op"] = "set_russian"
 	case ID_Adivainacion:
 		request.SetApi(GameDataAdivinacionCreate)
