@@ -5,16 +5,16 @@ import "log"
 var _ = log.Printf
 
 const (
-	ID_Russian      = iota //轮盘赌
-	ID_Adivainacion        //占卜
-	ID_Bang                //6连
-	ID_Follow              //走格子
-	ID_Greeting            //新人走廊
-	ID_Highnoon            //午时已到
-	ID_Hunter              //寻宝
-	ID_Marksman            //射箭
-	ID_Miner               //挖矿
-	ID_Privity             //默契牢笼
+	ID_Russian      = iota + 1 //轮盘赌
+	ID_Adivainacion            //占卜
+	ID_Bang                    //6连
+	ID_Follow                  //走格子
+	ID_Greeting                //新人走廊
+	ID_Highnoon                //午时已到
+	ID_Hunter                  //寻宝
+	ID_Marksman                //射箭
+	ID_Miner                   //挖矿
+	ID_Privity                 //默契牢笼
 )
 
 type LoginInfo struct {
@@ -260,6 +260,33 @@ type HunterBox struct {
 	Card_ID2      string
 	Box_status    int //0代表未开启，1代表开启
 	IsAssigned    bool
+}
+
+func (box *HunterBox) Reset() {
+	box.Time_build = ""
+	box.Time_validity = ""
+	box.Card_ID1 = ""
+	box.Card_ID2 = ""
+	box.Box_status = -1
+	box.IsAssigned = false
+}
+
+type HunterBoxSlice []HunterBox
+
+func (box HunterBoxSlice) Len() int {
+	return len(box)
+}
+
+func (box HunterBoxSlice) Swap(i, j int) {
+	box[i], box[j] = box[j], box[i]
+}
+
+func (box HunterBoxSlice) Less(i, j int) bool { // 重写 Less() 方法， 从大到小排序
+	if box[j].IsAssigned && !box[i].IsAssigned {
+		return true
+	} else {
+		return false
+	}
 }
 
 //射箭

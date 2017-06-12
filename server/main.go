@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	host        = "localhost"
+	host        = "172.16.10.177"
 	httpAddr    = host + ":3000"
 	tcpAddr     = host + ":4000"
 	adminAddr   = host + ":5000"

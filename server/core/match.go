@@ -26,16 +26,16 @@ type Match struct {
 	opt *MatchOptions
 	srv *Srv
 
-	Step              int
-	TotalTime         float64
-	OpenDoorDelayTime float64
-	CurrentBgm        int
+	Event      int
+	IsGoing    bool
+	TotalTime  float64
+	CurrentBgm int
 
 	msgCh   chan *InboxMessage
 	closeCh chan bool
 }
 
-func NewMatch(s *Srv) *Match {
+func NewMatch(s *Srv, event int) *Match {
 	m := Match{}
 	m.CurrentBgm = 0
 	m.srv = s
@@ -60,6 +60,10 @@ func (m *Match) Run() {
 		m.handleInputs()
 		m.gameStage(dt)
 	}
+}
+
+func (m *Match) Stop() {
+
 }
 
 func (m *Match) OnMatchCmdArrived(cmd *InboxMessage) {
@@ -104,7 +108,7 @@ func (m *Match) bgmPlay(bgm int) {
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("mp3_ctrl")
 	sendMsg.Set("music", strconv.Itoa(bgm))
-	addr := InboxAddress{InboxAddressTypeMusicArduino, "B-1"}
+	addr := InboxAddress{InboxAddressTypeDjArduino, "B-1"}
 	m.srv.sendToOne(sendMsg, addr)
 
 }
@@ -112,14 +116,14 @@ func (m *Match) bgmPlay(bgm int) {
 func att(id string) InboxAddressType {
 	if id == "" {
 		return InboxAddressTypeUnknown
-	} else if strings.HasPrefix(id, "R") {
+	} else if strings.HasPrefix(id, "G") {
 		return InboxAddressTypeGameArduinoDevice
-	} else if strings.HasPrefix(id, "L") {
-		return InboxAddressTypeLightArduinoDevice
+	} else if strings.HasPrefix(id, "T") {
+		return InboxAddressTypeTrashArduino
 	} else if strings.HasPrefix(id, "B") {
-		return InboxAddressTypeMusicArduino
+		return InboxAddressTypeBoxArduinoDevice
 	} else if strings.HasPrefix(id, "D") {
-		return InboxAddressTypeDoorArduino
+		return InboxAddressTypeDjArduino
 	}
 	return InboxAddressTypeUnknown
 }

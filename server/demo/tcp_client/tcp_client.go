@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "localhost:4000")
+	conn, err := net.Dial("tcp", "172.16.10.177:4000")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -38,7 +38,7 @@ func main() {
 			}
 			s = string(b)
 		case "1":
-			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]1"
+			s = "[ID]G-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]1"
 			//m := map[string]string{"cmd": "gameStart"}
 			//b, err := json.Marshal(m)
 			//if err != nil {
@@ -46,7 +46,7 @@ func main() {
 			//}
 			//s = string(b)
 		case "2":
-			s = "[ID]R-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]100"
+			s = "[ID]G-1-1[TYPE]6[CARD_ID]00FF0FF000FFCF4D54B110484DBDBBB104D0[AR]100"
 			//m := map[string]string{"cmd": "nextStep"}
 			//b, _ := json.Marshal(m)
 			//s = string(b)
@@ -54,11 +54,24 @@ func main() {
 			//m := map[string]string{"cmd": "nextStar"}
 			//b, _ := json.Marshal(m)
 			//s = string(b)
-			s = "[ID]R-1-1[TYPE]4[GAME]0"
+			s = "[ID]G-1-1[TYPE]4[FB]4[GAME]"
+			fmt.Println("print game no")
+			reader := bufio.NewReader(os.Stdin)
+			text, _ := reader.ReadString('\n')
+			text = strings.Trim(text, "\n")
+			s = s + text
+			fmt.Println(s)
 		case "4":
-			m := map[string]string{"cmd": "addStar"}
-			b, _ := json.Marshal(m)
-			s = string(b)
+			// m := map[string]string{"cmd": "addStar"}
+			//b, _ := json.Marshal(m)
+			//s = string(b)
+			s = "[ID]G-1-1[TYPE]7[ADMIN]4[CARD_ID]00FF0FF000FFCF4D54B1104846B4FBC10480[GAME]"
+			fmt.Println("print game no")
+			reader := bufio.NewReader(os.Stdin)
+			text, _ := reader.ReadString('\n')
+			text = strings.Trim(text, "\n")
+			s = s + text
+			fmt.Println(s)
 		default:
 			m := map[string]string{"cmd": text}
 			b, _ := json.Marshal(m)
@@ -120,7 +133,7 @@ func writech1(ch1 chan string) {
 	dt := 500 * time.Millisecond
 	tickChan := time.Tick(dt)
 	for {
-		ch1 <- "[ID]R-1-1[TYPE]0"
+		ch1 <- "[ID]G-1-1[TYPE]0"
 		<-tickChan
 	}
 }

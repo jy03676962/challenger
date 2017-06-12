@@ -7,17 +7,17 @@ import (
 type InboxAddressType int
 
 const (
-	InboxAddressTypeUnknown            = 0
-	InboxAddressTypeAdminDevice        = 1 // 管理员屏幕
-	InboxAddressTypeGameArduinoDevice  = 2 // 房间Arduino
-	InboxAddressTypeLightArduinoDevice = 3 // 环境灯光Arduino
-	InboxAddressTypeMusicArduino       = 4 // music arduino
-	InboxAddressTypeDoorArduino        = 5 // door arduino
+	InboxAddressTypeUnknown           = 0
+	InboxAddressTypeAdminDevice       = 1 // 管理员屏幕
+	InboxAddressTypeGameArduinoDevice = 2 // 游戏 Arduino
+	InboxAddressTypeBoxArduinoDevice  = 3 // 箱子 Arduino
+	InboxAddressTypeTrashArduino      = 4 // 垃圾桶 arduino
+	InboxAddressTypeDjArduino         = 5 // dj台 arduino
 )
 
 func (t InboxAddressType) IsArduinoControllerType() bool {
-	return t == InboxAddressTypeGameArduinoDevice || t == InboxAddressTypeLightArduinoDevice ||
-		t == InboxAddressTypeMusicArduino || t == InboxAddressTypeDoorArduino
+	return t == InboxAddressTypeGameArduinoDevice || t == InboxAddressTypeBoxArduinoDevice ||
+		t == InboxAddressTypeTrashArduino || t == InboxAddressTypeDjArduino
 }
 
 type InboxAddress struct {

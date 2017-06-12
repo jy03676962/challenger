@@ -1,17 +1,5 @@
-#Timerift
-#Room1
-FakeBooks = [ 1, 3, 5, 9, 13]#正确的假书编号
-FakeAnimationTime = 3000.0
-CandlesColor = [ 6, 8, 4, 4, 8, 7]#正确的颜色编号
-Constellations = ["crt", "cam", "boo", "mon", "lac"]#正确的星座名字
-ElementSymbol = [3, 6, 5, 4, 2, 1]
-Room2OpenDoorDelayTime = 10000.0
-Room3OpenDoorDelayTime = 10000.0
-Room4OpenDoorDelayTime = 10000.0
-Room5OpenDoorDelayTime = 10000.0
-Room6LaunchDelayTime = 6000.0
-Room6LastTime = 840000.0 #ms
-TotalTime = 4200.0 #4200秒，70min
+boxLastTime = 10.0 #1800s 30min
+boxNum = 10
 
 arenaWidth = 8 # 场地长
 arenaHeight = 6 # 场地高
@@ -247,75 +235,46 @@ subArduino = [
 "S-7-4"
 ]
 
-RoomArduino = [
-"R-1-1",
-"R-1-3",
-"R-2-2",
-"R-2-3",
-"R-2-4",
-"R-2-5",
-"R-2-6",
-"R-2-7",
-"R-2-8",
-"R-2-9",
-"R-2-10",
-"R-2-11",
-"R-2-12",
-"R-2-13",
-"R-2-14",
-"R-2-15",
-"R-2-16",
-"R-2-17",
-"R-2-18",
-"R-2-19",
-"R-2-20",
-"R-2-21",
-"R-2-22",
-"R-2-23",
-"R-3-1",
-"R-3-2",
-"R-3-3",
-"R-3-4",
-"R-3-5",
-"R-3-6",
-"R-3-7",
-"R-4-1",
-"R-4-2",
-"R-4-3",
-"R-4-4",
-"R-4-5",
-"R-4-6",
-"R-5-1",
-"R-5-2",
-"R-5-3",
-"R-5-4",
-"R-5-5",
-"R-5-6",
-"R-5-7",
-"R-5-8",
-"R-6-1",
-"R-6-2",
-"R-6-3",
-"R-6-4",
-"R-6-5",
-"R-6-6",
-"R-6-7",
-"R-6-8",
-"R-6-9"
+gameArduino = [
+"G-1-1",
+"G-2-1",
+"G-3-1",
+"G-4-1",
+"G-5-1",
+"G-5-2",
+"G-6-1",
+"G-6-2",
+"G-6-3",
+"G-6-4",
+"G-6-5",
+"G-7-1",
+"G-8-1",
+"G-9-1",
+"G-9-2",
+"G-10-1",
+"G-10-2"
 ]
 
-musicArduino = [
-"B-1"
+boxArduino = [
+"B-1",
+"B-2",
+"B-3",
+"B-4",
+"B-5",
+"B-6",
+"B-7",
+"B-8",
+"B-9",
+"B-10"
 ]
 
-doorArduino = [
-"D-0",
-"D-1",
-"D-2",
-"D-3",
-"D-4",
-"D-5",
-"D-6"
+trashArduino = [
+"T-1",
+"T-2"
+]
+
+djArduino = [
+"D-1"
 ]
 
 # 入口坐标

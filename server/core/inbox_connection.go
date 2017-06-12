@@ -103,14 +103,14 @@ func (tcp *InboxTcpConnection) ReadJSON(v *InboxMessage) error {
 func at(id string) InboxAddressType {
 	if id == "" {
 		return InboxAddressTypeUnknown
-	} else if strings.HasPrefix(id, "R") {
+	} else if strings.HasPrefix(id, "G") {
 		return InboxAddressTypeGameArduinoDevice
-	} else if strings.HasPrefix(id, "L") {
-		return InboxAddressTypeLightArduinoDevice
 	} else if strings.HasPrefix(id, "B") {
-		return InboxAddressTypeMusicArduino
+		return InboxAddressTypeBoxArduinoDevice
+	} else if strings.HasPrefix(id, "T") {
+		return InboxAddressTypeTrashArduino
 	} else if strings.HasPrefix(id, "D") {
-		return InboxAddressTypeDoorArduino
+		return InboxAddressTypeDjArduino
 	} else if strings.HasPrefix(id, "A") {
 		return InboxAddressTypeAdminDevice
 	}

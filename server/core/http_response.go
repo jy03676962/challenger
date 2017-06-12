@@ -15,8 +15,6 @@ const (
 	GameDataHighnoonModify    = api + "18.php"
 	GameDataHunterCreate      = api + "gamedata_hunter.php"
 	GameDataHunterModify      = api + "19.php"
-	GameDataHunterBoxCreate   = api + "gamedata_hunter_box.php"
-	GameDataHunterBoxModify   = api + "20.php"
 	GameDataMarksmanCreate    = api + "gamedata_marksman.php"
 	GameDataMarksmanModify    = api + "21.php"
 	GameDataMinerCreate       = api + "gamedata_miner.php"
@@ -27,6 +25,7 @@ const (
 	GameDataRussianModify     = api + "24.php"
 	TicketUse                 = api + "ticket_update.php"
 	TicketCheck               = api + "ticket_game.php"
+	BoxUpload                 = api + "gamedata_hunter_box.php"
 )
 
 type HttpResponse struct {

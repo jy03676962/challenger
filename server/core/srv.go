@@ -10,8 +10,10 @@ import (
 	//"golang.org/x/net/html/atom"
 	//"regexp"
 	//"math"
-	"time"
+	"math/rand"
 	"reflect"
+	"sort"
+	"time"
 )
 
 type AdminMode int
@@ -34,6 +36,7 @@ const (
 	TicketGet        = "7"
 	BoxStatus        = "8"
 	ResetGame        = "9"
+	Event            = "10"
 )
 
 var _ = log.Println
@@ -44,10 +47,11 @@ type Srv struct {
 	mChan            chan MatchEvent
 	httpResChan      chan *HttpResponse
 	aDict            map[string]*ArduinoController
-	//match            *Match
-	adminMode   AdminMode
-	isSimulator bool
+	match            *Match
+	adminMode        AdminMode
+	isSimulator      bool
 	//--------game info------------
+	boxes        []HunterBox
 	adivainacion *Adivainacion
 	bang         *Bang
 	follow       *Follow
@@ -77,6 +81,7 @@ func NewSrv(isSimulator bool) *Srv {
 func (s *Srv) Run(tcpAddr string, adminAddr string, dbPath string) {
 	go s.listenTcp(tcpAddr)
 	go s.listenTcp(adminAddr)
+	go s.watchBoxStatus()
 	s.mainLoop()
 }
 
@@ -190,10 +195,6 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		fallthrough
 	case GameDataHunterModify:
 		fallthrough
-	case GameDataHunterBoxCreate:
-		fallthrough
-	case GameDataHunterBoxModify:
-		fallthrough
 	case GameDataMarksmanCreate:
 		fallthrough
 	case GameDataMarksmanModify:
@@ -244,20 +245,29 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		msg.SetCmd("ticket_check")
 		if ticketId, ok := httpRes.Get("id").(float64); ok {
 			if ticketId != -1 {
-				log.Println(ticketId,gameId)
-				s.loginGame(strconv.FormatFloat(ticketId,'f',0,64), gameId, httpRes.Msg)
+				s.loginGame(strconv.FormatFloat(ticketId, 'f', 0, 64), gameId, httpRes.Msg)
 				msg.Set("return", "true")
-				log.Println("it has ticket!")
+				log.Println("it has ticket:", ticketId, " gameId:", gameId)
 			} else {
 				msg.Set("return", "false")
 				log.Println("it has'n ticket!")
 			}
 		} else {
-			log.Println("ticketId is'n int!",reflect.TypeOf(ticketId),"ticketId:",ticketId)
+			log.Println("ticketId is'n int!", reflect.TypeOf(ticketId), "ticketId:", ticketId)
 		}
 		res := httpRes.Data
 		log.Println("arduinoId:", arduinoId, "need feedback! and res :", res)
 		s.sendToOne(msg, addr)
+	case BoxUpload:
+		if res, ok := httpRes.Get("return").(bool); ok {
+			boxId, _ := strconv.Atoi(httpRes.Msg.GetStr("num"))
+			if !res {
+				log.Println("Modify BoxStatus failed!")
+				s.uploadBoxStatus(boxId)
+			} else {
+				s.boxes[boxId].Reset()
+			}
+		}
 	}
 }
 
@@ -299,9 +309,11 @@ func (s *Srv) handleInboxMessage(msg *InboxMessage) {
 		s.handleAdminMessage(msg)
 	case InboxAddressTypeGameArduinoDevice:
 		s.handleArduinoMessage(msg)
-	case InboxAddressTypeDoorArduino:
+	case InboxAddressTypeBoxArduinoDevice:
 		s.handleArduinoMessage(msg)
-	case InboxAddressTypeMusicArduino:
+	case InboxAddressTypeTrashArduino:
+		s.handleArduinoMessage(msg)
+	case InboxAddressTypeDjArduino:
 		s.handleArduinoMessage(msg)
 	}
 }
@@ -341,7 +353,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Receive Game:", gameId, "'s data!")
-		s.upldateGameInfo(msg, gameId)
+		s.updateGameInfo(msg, gameId)
 	case AuthorityCheck:
 		arduinoId := msg.GetStr("ID") //创建request的时候需要放入
 		cardId := msg.GetStr("CARD_ID")
@@ -394,6 +406,18 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		s.resetGame(gameId)
 		log.Println("Admin:", admin, " reset the game:", gameId, "!")
+	case Event:
+		event, _ := strconv.Atoi(msg.GetStr("EVENT"))
+		ctrl, _ := strconv.Atoi(msg.GetStr("CTRL"))
+		if ctrl == 1 {
+			//start event
+			s.startNewMatch(event)
+		} else {
+
+			//stop event
+			s.stopMatch()
+		}
+		log.Println("")
 	}
 }
 
@@ -417,11 +441,29 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	}
 }
 
-//func (s *Srv) startNewMatch() {
-//	m := NewMatch(s)
-//	s.match = m
-//	go m.Run()
-//}
+func (s *Srv) startNewMatch(event int) {
+	if s.match != nil {
+		if s.match.IsGoing {
+			return
+		} else if event == s.match.Event {
+			s.match.Run()
+		} else if event != s.match.Event {
+			s.stopMatch()
+			m := NewMatch(s, event)
+			s.match = m
+			go m.Run()
+		}
+	} else {
+		m := NewMatch(s, event)
+		s.match = m
+		go m.Run()
+	}
+}
+
+func (s *Srv) stopMatch() {
+	s.match.Stop()
+	s.match = nil
+}
 
 func (s *Srv) sendMsg(cmd string, data interface{}, id string, t InboxAddressType) {
 	addr := InboxAddress{t, id}
@@ -454,7 +496,7 @@ func (s *Srv) sends(msg *InboxMessage, types ...InboxAddressType) {
 }
 
 func (s *Srv) doorControl(IL string, OL string, ID string) {
-	addr := InboxAddress{InboxAddressTypeDoorArduino, ID}
+	addr := InboxAddress{InboxAddressTypeDjArduino, ID}
 	msg := NewInboxMessage()
 	msg.SetCmd("led_ctrl")
 	controls := make([]map[string]string, 0)
@@ -485,23 +527,23 @@ func (s *Srv) sendToOne(msg *InboxMessage, addr InboxAddress) {
 }
 
 func (s *Srv) initArduinoControllers() {
-	for _, roomArduino := range GetOptions().RoomArduino {
-		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, roomArduino}
+	for _, gameArdunio := range GetOptions().GameArduino {
+		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, gameArdunio}
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
-	for _, lightArduino := range GetOptions().LightArduino {
-		addr := InboxAddress{InboxAddressTypeLightArduinoDevice, lightArduino}
+	for _, boxArduino := range GetOptions().BoxArduino {
+		addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, boxArduino}
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
-	for _, music := range GetOptions().MusicArduino {
-		addr := InboxAddress{InboxAddressTypeMusicArduino, music}
+	for _, trashArduino := range GetOptions().TrashArduino {
+		addr := InboxAddress{InboxAddressTypeTrashArduino, trashArduino}
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
-	for _, door := range GetOptions().DoorArduino {
-		addr := InboxAddress{InboxAddressTypeDoorArduino, door}
+	for _, djArduino := range GetOptions().DjArduino {
+		addr := InboxAddress{InboxAddressTypeDjArduino, djArduino}
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
@@ -518,29 +560,36 @@ func (s *Srv) initGameInfo() {
 	s.miner = NewMiner()
 	s.privity = NewPrivity()
 	s.russian = NewRussian()
+	s.boxes = make([]HunterBox, GetOptions().BoxNum)
+	for i := range s.boxes {
+		s.boxes[i].Box_ID = i
+	}
+	log.Println(time.Unix(1497293951, 0).Format("2006-01-02 15:04:05"))
 }
 
 func (s *Srv) bgmControl(music string) {
 	msg := NewInboxMessage()
 	msg.SetCmd("mp3_ctrl")
 	msg.Set("music", music)
-	s.sends(msg, InboxAddressTypeMusicArduino)
+	s.sends(msg, InboxAddressTypeDjArduino)
 }
 
 func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
-	log.Println("login:",msg)
+	log.Println("login:", msg)
 	cardId := msg.GetStr("CARD_ID")
 	switch gameId {
 	case ID_Russian:
-		if s.russian.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.russian.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.russian.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
+			log.Println("1p login:", s.russian.LoginInfo)
 		} else {
 			s.russian.LoginInfo.PlayerCardInfo["2p"] = cardId
 			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
+			log.Println("2p login:", s.russian.LoginInfo)
 		}
 	case ID_Adivainacion:
-		if s.adivainacion.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.adivainacion.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -548,7 +597,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Bang:
-		if s.bang.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.bang.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.bang.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -556,7 +605,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Follow:
-		if s.follow.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.follow.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.follow.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -564,7 +613,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Greeting:
-		if s.greeting.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.greeting.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.greeting.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -572,7 +621,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Highnoon:
-		if s.highnoon.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.highnoon.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.highnoon.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -580,7 +629,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Hunter:
-		if s.hunter.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.hunter.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.hunter.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -588,7 +637,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Marksman:
-		if s.marksman.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.marksman.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.marksman.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -596,7 +645,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Miner:
-		if s.miner.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.miner.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.miner.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -604,7 +653,7 @@ func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
 			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
 		}
 	case ID_Privity:
-		if s.privity.LoginInfo.PlayerCardInfo["1p"] != "" {
+		if s.privity.LoginInfo.PlayerCardInfo["1p"] == "" {
 			s.privity.LoginInfo.PlayerCardInfo["1p"] = cardId
 			s.privity.LoginInfo.CardTicketInfo[cardId] = ticketId
 		} else {
@@ -620,6 +669,7 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 	request.SetMsg(msg)
 	request.SetApi(TicketUse)
 	params := make(map[string]string)
+	params["op"] = "set_exchanger_id"
 	switch gameId {
 	case ID_Russian:
 		s.russian.Time_start = currentTime()
@@ -632,9 +682,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.russian.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.russian.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Adivainacion:
 		s.adivainacion.Time_start = currentTime()
@@ -647,9 +704,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.adivainacion.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.adivainacion.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Bang:
 		s.bang.Time_start = currentTime()
@@ -662,9 +726,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.bang.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.bang.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Follow:
 		s.follow.Time_start = currentTime()
@@ -677,9 +748,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.follow.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.follow.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Greeting:
 		s.greeting.Time_start = currentTime()
@@ -692,9 +770,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.greeting.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.greeting.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Highnoon:
 		s.highnoon.Time_start = currentTime()
@@ -707,9 +792,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.highnoon.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.highnoon.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Hunter:
 		s.hunter.Time_start = currentTime()
@@ -722,9 +814,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.hunter.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.hunter.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Marksman:
 		s.marksman.Time_start = currentTime()
@@ -737,9 +836,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.marksman.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.marksman.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Miner:
 		s.miner.Time_start = currentTime()
@@ -752,9 +858,16 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.miner.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.miner.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	case ID_Privity:
 		s.privity.Time_start = currentTime()
@@ -767,14 +880,22 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 		request.SetParams(params)
 		request.DoPost()
 		if cardId_2p != "" {
-			params["id"] = s.privity.LoginInfo.CardTicketInfo[cardId_2p]
-			request.SetParams(params)
-			request.DoPost()
+			request2 := NewHttpRequest(s)
+			request2.SetMsg(msg)
+			request2.SetApi(TicketUse)
+			params2 := make(map[string]string)
+			params2["op"] = "set_exchanger_id"
+			params2["game_ID"] = strconv.Itoa(gameId)
+			params2["exchanger_ID"] = admin
+			params2["id"] = s.privity.LoginInfo.CardTicketInfo[cardId_2p]
+			request2.SetParams(params2)
+			request2.DoPost()
 		}
 	}
 }
 
 func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
+	s.updateGameInfo(msg, gameId)
 	switch gameId {
 	case ID_Russian:
 		s.russian.LoginInfo.IsUploadInfo = true
@@ -843,8 +964,8 @@ func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
 		s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
 		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.hunter.Time_firstButton = "5"
-		s.hunter.Box_ID = 1
+		//s.hunter.Time_firstButton = "5"
+		//s.hunter.Box_ID = 1
 	case ID_Marksman:
 		s.marksman.LoginInfo.IsUploadInfo = true
 		s.marksman.Time_start = currentTime()
@@ -887,7 +1008,6 @@ func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 		s.highnoon.Time_end = currentTime()
 	case ID_Hunter:
 		s.hunter.Time_end = currentTime()
-		//choose box
 	case ID_Marksman:
 		s.marksman.Time_end = currentTime()
 	case ID_Miner:
@@ -923,7 +1043,7 @@ func (s *Srv) resetGame(gameId int) {
 	}
 }
 
-func (s *Srv) upldateGameInfo(msg *InboxMessage, gameId int) {
+func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 	switch gameId {
 	case ID_Russian:
 	case ID_Adivainacion:
@@ -951,6 +1071,12 @@ func (s *Srv) upldateGameInfo(msg *InboxMessage, gameId int) {
 		s.highnoon.Result_round_2p[7] = msg.GetStr("R7P2")
 	case ID_Hunter:
 		s.hunter.Time_firstButton = msg.GetStr("FB")
+		if s.hunter.Time_firstButton != "0" {
+			//choose box
+			cardId1 := s.hunter.LoginInfo.PlayerCardInfo["1p"]
+			cardId2 := s.hunter.LoginInfo.PlayerCardInfo["2p"]
+			s.hunter.Box_ID = s.setBox(cardId1, cardId2)
+		}
 	case ID_Marksman:
 		s.marksman.Point_right = msg.GetStr("PR")
 		s.marksman.Point_left = msg.GetStr("PL")
@@ -1109,7 +1235,145 @@ func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
 	request.DoPost()
 }
 
+func (s *Srv) uploadBoxStatus(boxNum int) {
+	var arduinoId string
+	switch boxNum {
+	case 0:
+		arduinoId = "B-1"
+	case 1:
+		arduinoId = "B-2"
+	case 2:
+		arduinoId = "B-3"
+	case 3:
+		arduinoId = "B-4"
+	case 4:
+		arduinoId = "B-5"
+	case 5:
+		arduinoId = "B-6"
+	case 6:
+		arduinoId = "B-7"
+	case 7:
+		arduinoId = "B-8"
+	case 8:
+		arduinoId = "B-9"
+	case 9:
+		arduinoId = "B-10"
+	}
+	addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
+	msg := NewInboxMessage()
+	msg.SetCmd("box_reset")
+	msg.Set("num", strconv.Itoa(boxNum))
+	s.sendToOne(msg, addr)
+
+	params := make(map[string]string)
+	params["box_ID"] = strconv.Itoa(s.boxes[boxNum].Box_ID)
+	params["time_build"] = s.boxes[boxNum].Time_build
+	params["time_validity"] = s.boxes[boxNum].Time_validity
+	params["card_ID1"] = s.boxes[boxNum].Card_ID1
+	params["card_ID2"] = s.boxes[boxNum].Card_ID2
+	params["box_status"] = strconv.Itoa(s.boxes[boxNum].Box_status)
+	request := NewHttpRequest(s)
+	request.SetApi(BoxUpload)
+	request.SetMsg(msg)
+	request.SetParams(params)
+	request.DoPost()
+}
+
+func (s *Srv) setBox(cardId1, cardId2 string) int {
+	boxId := s.getRandomBoxId()
+	if boxId == -1 {
+		log.Println("all box has been assigned!")
+	} else {
+		s.boxes[boxId].IsAssigned = true
+		s.boxes[boxId].Box_status = -1
+		s.boxes[boxId].Card_ID1 = cardId1
+		s.boxes[boxId].Card_ID2 = cardId2
+		s.boxes[boxId].Time_build = currentTime()
+		s.boxes[boxId].Time_validity = boxLastTime()
+		log.Println("BoxId:", boxId, " is assigned!")
+		log.Println("BoxInfo:", s.boxes[boxId])
+	}
+	return boxId
+}
+
+func (s *Srv) getRandomBoxId() int {
+	//s.boxes[0].IsAssigned = true
+	//s.boxes[1].IsAssigned = true
+	//s.boxes[2].IsAssigned = true
+	//s.boxes[3].IsAssigned = true
+	//s.boxes[4].IsAssigned = false
+	//s.boxes[5].IsAssigned = false
+	//s.boxes[6].IsAssigned = false
+	//s.boxes[7].IsAssigned = false
+	//s.boxes[8].IsAssigned = false
+	//s.boxes[9].IsAssigned = false
+	//log.Println("before sort:", s.boxes)
+	//sort.Sort(HunterBoxSlice(s.boxes))
+	//log.Println("after sort:", s.boxes)
+	totalNum := s.getNotAssignedBoxTotalNum()
+	if totalNum == 0 {
+		return -1
+	} else {
+		return s.generateRandomNumber(totalNum)
+	}
+}
+
+//获得没有被分配出去的宝箱数量
+func (s *Srv) getNotAssignedBoxTotalNum() int {
+	var totalNum int = 0
+	for i := range s.boxes {
+		if !s.boxes[i].IsAssigned {
+			totalNum++
+		}
+	}
+	log.Println(totalNum, " boxes is not assigned!")
+	return totalNum
+}
+
+//从没有被分配出去的宝箱中挑选一个
+func (s *Srv) generateRandomNumber(boxTotalNum int) int {
+	//首先对宝箱进行牌序
+	sort.Sort(HunterBoxSlice(s.boxes))
+	//随机数生成器，加入时间戳保证每次生成的随机数不一样
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//生成随机数
+	num := r.Intn(boxTotalNum)
+	return num
+}
+
+func (s *Srv) watchBoxStatus() {
+	dt := 1000 * time.Millisecond
+	tickChan := time.Tick(dt)
+	for {
+		<-tickChan
+		for i := range s.boxes {
+			if s.boxes[i].IsAssigned {
+				loc, _ := time.LoadLocation("Local")
+				validityTime, err := time.ParseInLocation("2006-01-02 15:04:05", s.boxes[i].Time_validity, loc)
+				log.Println("validityTime:", validityTime)
+				if err == nil {
+					lastTime := validityTime.Unix()
+					timeNow := time.Now().Unix()
+					log.Println("now:", timeNow, " endTime", lastTime)
+					if lastTime <= timeNow {
+						s.boxes[i].Box_status = 0
+						s.uploadBoxStatus(i)
+					}
+				}
+			}
+
+		}
+	}
+}
+
 func currentTime() string {
 	tm := time.Now().Format("2006-01-02 15:04:05")
+	return tm
+}
+
+func boxLastTime() string {
+	nextTime := time.Now().Unix() + int64(GetOptions().BoxLastTime)
+	tm := time.Unix(nextTime, 0).Format("2006-01-02 15:04:05")
+	log.Println("UTC:", tm)
 	return tm
 }

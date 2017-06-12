@@ -147,24 +147,13 @@ type MatchOptions struct {
 	SurvivalTeamRank     [4][4]int          `json:"-"`
 	LocationTransfers    []LocationTransfer `json:"-"`
 
-	//Timerift
-	RoomArduino  []string
-	MusicArduino []string
-	DoorArduino  []string
-	LightArduino []string
+	GameArduino  []string
+	BoxArduino   []string
+	TrashArduino []string
+	DjArduino    []string
 
-	FakeBooks              []int
-	FakeAnimationTime      float64
-	CandlesColor           [6]int
-	Constellations         [5]string
-	ElementSymbol          [6]int
-	Room2OpenDoorDelayTime float64
-	Room3OpenDoorDelayTime float64
-	Room4OpenDoorDelayTime float64
-	Room5OpenDoorDelayTime float64
-	Room6LaunchDelayTime   float64
-	Room6LastTime          float64 //献祭仪式后的剩余时间
-	TotalTime              float64
+	BoxLastTime float64
+	BoxNum      int
 }
 
 type ScoreInfo [4]map[string]interface{}
