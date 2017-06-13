@@ -6,13 +6,10 @@ import (
 	"os"
 
 	"golang.org/x/net/websocket"
-	"strconv"
-	//"golang.org/x/net/html/atom"
-	//"regexp"
-	//"math"
 	"math/rand"
 	"reflect"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -213,7 +210,10 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		if res, ok := httpRes.Get("return").(bool); ok {
 			gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
 			if !res {
-				s.uploadGameInfo(httpRes.Msg, gameId)
+				//s.uploadGameInfo(httpRes.Msg, gameId)
+				log.Println("upload game ", gameId, " failed!")
+			} else {
+				s.resetGame(gameId)
 			}
 		}
 	case AuthorityGet:
@@ -233,8 +233,8 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		if res, ok := httpRes.Get("return").(bool); ok {
 			gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
 			if !res {
-				log.Println("Modify Ticket failed!")
-				s.gameStart(gameId, httpRes.Msg)
+				log.Println("Modify Ticket failed!Game ", gameId, "start failed!")
+				//s.gameStart(gameId, httpRes.Msg)
 			}
 		}
 	case TicketCheck:
@@ -266,6 +266,7 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 				s.uploadBoxStatus(boxId)
 			} else {
 				s.boxes[boxId].Reset()
+				log.Println("box ", s.boxes[boxId].Box_ID, "has been reset!")
 			}
 		}
 	}
@@ -327,30 +328,27 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		//log.Println("Receive htb:", msg.GetStr("ID"),msg.GetStr("CARD_ID"))
 	case GameStartForward:
 		admin := msg.GetStr("ADMIN")
-		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "start and forward to ", arduino, "! operator:", admin)
 		s.gameStart(gameId, msg)
 	case GameStart:
 		admin := msg.GetStr("ADMIN")
-		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Game:", gameId, "start! operator:", admin)
 		s.gameStart(gameId, msg)
 	case GameEndForward:
 		admin := msg.GetStr("ADMIN")
-		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "end and forward to ", arduino, "! operator:", admin)
-		s.gameEnd(msg, gameId)
+		//s.gameEnd(msg, gameId)
+		//不处理数据，只进行转发
 	case GameEnd:
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		s.gameEnd(msg, gameId)
 		log.Println("Game:", gameId, "end!")
 	case GameData:
-		//gameId := msg.GetStr("GAME")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		log.Println("Receive Game:", gameId, "'s data!")
 		s.updateGameInfo(msg, gameId)
@@ -361,27 +359,20 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		log.Println("Get the card:", cardId, "  AuthrorityId:", authorityId, " ArduinoId:", arduinoId)
 		request := NewHttpRequest(s)
 		request.SetApi(AuthorityGet)
-		//request.SetCardId(cardId)
-		//request.SetArduinoId(arduinoId)
 		params := make(map[string]string)
-		//params["card_Uid"] = "00FF0FF000FFCF4D54B110484EBAF95B4EB0"
 		params["card_Uid"] = cardId
 		params["authority_ID"] = authorityId
-		//params["op"] = "get_user_authid"
 		params["op"] = "validate_authid"
 		request.SetParams(params)
 		request.SetMsg(msg)
 		request.DoGet()
 	case TicketGet:
-		//arduinoId := msg.GetStr("ID") //创建request的时候需要放入
 		admin := msg.GetStr("ADMIN")
 		gameId := msg.GetStr("GAME")
 		cardId := msg.GetStr("CARD_ID")
 		log.Println("Ticket Get：  CardId:", cardId, "GameId:", gameId, " Admin:", admin)
 		request := NewHttpRequest(s)
 		request.SetApi(TicketCheck)
-		//request.SetCardId(cardId)
-		//request.SetArduinoId(arduinoId)
 		params := make(map[string]string)
 		params["card_Uid"] = cardId
 		params["game_ID"] = gameId
@@ -896,103 +887,105 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 
 func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 	s.updateGameInfo(msg, gameId)
-	switch gameId {
-	case ID_Russian:
-		s.russian.LoginInfo.IsUploadInfo = true
-		s.russian.Time_start = currentTime()
-		s.russian.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.russian.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.russian.Bullet_trigger = "3"
-		s.russian.Desk_num = "5"
-	case ID_Adivainacion:
-		s.adivainacion.LoginInfo.IsUploadInfo = true
-		s.adivainacion.Time_start = currentTime()
-		s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-	case ID_Bang:
-		s.bang.LoginInfo.IsUploadInfo = true
-		s.bang.Time_start = currentTime()
-		s.bang.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.bang.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.bang.Point_round[1] = "6"
-		s.bang.Point_round[2] = "5"
-		s.bang.Point_round[3] = "4"
-	case ID_Follow:
-		s.follow.LoginInfo.IsUploadInfo = true
-		s.follow.Time_start = currentTime()
-		s.follow.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.follow.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.follow.Last_round = "10"
-	case ID_Greeting:
-		s.greeting.LoginInfo.IsUploadInfo = true
-		s.greeting.Time_start = currentTime()
-		s.greeting.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.greeting.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-	case ID_Highnoon:
-		s.highnoon.LoginInfo.IsUploadInfo = true
-		s.highnoon.Time_start = currentTime()
-		s.highnoon.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.highnoon.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.highnoon.Result_round_1p[1] = "0.11"
-		s.highnoon.Result_round_2p[1] = "0.12"
-		s.highnoon.Result_round_1p[2] = "0.21"
-		s.highnoon.Result_round_2p[2] = "0.22"
-		s.highnoon.Result_round_1p[3] = "0.31"
-		s.highnoon.Result_round_2p[3] = "0.32"
-		s.highnoon.Result_round_1p[4] = "0.41"
-		s.highnoon.Result_round_2p[4] = "0.42"
-		s.highnoon.Result_round_1p[5] = "0.51"
-		s.highnoon.Result_round_2p[5] = "0.52"
-		s.highnoon.Result_round_1p[6] = "0.61"
-		s.highnoon.Result_round_2p[6] = "0.62"
-	case ID_Hunter:
-		s.hunter.LoginInfo.IsUploadInfo = true
-		s.hunter.Time_start = currentTime()
-		s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		//s.hunter.Time_firstButton = "5"
-		//s.hunter.Box_ID = 1
-	case ID_Marksman:
-		s.marksman.LoginInfo.IsUploadInfo = true
-		s.marksman.Time_start = currentTime()
-		s.marksman.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.marksman.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.marksman.Point_right = "10"
-		s.marksman.Point_left = "20"
-	case ID_Miner:
-		s.miner.LoginInfo.IsUploadInfo = true
-		s.miner.Time_start = currentTime()
-		s.miner.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.miner.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-	case ID_Privity:
-		s.privity.LoginInfo.IsUploadInfo = true
-		s.privity.Time_start = currentTime()
-		s.privity.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-		s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-		s.privity.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-		s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-		s.privity.Num_right = "10"
-		s.privity.Num_question = "20"
-	}
-
+	/*            test code
+		switch gameId {
+		case ID_Russian:
+			s.russian.LoginInfo.IsUploadInfo = true
+			s.russian.Time_start = currentTime()
+			//s.russian.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.russian.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.russian.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.russian.Bullet_trigger = "3"
+			//s.russian.Desk_num = "5"
+		case ID_Adivainacion:
+			s.adivainacion.LoginInfo.IsUploadInfo = true
+			s.adivainacion.Time_start = currentTime()
+			//s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.adivainacion.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+		case ID_Bang:
+			s.bang.LoginInfo.IsUploadInfo = true
+			s.bang.Time_start = currentTime()
+			//s.bang.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.bang.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.bang.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.bang.Point_round[1] = "6"
+			//s.bang.Point_round[2] = "5"
+			//s.bang.Point_round[3] = "4"
+		case ID_Follow:
+			s.follow.LoginInfo.IsUploadInfo = true
+			s.follow.Time_start = currentTime()
+			//s.follow.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.follow.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.follow.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.follow.Last_round = "10"
+		case ID_Greeting:
+			s.greeting.LoginInfo.IsUploadInfo = true
+			s.greeting.Time_start = currentTime()
+			//s.greeting.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.greeting.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.greeting.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+		case ID_Highnoon:
+			s.highnoon.LoginInfo.IsUploadInfo = true
+			s.highnoon.Time_start = currentTime()
+			//s.highnoon.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.highnoon.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.highnoon.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.highnoon.Result_round_1p[1] = "0.11"
+			//s.highnoon.Result_round_2p[1] = "0.12"
+			//s.highnoon.Result_round_1p[2] = "0.21"
+			//s.highnoon.Result_round_2p[2] = "0.22"
+			//s.highnoon.Result_round_1p[3] = "0.31"
+			//s.highnoon.Result_round_2p[3] = "0.32"
+			//s.highnoon.Result_round_1p[4] = "0.41"
+			//s.highnoon.Result_round_2p[4] = "0.42"
+			//s.highnoon.Result_round_1p[5] = "0.51"
+			//s.highnoon.Result_round_2p[5] = "0.52"
+			//s.highnoon.Result_round_1p[6] = "0.61"
+			//s.highnoon.Result_round_2p[6] = "0.62"
+			//log.Println(s.highnoon.Result_round_1p)
+		case ID_Hunter:
+			s.hunter.LoginInfo.IsUploadInfo = true
+			s.hunter.Time_start = currentTime()
+			//s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.hunter.Time_firstButton = "5"
+			//s.hunter.Box_ID = 1
+		case ID_Marksman:
+			s.marksman.LoginInfo.IsUploadInfo = true
+			s.marksman.Time_start = currentTime()
+			//s.marksman.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.marksman.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.marksman.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.marksman.Point_right = "10"
+			//s.marksman.Point_left = "20"
+		case ID_Miner:
+			s.miner.LoginInfo.IsUploadInfo = true
+			s.miner.Time_start = currentTime()
+			//s.miner.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.miner.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.miner.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+		case ID_Privity:
+			s.privity.LoginInfo.IsUploadInfo = true
+			s.privity.Time_start = currentTime()
+			//s.privity.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			//s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			//s.privity.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			//s.privity.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			//s.privity.Num_right = "10"
+			//s.privity.Num_question = "20"
+		}
+	                test      code                */
 	switch gameId {
 	case ID_Russian:
 		s.russian.Time_end = currentTime()
@@ -1046,44 +1039,162 @@ func (s *Srv) resetGame(gameId int) {
 func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 	switch gameId {
 	case ID_Russian:
+		if msg.GetStr("BT") != "" {
+			s.russian.Bullet_trigger = msg.GetStr("BT")
+		} else {
+			s.russian.Bullet_trigger = "0"
+		}
+
+		if msg.GetStr("DN") != "" {
+			s.russian.Desk_num = msg.GetStr("DN")
+		} else {
+			s.russian.Desk_num = "0"
+		}
 	case ID_Adivainacion:
 	case ID_Bang:
-		s.bang.Point_round[1] = msg.GetStr("PR1")
-		s.bang.Point_round[2] = msg.GetStr("PR2")
-		s.bang.Point_round[3] = msg.GetStr("PR3")
+		if msg.GetStr("PR1") != "" {
+			s.bang.Point_round[1] = msg.GetStr("PR1")
+		} else {
+			s.bang.Point_round[1] = "0"
+		}
+
+		if msg.GetStr("PR2") != "" {
+			s.bang.Point_round[2] = msg.GetStr("PR2")
+		} else {
+			s.bang.Point_round[2] = "0"
+		}
+		if msg.GetStr("PR3") != "" {
+			s.bang.Point_round[3] = msg.GetStr("PR3")
+		} else {
+			s.bang.Point_round[3] = "0"
+		}
 	case ID_Follow:
-		s.follow.Last_round = msg.GetStr("LR")
+		if msg.GetStr("LR") != "" {
+			s.follow.Last_round = msg.GetStr("LR")
+		} else {
+			s.follow.Last_round = "0"
+		}
 	case ID_Greeting:
 	case ID_Highnoon:
-		s.highnoon.Result_round_1p[1] = msg.GetStr("R1P1")
-		s.highnoon.Result_round_2p[1] = msg.GetStr("R1P2")
-		s.highnoon.Result_round_1p[2] = msg.GetStr("R2P1")
-		s.highnoon.Result_round_2p[2] = msg.GetStr("R2P2")
-		s.highnoon.Result_round_1p[3] = msg.GetStr("R3P1")
-		s.highnoon.Result_round_2p[3] = msg.GetStr("R3P2")
-		s.highnoon.Result_round_1p[4] = msg.GetStr("R4P1")
-		s.highnoon.Result_round_2p[4] = msg.GetStr("R4P2")
-		s.highnoon.Result_round_1p[5] = msg.GetStr("R5P1")
-		s.highnoon.Result_round_2p[5] = msg.GetStr("R5P2")
-		s.highnoon.Result_round_1p[6] = msg.GetStr("R6P1")
-		s.highnoon.Result_round_2p[6] = msg.GetStr("R6P2")
-		s.highnoon.Result_round_1p[7] = msg.GetStr("R7P1")
-		s.highnoon.Result_round_2p[7] = msg.GetStr("R7P2")
+		if msg.GetStr("R1P1") != "" {
+			s.highnoon.Result_round_1p[1] = msg.GetStr("R1P1")
+		} else {
+			s.highnoon.Result_round_1p[1] = "0"
+		}
+
+		if msg.GetStr("R1P2") != "" {
+			s.highnoon.Result_round_2p[1] = msg.GetStr("R1P2")
+		} else {
+			s.highnoon.Result_round_2p[1] = "0"
+		}
+
+		if msg.GetStr("R2P1") != "" {
+			s.highnoon.Result_round_1p[2] = msg.GetStr("R2P1")
+		} else {
+			s.highnoon.Result_round_1p[2] = "0"
+		}
+
+		if msg.GetStr("R2P2") != "" {
+			s.highnoon.Result_round_2p[2] = msg.GetStr("R2P2")
+		} else {
+			s.highnoon.Result_round_2p[2] = "0"
+		}
+
+		if msg.GetStr("R3P1") != "" {
+			s.highnoon.Result_round_1p[3] = msg.GetStr("R3P1")
+		} else {
+			s.highnoon.Result_round_1p[3] = "0"
+		}
+
+		if msg.GetStr("R3P2") != "" {
+			s.highnoon.Result_round_2p[3] = msg.GetStr("R3P2")
+		} else {
+			s.highnoon.Result_round_2p[3] = "0"
+		}
+
+		if msg.GetStr("R4P1") != "" {
+			s.highnoon.Result_round_1p[4] = msg.GetStr("R4P1")
+		} else {
+			s.highnoon.Result_round_1p[4] = "0"
+		}
+
+		if msg.GetStr("R4P2") != "" {
+			s.highnoon.Result_round_2p[4] = msg.GetStr("R4P2")
+		} else {
+			s.highnoon.Result_round_2p[4] = "0"
+		}
+
+		if msg.GetStr("R5P1") != "" {
+			s.highnoon.Result_round_1p[5] = msg.GetStr("R5P1")
+		} else {
+			s.highnoon.Result_round_1p[5] = "0"
+		}
+
+		if msg.GetStr("R5P2") != "" {
+			s.highnoon.Result_round_2p[5] = msg.GetStr("R5P2")
+		} else {
+			s.highnoon.Result_round_2p[5] = "0"
+		}
+
+		if msg.GetStr("R6P1") != "" {
+			s.highnoon.Result_round_1p[6] = msg.GetStr("R6P1")
+		} else {
+			s.highnoon.Result_round_1p[6] = "0"
+		}
+
+		if msg.GetStr("R6P2") != "" {
+			s.highnoon.Result_round_2p[6] = msg.GetStr("R6P2")
+		} else {
+			s.highnoon.Result_round_2p[6] = "0"
+		}
+
+		if msg.GetStr("R7P1") != "" {
+			s.highnoon.Result_round_1p[7] = msg.GetStr("R7P1")
+		} else {
+			s.highnoon.Result_round_1p[7] = "0"
+		}
+
+		if msg.GetStr("R7P2") != "" {
+			s.highnoon.Result_round_2p[7] = msg.GetStr("R7P2")
+		} else {
+			s.highnoon.Result_round_2p[7] = "0"
+		}
 	case ID_Hunter:
 		s.hunter.Time_firstButton = msg.GetStr("FB")
-		if s.hunter.Time_firstButton != "0" {
+		if s.hunter.Time_firstButton != "0" || s.hunter.Time_firstButton != "" {
 			//choose box
 			cardId1 := s.hunter.LoginInfo.PlayerCardInfo["1p"]
 			cardId2 := s.hunter.LoginInfo.PlayerCardInfo["2p"]
-			s.hunter.Box_ID = s.setBox(cardId1, cardId2)
+			s.hunter.Box_ID = s.boxes[s.setBox(cardId1, cardId2)].Box_ID
+			log.Println("assigned box ~ cardId1:", cardId1, " cardId2:", cardId2)
+		} else {
+			s.hunter.Time_firstButton = "0"
 		}
 	case ID_Marksman:
-		s.marksman.Point_right = msg.GetStr("PR")
-		s.marksman.Point_left = msg.GetStr("PL")
+		if msg.GetStr("PR") != "" {
+			s.marksman.Point_right = msg.GetStr("PR")
+		} else {
+			s.marksman.Point_right = "0"
+		}
+
+		if msg.GetStr("PL") != "" {
+			s.marksman.Point_left = msg.GetStr("PL")
+		} else {
+			s.marksman.Point_left = "0"
+		}
 	case ID_Miner:
 	case ID_Privity:
-		s.privity.Num_right = msg.GetStr("NR")
-		s.privity.Num_question = msg.GetStr("NQ")
+		if msg.GetStr("NR") != "" {
+			s.privity.Num_right = msg.GetStr("NR")
+		} else {
+			s.privity.Num_right = "0"
+		}
+
+		if msg.GetStr("NQ") != "" {
+			s.privity.Num_question = msg.GetStr("NQ")
+		} else {
+			s.privity.Num_question = "0"
+		}
 	}
 }
 
@@ -1272,6 +1383,7 @@ func (s *Srv) uploadBoxStatus(boxNum int) {
 	params["card_ID1"] = s.boxes[boxNum].Card_ID1
 	params["card_ID2"] = s.boxes[boxNum].Card_ID2
 	params["box_status"] = strconv.Itoa(s.boxes[boxNum].Box_status)
+	params["op"] = "set_hunter_box"
 	request := NewHttpRequest(s)
 	request.SetApi(BoxUpload)
 	request.SetMsg(msg)
@@ -1290,26 +1402,13 @@ func (s *Srv) setBox(cardId1, cardId2 string) int {
 		s.boxes[boxId].Card_ID2 = cardId2
 		s.boxes[boxId].Time_build = currentTime()
 		s.boxes[boxId].Time_validity = boxLastTime()
-		log.Println("BoxId:", boxId, " is assigned!")
+		log.Println("BoxId:", s.boxes[boxId].Box_ID, " is assigned!")
 		log.Println("BoxInfo:", s.boxes[boxId])
 	}
 	return boxId
 }
 
 func (s *Srv) getRandomBoxId() int {
-	//s.boxes[0].IsAssigned = true
-	//s.boxes[1].IsAssigned = true
-	//s.boxes[2].IsAssigned = true
-	//s.boxes[3].IsAssigned = true
-	//s.boxes[4].IsAssigned = false
-	//s.boxes[5].IsAssigned = false
-	//s.boxes[6].IsAssigned = false
-	//s.boxes[7].IsAssigned = false
-	//s.boxes[8].IsAssigned = false
-	//s.boxes[9].IsAssigned = false
-	//log.Println("before sort:", s.boxes)
-	//sort.Sort(HunterBoxSlice(s.boxes))
-	//log.Println("after sort:", s.boxes)
 	totalNum := s.getNotAssignedBoxTotalNum()
 	if totalNum == 0 {
 		return -1
@@ -1350,11 +1449,11 @@ func (s *Srv) watchBoxStatus() {
 			if s.boxes[i].IsAssigned {
 				loc, _ := time.LoadLocation("Local")
 				validityTime, err := time.ParseInLocation("2006-01-02 15:04:05", s.boxes[i].Time_validity, loc)
-				log.Println("validityTime:", validityTime)
+				//log.Println("validityTime:", validityTime)
 				if err == nil {
 					lastTime := validityTime.Unix()
 					timeNow := time.Now().Unix()
-					log.Println("now:", timeNow, " endTime", lastTime)
+					//log.Println("now:", timeNow, " endTime", lastTime)
 					if lastTime <= timeNow {
 						s.boxes[i].Box_status = 0
 						s.uploadBoxStatus(i)

@@ -72,6 +72,15 @@ func main() {
 			text = strings.Trim(text, "\n")
 			s = s + text
 			fmt.Println(s)
+		case "5":
+			s = "[ID]G-1-1[TYPE]2[GAME]"
+			fmt.Println("print game no")
+			reader := bufio.NewReader(os.Stdin)
+			text, _ := reader.ReadString('\n')
+			text = strings.Trim(text, "\n")
+			s = s + text
+			fmt.Println(s)
+
 		default:
 			m := map[string]string{"cmd": text}
 			b, _ := json.Marshal(m)

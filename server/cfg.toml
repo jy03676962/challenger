@@ -1,4 +1,4 @@
-boxLastTime = 10.0 #1800s 30min
+boxLastTime = 1800.0 #1800s 30min
 boxNum = 10
 
 arenaWidth = 8 # 场地长
