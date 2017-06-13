@@ -13,13 +13,6 @@ import (
 	"time"
 )
 
-type AdminMode int
-
-const (
-	AdminModeNormal = iota
-	AdminModeDebug  = iota
-)
-
 //Arduino msg type
 const (
 	UnKnown          = "unknown"
@@ -45,7 +38,6 @@ type Srv struct {
 	httpResChan      chan *HttpResponse
 	aDict            map[string]*ArduinoController
 	match            *Match
-	adminMode        AdminMode
 	isSimulator      bool
 	//--------game info------------
 	boxes        []HunterBox
@@ -69,7 +61,6 @@ func NewSrv(isSimulator bool) *Srv {
 	s.mChan = make(chan MatchEvent)
 	s.httpResChan = make(chan *HttpResponse, 1)
 	s.aDict = make(map[string]*ArduinoController)
-	s.adminMode = AdminModeNormal
 	s.initArduinoControllers()
 	s.initGameInfo()
 	return &s
@@ -331,6 +322,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "start and forward to ", arduino, "! operator:", admin)
+		s.gameControl("1", arduino)
 		s.gameStart(gameId, msg)
 	case GameStart:
 		admin := msg.GetStr("ADMIN")
@@ -342,8 +334,8 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "end and forward to ", arduino, "! operator:", admin)
-		//s.gameEnd(msg, gameId)
 		//不处理数据，只进行转发
+		s.gameControl("0", arduino)
 	case GameEnd:
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		s.gameEnd(msg, gameId)
@@ -484,6 +476,14 @@ func (s *Srv) sends(msg *InboxMessage, types ...InboxAddressType) {
 		addrs[i] = InboxAddress{t, ""}
 	}
 	s.send(msg, addrs)
+}
+
+func (s *Srv) gameControl(value string, arduinoId string) {
+	addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+	msg := NewInboxMessage()
+	msg.SetCmd("game_ctrl")
+	msg.Set("value", value)
+	s.sendToOne(msg, addr)
 }
 
 func (s *Srv) doorControl(IL string, OL string, ID string) {
@@ -1161,7 +1161,7 @@ func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 		}
 	case ID_Hunter:
 		s.hunter.Time_firstButton = msg.GetStr("FB")
-		if s.hunter.Time_firstButton != "0" || s.hunter.Time_firstButton != "" {
+		if s.hunter.Time_firstButton != "0" && s.hunter.Time_firstButton != "" {
 			//choose box
 			cardId1 := s.hunter.LoginInfo.PlayerCardInfo["1p"]
 			cardId2 := s.hunter.LoginInfo.PlayerCardInfo["2p"]
