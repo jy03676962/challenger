@@ -210,7 +210,8 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 	case AuthorityGet:
 		if res, ok := httpRes.Get("return").(bool); ok {
 			arduinoId := httpRes.Msg.GetStr("ID")
-			addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+			arduinoType := at(arduinoId)
+			addr := InboxAddress{arduinoType, arduinoId}
 			msg := NewInboxMessage()
 			msg.SetCmd("authority_check")
 			if res {
@@ -251,13 +252,11 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 		s.sendToOne(msg, addr)
 	case BoxUpload:
 		if res, ok := httpRes.Get("return").(bool); ok {
-			boxId, _ := strconv.Atoi(httpRes.Msg.GetStr("num"))
 			if !res {
 				log.Println("Modify BoxStatus failed!")
-				s.uploadBoxStatus(boxId)
+				//s.uploadBoxStatus(boxId)
 			} else {
-				s.boxes[boxId].Reset()
-				log.Println("box ", s.boxes[boxId].Box_ID, "has been reset!")
+				log.Println("box has been upload!")
 			}
 		}
 	}
@@ -373,16 +372,25 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		request.SetMsg(msg)
 		request.DoGet()
 	case BoxStatus:
-		admin := msg.GetStr("ADMIN")
-		boxId := msg.GetStr("BOX_ID")
-		boxStatus := msg.GetStr("ST")
-		switch boxStatus {
-		case "0":
-			log.Println("Box:", boxId, "has'n been opened by player!")
-		case "1":
-			log.Println("Box:", boxId, "has been opened by player! Watting reset!")
-		case "2":
-			log.Println("Box:", boxId, "has been reset by admin:", admin, "!")
+		boxId, _ := strconv.Atoi(msg.GetStr("BOX_ID"))
+		boxStatus, _ := strconv.Atoi(msg.GetStr("ST"))
+		for k := range s.boxes {
+			if s.boxes[k].Box_ID == boxId {
+				s.boxes[k].Box_status = boxStatus
+				switch boxStatus {
+				case 0:
+					s.uploadBoxStatus(k)
+					s.boxes[k].Reset()
+					log.Println("Box:", boxId, "has'n been opened by player，and reset the box！")
+				case 1:
+					s.uploadBoxStatus(k)
+					log.Println("Box:", boxId, "has been opened by player! Watting reset!")
+				case 2:
+					s.boxes[k].Reset()
+					log.Println("Box:", boxId, "has been reset by admin!")
+				}
+				break
+			}
 		}
 	case ResetGame:
 		admin := msg.GetStr("ADMIN")
@@ -428,8 +436,6 @@ func (s *Srv) startNewMatch(event int) {
 	if s.match != nil {
 		if s.match.IsGoing {
 			return
-		} else if event == s.match.Event {
-			s.match.Run()
 		} else if event != s.match.Event {
 			s.stopMatch()
 			m := NewMatch(s, event)
@@ -555,7 +561,6 @@ func (s *Srv) initGameInfo() {
 	for i := range s.boxes {
 		s.boxes[i].Box_ID = i
 	}
-	log.Println(time.Unix(1497293951, 0).Format("2006-01-02 15:04:05"))
 }
 
 func (s *Srv) bgmControl(music string) {
@@ -566,91 +571,39 @@ func (s *Srv) bgmControl(music string) {
 }
 
 func (s *Srv) loginGame(ticketId string, gameId int, msg *InboxMessage) {
-	log.Println("login:", msg)
+	//log.Println("login:", msg)
 	cardId := msg.GetStr("CARD_ID")
 	switch gameId {
 	case ID_Russian:
-		if s.russian.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.russian.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
-			log.Println("1p login:", s.russian.LoginInfo)
-		} else {
-			s.russian.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.russian.LoginInfo.CardTicketInfo[cardId] = ticketId
-			log.Println("2p login:", s.russian.LoginInfo)
-		}
+		s.russian.LoginInfo.setCardId(cardId)
+		s.russian.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Adivainacion:
-		if s.adivainacion.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.adivainacion.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.adivainacion.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.adivainacion.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.adivainacion.LoginInfo.setCardId(cardId)
+		s.adivainacion.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Bang:
-		if s.bang.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.bang.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.bang.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.bang.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.bang.LoginInfo.setCardId(cardId)
+		s.bang.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Follow:
-		if s.follow.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.follow.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.follow.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.follow.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.follow.LoginInfo.setCardId(cardId)
+		s.follow.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Greeting:
-		if s.greeting.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.greeting.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.greeting.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.greeting.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.greeting.LoginInfo.setCardId(cardId)
+		s.greeting.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Highnoon:
-		if s.highnoon.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.highnoon.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.highnoon.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.highnoon.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.highnoon.LoginInfo.setCardId(cardId)
+		s.highnoon.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Hunter:
-		if s.hunter.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.hunter.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.hunter.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.hunter.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.hunter.LoginInfo.setCardId(cardId)
+		s.hunter.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Marksman:
-		if s.marksman.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.marksman.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.marksman.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.marksman.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.marksman.LoginInfo.setCardId(cardId)
+		s.marksman.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Miner:
-		if s.miner.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.miner.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.miner.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.miner.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.miner.LoginInfo.setCardId(cardId)
+		s.miner.LoginInfo.setTicket(cardId, ticketId)
 	case ID_Privity:
-		if s.privity.LoginInfo.PlayerCardInfo["1p"] == "" {
-			s.privity.LoginInfo.PlayerCardInfo["1p"] = cardId
-			s.privity.LoginInfo.CardTicketInfo[cardId] = ticketId
-		} else {
-			s.privity.LoginInfo.PlayerCardInfo["2p"] = cardId
-			s.privity.LoginInfo.CardTicketInfo[cardId] = ticketId
-		}
+		s.privity.LoginInfo.setCardId(cardId)
+		s.privity.LoginInfo.setTicket(cardId, ticketId)
 	}
 }
 
@@ -886,6 +839,14 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 }
 
 func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
+	//s.hunter.LoginInfo.IsUploadInfo = true
+	//s.hunter.Time_start = currentTime()
+	//s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+	//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+	//s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+	//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+	//s.hunter.Time_firstButton = "5"
+	//s.hunter.Box_ID = 1
 	s.updateGameInfo(msg, gameId)
 	/*            test code
 		switch gameId {
@@ -953,12 +914,12 @@ func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 		case ID_Hunter:
 			s.hunter.LoginInfo.IsUploadInfo = true
 			s.hunter.Time_start = currentTime()
-			//s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-			//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
-			//s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
-			//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
-			//s.hunter.Time_firstButton = "5"
-			//s.hunter.Box_ID = 1
+			s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
+			s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+			s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
+			s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
+			s.hunter.Time_firstButton = "5"
+			s.hunter.Box_ID = 1
 		case ID_Marksman:
 			s.marksman.LoginInfo.IsUploadInfo = true
 			s.marksman.Time_start = currentTime()
@@ -1166,6 +1127,22 @@ func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 			cardId1 := s.hunter.LoginInfo.PlayerCardInfo["1p"]
 			cardId2 := s.hunter.LoginInfo.PlayerCardInfo["2p"]
 			s.hunter.Box_ID = s.boxes[s.setBox(cardId1, cardId2)].Box_ID
+			if s.hunter.Box_ID != -1 {
+				arduinoId := returnBox(s.hunter.Box_ID)
+				if arduinoId != "" {
+					addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
+					msg := NewInboxMessage()
+					msg.SetCmd("box_set")
+					msg.Set("cardId1", cardId1)
+					if cardId2 != "" {
+						msg.Set("cardId2", cardId2)
+					} else {
+						log.Println("none cardId2")
+					}
+					s.sendToOne(msg, addr)
+				}
+				log.Println(s.boxes)
+			}
 			log.Println("assigned box ~ cardId1:", cardId1, " cardId2:", cardId2)
 		} else {
 			s.hunter.Time_firstButton = "0"
@@ -1347,35 +1324,6 @@ func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
 }
 
 func (s *Srv) uploadBoxStatus(boxNum int) {
-	var arduinoId string
-	switch boxNum {
-	case 0:
-		arduinoId = "B-1"
-	case 1:
-		arduinoId = "B-2"
-	case 2:
-		arduinoId = "B-3"
-	case 3:
-		arduinoId = "B-4"
-	case 4:
-		arduinoId = "B-5"
-	case 5:
-		arduinoId = "B-6"
-	case 6:
-		arduinoId = "B-7"
-	case 7:
-		arduinoId = "B-8"
-	case 8:
-		arduinoId = "B-9"
-	case 9:
-		arduinoId = "B-10"
-	}
-	addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
-	msg := NewInboxMessage()
-	msg.SetCmd("box_reset")
-	msg.Set("num", strconv.Itoa(boxNum))
-	s.sendToOne(msg, addr)
-
 	params := make(map[string]string)
 	params["box_ID"] = strconv.Itoa(s.boxes[boxNum].Box_ID)
 	params["time_build"] = s.boxes[boxNum].Time_build
@@ -1386,13 +1334,44 @@ func (s *Srv) uploadBoxStatus(boxNum int) {
 	params["op"] = "set_hunter_box"
 	request := NewHttpRequest(s)
 	request.SetApi(BoxUpload)
-	request.SetMsg(msg)
 	request.SetParams(params)
 	request.DoPost()
 }
 
+//根据num 返回boxId
+func returnBox(boxNum int) string {
+	switch boxNum {
+	case 0:
+		return "B-1"
+	case 1:
+		return "B-2"
+	case 2:
+		return "B-3"
+	case 3:
+		return "B-4"
+	case 4:
+		return "B-5"
+	case 5:
+		return "B-6"
+	case 6:
+		return "B-7"
+	case 7:
+		return "B-8"
+	case 8:
+		return "B-9"
+	case 9:
+		return "B-10"
+	}
+	return ""
+}
+
 func (s *Srv) setBox(cardId1, cardId2 string) int {
 	boxId := s.getRandomBoxId()
+	//for k := range s.boxes {
+	//	if s.boxes[k].Box_ID == 0 && !s.boxes[k].IsAssigned {
+	//		boxId = k
+	//	}
+	//}
 	if boxId == -1 {
 		log.Println("all box has been assigned!")
 	} else {
@@ -1446,7 +1425,7 @@ func (s *Srv) watchBoxStatus() {
 	for {
 		<-tickChan
 		for i := range s.boxes {
-			if s.boxes[i].IsAssigned {
+			if s.boxes[i].IsAssigned && s.boxes[i].Box_status == -1 {
 				loc, _ := time.LoadLocation("Local")
 				validityTime, err := time.ParseInLocation("2006-01-02 15:04:05", s.boxes[i].Time_validity, loc)
 				//log.Println("validityTime:", validityTime)
@@ -1455,8 +1434,16 @@ func (s *Srv) watchBoxStatus() {
 					timeNow := time.Now().Unix()
 					//log.Println("now:", timeNow, " endTime", lastTime)
 					if lastTime <= timeNow {
-						s.boxes[i].Box_status = 0
-						s.uploadBoxStatus(i)
+						var arduinoId string
+						arduinoId = returnBox(i)
+						addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
+						msg := NewInboxMessage()
+						msg.SetCmd("box_reset")
+						msg.Set("num", strconv.Itoa(i))
+						s.sendToOne(msg, addr)
+						log.Println("response!!!!!!!! please!!!!!")
+					} else {
+						log.Println("box:",s.boxes[i].Box_ID," left:",lastTime - timeNow)
 					}
 				}
 			}

@@ -40,6 +40,8 @@ func NewMatch(s *Srv, event int) *Match {
 	m.CurrentBgm = 0
 	m.srv = s
 	m.opt = GetOptions()
+	m.Event = event
+	m.IsGoing = true
 	m.TotalTime = 0 //config
 	m.msgCh = make(chan *InboxMessage, 1000)
 	m.closeCh = make(chan bool)
@@ -57,13 +59,16 @@ func (m *Match) Run() {
 	tickChan := time.Tick(dt)
 	for {
 		<-tickChan
+		if !m.IsGoing {
+			break
+		}
 		m.handleInputs()
 		m.gameStage(dt)
 	}
 }
 
 func (m *Match) Stop() {
-
+	m.IsGoing = false
 }
 
 func (m *Match) OnMatchCmdArrived(cmd *InboxMessage) {
@@ -89,7 +94,6 @@ func (m *Match) handleInputs() bool {
 }
 
 func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来改变服务器变量
-
 }
 
 func (m *Match) setStage(s string) {

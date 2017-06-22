@@ -24,6 +24,20 @@ type LoginInfo struct {
 	IsUploadInfo   bool
 }
 
+func (l *LoginInfo) setCardId(cardId string) {
+	if l.PlayerCardInfo["1p"] != "" {
+		l.PlayerCardInfo["2p"] = cardId
+		log.Println("2p login:", cardId)
+	} else {
+		l.PlayerCardInfo["1p"] = cardId
+		log.Println("1p login:", cardId)
+	}
+}
+
+func (l *LoginInfo) setTicket(card, ticket string) {
+	l.CardTicketInfo[card] = ticket
+}
+
 //占卜
 type Adivainacion struct {
 	GameId int
