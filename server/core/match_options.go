@@ -154,6 +154,7 @@ type MatchOptions struct {
 
 	BoxLastTime float64
 	BoxNum      int
+	LapseTime   float64
 }
 
 type ScoreInfo [4]map[string]interface{}

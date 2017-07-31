@@ -264,8 +264,8 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 
 func (s *Srv) handleMatchEvent(evt MatchEvent) {
 	switch evt.Type {
-	case MatchEventTypeEnd:
-	case MatchEventTypeUpdate:
+	//case MatchEventTypeEnd:
+	//case MatchEventTypeUpdate:
 	}
 }
 
@@ -408,7 +408,6 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 			//stop event
 			s.stopMatch()
 		}
-		log.Println("")
 	}
 }
 
@@ -1441,9 +1440,6 @@ func (s *Srv) watchBoxStatus() {
 						msg.SetCmd("box_reset")
 						msg.Set("num", strconv.Itoa(i))
 						s.sendToOne(msg, addr)
-						log.Println("response!!!!!!!! please!!!!!")
-					} else {
-						log.Println("box:",s.boxes[i].Box_ID," left:",lastTime - timeNow)
 					}
 				}
 			}
