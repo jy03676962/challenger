@@ -27,6 +27,9 @@ const (
 	BoxStatus        = "8"
 	ResetGame        = "9"
 	Event            = "10"
+	DJControl        = "11"
+	MineControl      = "12"
+	BoxStatusGet     = "13"
 )
 
 var _ = log.Println
@@ -302,7 +305,7 @@ func (s *Srv) handleInboxMessage(msg *InboxMessage) {
 		s.handleArduinoMessage(msg)
 	case InboxAddressTypeBoxArduinoDevice:
 		s.handleArduinoMessage(msg)
-	case InboxAddressTypeTrashArduino:
+	case InboxAddressTypeNightArduino:
 		s.handleArduinoMessage(msg)
 	case InboxAddressTypeDjArduino:
 		s.handleArduinoMessage(msg)
@@ -399,15 +402,45 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		log.Println("Admin:", admin, " reset the game:", gameId, "!")
 	case Event:
 		event, _ := strconv.Atoi(msg.GetStr("EVENT"))
-		ctrl, _ := strconv.Atoi(msg.GetStr("CTRL"))
-		if ctrl == 1 {
-			//start event
-			s.startNewMatch(event)
-		} else {
+		s.startNewMatch(event)
+	case DJControl:
+		dj, _ := strconv.Atoi(msg.GetStr("DJ"))
+		s.startNewMatch(dj)
+		log.Println("DJ:",dj)
+	case MineControl:
+		arduinoId := msg.GetStr("ID")
+		mineNum := msg.GetStr("M")
+		control := msg.GetStr("CTRL")
 
-			//stop event
-			s.stopMatch()
+		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+		msg := NewInboxMessage()
+		msg.SetCmd("mine_ctrl")
+		msg.Set("num", mineNum)
+		msg.Set("ctrl", control)
+		s.sendToOne(msg, addr)
+	case BoxStatusGet:
+		arduinoId := msg.GetStr("ID")
+		box := make([]map[string]string, 0)
+		for i := range s.boxes {
+			var status int
+			if s.boxes[i].IsAssigned {
+				if s.boxes[i].Box_status == 1 {
+					status = 2
+				} else {
+					status = 1
+				}
+			} else {
+				status = 0
+			}
+			box = append(box,
+				map[string]string{"box_n": strconv.Itoa(i), "box_s": strconv.Itoa(status)},
+			)
 		}
+		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+		msg := NewInboxMessage()
+		msg.SetCmd("box_status")
+		msg.Set("box", box)
+		s.sendToOne(msg, addr)
 	}
 }
 
@@ -533,8 +566,8 @@ func (s *Srv) initArduinoControllers() {
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}
-	for _, trashArduino := range GetOptions().TrashArduino {
-		addr := InboxAddress{InboxAddressTypeTrashArduino, trashArduino}
+	for _, trashArduino := range GetOptions().NightArduino {
+		addr := InboxAddress{InboxAddressTypeNightArduino, trashArduino}
 		controller := NewArduinoController(addr)
 		s.aDict[addr.String()] = controller
 	}

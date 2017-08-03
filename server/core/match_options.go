@@ -149,7 +149,7 @@ type MatchOptions struct {
 
 	GameArduino  []string
 	BoxArduino   []string
-	TrashArduino []string
+	NightArduino []string
 	DjArduino    []string
 
 	BoxLastTime float64

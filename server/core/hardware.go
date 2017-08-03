@@ -5,7 +5,7 @@ import "log"
 var _ = log.Printf
 
 const (
-	ID_Follow       = iota + 1 //走格子
+	ID_Follow       = iota + 2 //走格子
 	ID_Privity                 //默契牢笼
 	ID_Bang                    //6连
 	ID_Highnoon                //午时已到

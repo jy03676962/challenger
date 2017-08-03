@@ -1,7 +1,7 @@
 package core
 
 const (
-	api                       = "http://172.16.10.7/gsaleapi/"
+	api                       = "http://172.16.10.70/gsaleapi/"
 	AuthorityGet              = api + "authority_list.php"
 	GameDataAdivinacionCreate = api + "gamedata_adivinacion.php"
 	GameDataAdivinacionModify = api + "14.php"

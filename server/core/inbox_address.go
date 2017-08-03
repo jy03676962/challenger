@@ -11,13 +11,13 @@ const (
 	InboxAddressTypeAdminDevice       = 1 // 管理员屏幕
 	InboxAddressTypeGameArduinoDevice = 2 // 游戏 Arduino
 	InboxAddressTypeBoxArduinoDevice  = 3 // 箱子 Arduino
-	InboxAddressTypeTrashArduino      = 4 // 垃圾桶 arduino
+	InboxAddressTypeNightArduino      = 4 // 垃圾桶 arduino
 	InboxAddressTypeDjArduino         = 5 // dj台 arduino
 )
 
 func (t InboxAddressType) IsArduinoControllerType() bool {
 	return t == InboxAddressTypeGameArduinoDevice || t == InboxAddressTypeBoxArduinoDevice ||
-		t == InboxAddressTypeTrashArduino || t == InboxAddressTypeDjArduino
+		t == InboxAddressTypeNightArduino || t == InboxAddressTypeDjArduino
 }
 
 type InboxAddress struct {
