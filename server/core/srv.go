@@ -1369,7 +1369,7 @@ func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
 
 func (s *Srv) uploadBoxStatus(boxNum int) {
 	params := make(map[string]string)
-	params["box_ID"] = strconv.Itoa(s.boxes[boxNum].Box_ID)
+	params["box_ID"] = strconv.Itoa(s.boxes[boxNum].Box_ID + 1)
 	params["time_build"] = s.boxes[boxNum].Time_build
 	params["time_validity"] = s.boxes[boxNum].Time_validity
 	params["card_ID1"] = s.boxes[boxNum].Card_ID1
