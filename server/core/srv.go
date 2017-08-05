@@ -1157,8 +1157,9 @@ func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 			//choose box
 			cardId1 := s.hunter.LoginInfo.PlayerCardInfo["1p"]
 			cardId2 := s.hunter.LoginInfo.PlayerCardInfo["2p"]
-			s.hunter.Box_ID = s.boxes[s.setBox(cardId1, cardId2)].Box_ID
-			if s.hunter.Box_ID != -1 {
+			rBoxID := s.setBox(cardId1, cardId2)
+			if rBoxID != -1 {
+				s.hunter.Box_ID = s.boxes[rBoxID].Box_ID
 				arduinoId := returnBox(s.hunter.Box_ID)
 				if arduinoId != "" {
 					addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
@@ -1173,8 +1174,8 @@ func (s *Srv) updateGameInfo(msg *InboxMessage, gameId int) {
 					s.sendToOne(msg, addr)
 				}
 				log.Println(s.boxes)
+				log.Println("assigned box ~ cardId1:", cardId1, " cardId2:", cardId2)
 			}
-			log.Println("assigned box ~ cardId1:", cardId1, " cardId2:", cardId2)
 		} else {
 			s.hunter.Time_firstButton = "0"
 		}
@@ -1320,7 +1321,7 @@ func (s *Srv) uploadGameInfo(msg *InboxMessage, gameId int) {
 		params["time_start"] = s.hunter.Time_start
 		params["time_end"] = s.hunter.Time_end
 		params["time_firstbutton"] = s.hunter.Time_firstButton
-		params["box_ID"] = strconv.Itoa(s.hunter.Box_ID)
+		params["box_ID"] = strconv.Itoa(s.hunter.Box_ID + 1)
 		params["op"] = "set_hunter"
 	case ID_Marksman:
 		request.SetApi(GameDataMarksmanCreate)
@@ -1463,8 +1464,9 @@ func (s *Srv) watchBoxStatus() {
 				if err == nil {
 					lastTime := validityTime.Unix()
 					timeNow := time.Now().Unix()
-					//log.Println("now:", timeNow, " endTime", lastTime)
+					//log.Println("boxNum:",s.boxes[i].Box_ID," now:", timeNow, " endTime", lastTime)
 					if lastTime <= timeNow {
+						s.boxes[i].Box_status = 0
 						var arduinoId string
 						arduinoId = returnBox(i)
 						addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
