@@ -149,6 +149,14 @@ func (m *Match) tick(dt time.Duration) {
 				)
 				sendMsg.Set("mp3", mp3)
 				m.srv.sendToOne(sendMsg, addr)
+
+				sendMsg1 := NewInboxMessage()
+				sendMsg.SetCmd("led_ctrl")
+				led := make([]map[string]string, 0)
+				led = append(led,
+					map[string]string{"led_n": "0", "mode": "0"},
+				)
+				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}
 				sendMsg := NewInboxMessage()
@@ -277,7 +285,7 @@ func (m *Match) tick(dt time.Duration) {
 				sendMsg1.Set("light", lights1)
 				m.srv.sendToOne(sendMsg1, addr1)
 
-				addr2 := InboxAddress{InboxAddressTypeGameArduinoDevice, "G-7-1"}
+				addr2 := InboxAddress{InboxAddressTypeGameArduinoDevice, "G-1-1"}
 				sendMsg2 := NewInboxMessage()
 				sendMsg2.SetCmd("light_ctrl")
 				lights2 := make([]map[string]string, 0)
@@ -309,7 +317,7 @@ func (m *Match) tick(dt time.Duration) {
 				sendMsg1.SetCmd("light_ctrl")
 				lights1 := make([]map[string]string, 0)
 				lights1 = append(lights1,
-					map[string]string{"light_n": "1", "light_s": "1"},
+					map[string]string{"light_n": "0", "light_s": "1"},
 					map[string]string{"light_n": "1", "light_s": "1"},
 					map[string]string{"light_n": "6", "light_s": "1"},
 					map[string]string{"light_n": "8", "light_s": "1"},
@@ -345,6 +353,14 @@ func (m *Match) tick(dt time.Duration) {
 				)
 				sendMsg.Set("mp3", mp3)
 				m.srv.sendToOne(sendMsg, addr)
+
+				sendMsg1 := NewInboxMessage()
+				sendMsg.SetCmd("led_ctrl")
+				led := make([]map[string]string, 0)
+				led = append(led,
+					map[string]string{"led_n": "0", "mode": "1"},
+				)
+				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}
 				sendMsg := NewInboxMessage()
@@ -473,7 +489,7 @@ func (m *Match) tick(dt time.Duration) {
 				sendMsg1.Set("light", lights1)
 				m.srv.sendToOne(sendMsg1, addr1)
 
-				addr2 := InboxAddress{InboxAddressTypeGameArduinoDevice, "G-7-1"}
+				addr2 := InboxAddress{InboxAddressTypeGameArduinoDevice, "G-1-1"}
 				sendMsg2 := NewInboxMessage()
 				sendMsg2.SetCmd("light_ctrl")
 				lights2 := make([]map[string]string, 0)
@@ -505,7 +521,7 @@ func (m *Match) tick(dt time.Duration) {
 				sendMsg1.SetCmd("light_ctrl")
 				lights1 := make([]map[string]string, 0)
 				lights1 = append(lights1,
-					map[string]string{"light_n": "1", "light_s": "0"},
+					map[string]string{"light_n": "0", "light_s": "0"},
 					map[string]string{"light_n": "1", "light_s": "0"},
 					map[string]string{"light_n": "6", "light_s": "0"},
 					map[string]string{"light_n": "8", "light_s": "0"},

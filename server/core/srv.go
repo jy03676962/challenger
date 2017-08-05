@@ -406,7 +406,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 	case DJControl:
 		dj, _ := strconv.Atoi(msg.GetStr("DJ"))
 		s.startNewMatch(dj)
-		log.Println("DJ:",dj)
+		log.Println("DJ:", dj)
 	case MineControl:
 		arduinoId := msg.GetStr("ID")
 		mineNum := msg.GetStr("M")
