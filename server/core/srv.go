@@ -455,6 +455,18 @@ func (s *Srv) handleAdminMessage(msg *InboxMessage) {
 	case "init":
 	case "gameStart":
 	case "queryGameInfo":
+		msg1 := NewInboxMessage()
+		msg1.SetCmd("GameInfo")
+		arduinolist := make([]ArduinoController, len(s.aDict))
+		i := 0
+		for _, controller := range s.aDict {
+			arduinolist[i] = *controller
+			i += 1
+		}
+		msg1.Set("ArduinoList", arduinolist)
+		//log.Println(msg)
+		addr := InboxAddress{msg.Address.Type, msg.Address.ID}
+		s.sendToOne(msg1, addr)
 	case "nextStep":
 	case "gameOver":
 	case "completed":
