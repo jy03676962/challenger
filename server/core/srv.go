@@ -408,11 +408,10 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		s.startNewMatch(dj)
 		log.Println("DJ:", dj)
 	case MineControl:
-		arduinoId := msg.GetStr("ID")
 		mineNum := msg.GetStr("M")
 		control := msg.GetStr("CTRL")
 
-		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
+		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, "G-9-2"}
 		msg := NewInboxMessage()
 		msg.SetCmd("mine_ctrl")
 		msg.Set("num", mineNum)
