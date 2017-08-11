@@ -30,6 +30,7 @@ const (
 	DJControl        = "11"
 	MineControl      = "12"
 	BoxStatusGet     = "13"
+	GameReset        = "14"
 )
 
 var _ = log.Println
@@ -440,6 +441,13 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		msg.SetCmd("box_status")
 		msg.Set("box", box)
 		s.sendToOne(msg, addr)
+	case GameReset:
+		admin := msg.GetStr("ADMIN")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		arduino := msg.GetStr("ARDUINO")
+		log.Println("Game:", gameId, "reset and forward to ", arduino, "! operator:", admin)
+		//不处理数据，只进行转发
+		s.gameControl("2", arduino)
 	}
 }
 
