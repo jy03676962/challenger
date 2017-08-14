@@ -151,11 +151,12 @@ func (m *Match) tick(dt time.Duration) {
 				m.srv.sendToOne(sendMsg, addr)
 
 				sendMsg1 := NewInboxMessage()
-				sendMsg.SetCmd("led_ctrl")
+				sendMsg1.SetCmd("led_ctrl")
 				led := make([]map[string]string, 0)
 				led = append(led,
 					map[string]string{"led_n": "0", "mode": "0"},
 				)
+				sendMsg1.Set("led",led)
 				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}
@@ -355,11 +356,12 @@ func (m *Match) tick(dt time.Duration) {
 				m.srv.sendToOne(sendMsg, addr)
 
 				sendMsg1 := NewInboxMessage()
-				sendMsg.SetCmd("led_ctrl")
+				sendMsg1.SetCmd("led_ctrl")
 				led := make([]map[string]string, 0)
 				led = append(led,
 					map[string]string{"led_n": "0", "mode": "1"},
 				)
+				sendMsg1.Set("led",led)
 				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}
