@@ -156,7 +156,7 @@ func (m *Match) tick(dt time.Duration) {
 				led = append(led,
 					map[string]string{"led_n": "0", "mode": "0"},
 				)
-				sendMsg1.Set("led",led)
+				sendMsg1.Set("led", led)
 				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}
@@ -361,7 +361,7 @@ func (m *Match) tick(dt time.Duration) {
 				led = append(led,
 					map[string]string{"led_n": "0", "mode": "1"},
 				)
-				sendMsg1.Set("led",led)
+				sendMsg1.Set("led", led)
 				m.srv.sends(sendMsg1, InboxAddressTypeNightArduino)
 			case 1:
 				addr := InboxAddress{InboxAddressTypeDjArduino, "D-1"}

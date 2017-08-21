@@ -324,8 +324,16 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		admin := msg.GetStr("ADMIN")
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		arduino := msg.GetStr("ARDUINO")
+		var playerNum string
+		if msg.GetStr("P") != "" {
+			playerNum = msg.GetStr("P")
+			log.Println("rev playerNum:", playerNum)
+		} else {
+			playerNum = "1"
+			log.Println(("this game did't need playerNum!"))
+		}
 		log.Println("Game:", gameId, "start and forward to ", arduino, "! operator:", admin)
-		s.gameControl("1", arduino)
+		s.gameControl("1", arduino, playerNum)
 		s.gameStart(gameId, msg)
 	case GameStart:
 		admin := msg.GetStr("ADMIN")
@@ -338,7 +346,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "end and forward to ", arduino, "! operator:", admin)
 		//不处理数据，只进行转发
-		s.gameControl("0", arduino)
+		s.gameControl("0", arduino, "0")
 	case GameEnd:
 		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
 		s.gameEnd(msg, gameId)
@@ -447,7 +455,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		arduino := msg.GetStr("ARDUINO")
 		log.Println("Game:", gameId, "reset and forward to ", arduino, "! operator:", admin)
 		//不处理数据，只进行转发
-		s.gameControl("2", arduino)
+		s.gameControl("2", arduino, "0")
 	}
 }
 
@@ -501,8 +509,11 @@ func (s *Srv) startNewMatch(event int) {
 }
 
 func (s *Srv) stopMatch() {
-	s.match.Stop()
-	s.match = nil
+	if s.match != nil {
+		s.match.Stop()
+		s.match = nil
+	}
+
 }
 
 func (s *Srv) sendMsg(cmd string, data interface{}, id string, t InboxAddressType) {
@@ -535,11 +546,14 @@ func (s *Srv) sends(msg *InboxMessage, types ...InboxAddressType) {
 	s.send(msg, addrs)
 }
 
-func (s *Srv) gameControl(value string, arduinoId string) {
+func (s *Srv) gameControl(value string, arduinoId string, playerNum string) {
 	addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
 	msg := NewInboxMessage()
 	msg.SetCmd("game_ctrl")
 	msg.Set("value", value)
+	if value == "1" {
+		msg.Set("num", playerNum)
+	}
 	s.sendToOne(msg, addr)
 }
 
