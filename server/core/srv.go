@@ -31,6 +31,7 @@ const (
 	MineControl      = "12"
 	BoxStatusGet     = "13"
 	GameReset        = "14"
+	GameRealStart    = "15"
 )
 
 var _ = log.Println
@@ -456,6 +457,13 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 		log.Println("Game:", gameId, "reset and forward to ", arduino, "! operator:", admin)
 		//不处理数据，只进行转发
 		s.gameControl("2", arduino, "0")
+	case GameRealStart:
+		admin := msg.GetStr("ADMIN")
+		gameId, _ := strconv.Atoi(msg.GetStr("GAME"))
+		arduino := msg.GetStr("ARDUINO")
+		log.Println("Game:", gameId, "real start and start time and forward to ", arduino, "! operator:", admin)
+		//不处理数据，只进行转发
+		s.gameControl("3", arduino, "0")
 	}
 }
 
@@ -906,12 +914,12 @@ func (s *Srv) gameStart(gameId int, msg *InboxMessage) {
 func (s *Srv) gameEnd(msg *InboxMessage, gameId int) {
 	//s.hunter.LoginInfo.IsUploadInfo = true
 	//s.hunter.Time_start = currentTime()
-	//s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B110484DBDBBB104D0"
-	//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B110484DBDBBB104D0"] = "ticketId1"
+	//s.hunter.LoginInfo.PlayerCardInfo["1p"] = "00FF0FF000FFCF4D54B1104848EBDED9FF70"
+	//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104848EBDED9FF70"] = "ticketId1"
 	//s.hunter.LoginInfo.PlayerCardInfo["2p"] = "00FF0FF000FFCF4D54B1104846B4FBC10480"
 	//s.hunter.LoginInfo.CardTicketInfo["00FF0FF000FFCF4D54B1104846B4FBC10480"] = "ticketId2"
 	//s.hunter.Time_firstButton = "5"
-	//s.hunter.Box_ID = 1
+	//s.hunter.Box_ID = 4
 	s.updateGameInfo(msg, gameId)
 	/*            test code
 		switch gameId {
