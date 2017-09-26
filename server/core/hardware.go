@@ -5,16 +5,16 @@ import "log"
 var _ = log.Printf
 
 const (
-	ID_Follow       = iota + 2 //走格子
-	ID_Privity                 //默契牢笼
-	ID_Bang                    //6连
-	ID_Highnoon                //午时已到
-	ID_Greeting                //新人走廊
-	ID_Russian                 //轮盘赌
-	ID_Marksman                //射箭
-	ID_Adivainacion            //占卜
-	ID_Miner                   //挖矿
-	ID_Hunter                  //寻宝
+	ID_Follow       = iota + 2 //走格子 2
+	ID_Privity                 //默契牢笼 3
+	ID_Bang                    //6连 4
+	ID_Highnoon                //午时已到 5
+	ID_Greeting                //新人走廊 6
+	ID_Russian                 //轮盘赌 7
+	ID_Marksman                //射箭 8
+	ID_Adivainacion            //占卜 9
+	ID_Miner                   //挖矿 10
+	ID_Hunter                  //寻宝 11
 )
 
 type LoginInfo struct {

@@ -9,6 +9,8 @@ import (
 
 	"encoding/json"
 	"github.com/labstack/echo"
+	"net"
+	"time"
 )
 
 type HttpRequest struct {
@@ -25,7 +27,19 @@ func NewHttpRequest(s *Srv) *HttpRequest {
 	request := HttpRequest{}
 	request.s = s
 	request.api = ""
-	request.client = &http.Client{}
+	request.client = &http.Client{
+		Transport: &http.Transport{
+			Dial: func(netw, addr string) (net.Conn, error) {
+				conn, err := net.DialTimeout(netw, addr, time.Second*2)
+				if err != nil {
+					return nil, err
+				}
+				conn.SetDeadline(time.Now().Add(time.Second * 2))
+				return conn, nil
+			},
+			ResponseHeaderTimeout: time.Second * 2,
+		},
+	}
 	return &request
 }
 
@@ -68,28 +82,36 @@ func (r *HttpRequest) DoGet() {
 		u.RawQuery = q.Encode()
 		httpAddr = u.String()
 		log.Println("request httpAddr:", httpAddr)
-		request, _ := http.NewRequest(echo.GET, httpAddr, nil)
+		request, err := http.NewRequest(echo.GET, httpAddr, nil)
+		if err != nil {
+			log.Println("New request Get error:", err)
+			return
+		}
 		request.Header.Set("Connection", "keep-alive")
-		response, _ := r.client.Do(request)
+		response, error := r.client.Do(request)
+		if error != nil {
+			log.Println("Do Get error:", error)
+			hr := NewHttpResponse()
+			hr.Api = r.api
+			hr.Msg = r.msg
+			hr.StatusCode = 408
+			r.s.OnHttpRequest(hr)
+			return
+		}
 		defer func() {
 			if response != nil {
 				response.Body.Close()
 			}
 		}()
 		if response != nil {
-			if response.StatusCode == 200 {
+			if response.StatusCode == http.StatusOK {
 				body, _ := ioutil.ReadAll(response.Body)
 				hr := NewHttpResponse()
 				hr.Data = string(body)
-				hr.Msg = r.msg
-				json.Unmarshal(body, &hr.JsonData)
 				hr.Api = r.api
-				//if r.arduinoId != "" {
-				//	hr.ArduinoId = r.arduinoId
-				//}
-				//if r.cardId != "" {
-				//	hr.CardId = r.cardId
-				//}
+				hr.Msg = r.msg
+				hr.StatusCode = http.StatusOK
+				json.Unmarshal(body, &hr.JsonData)
 				r.s.OnHttpRequest(hr)
 			}
 		}
@@ -111,9 +133,20 @@ func (r *HttpRequest) DoPost() {
 		}
 		log.Println("request httpAddr:", r.api)
 		log.Println("parmas:", p)
-		request, _ := http.NewRequest(echo.POST, r.api, strings.NewReader(p.Encode()))
+		request, err := http.NewRequest(echo.POST, r.api, strings.NewReader(p.Encode()))
+		if err != nil {
+			log.Println("New request Post error:", err)
+			return
+		}
 		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
-		response, _ := r.client.Do(request)
+		response, error := r.client.Do(request)
+		if error != nil {
+			log.Println("Do Post error:", error)
+			hr := NewHttpResponse()
+			hr.StatusCode = 408
+			r.s.OnHttpRequest(hr)
+			return
+		}
 		defer func() {
 			if response != nil {
 				response.Body.Close()
@@ -124,15 +157,10 @@ func (r *HttpRequest) DoPost() {
 				body, _ := ioutil.ReadAll(response.Body)
 				hr := NewHttpResponse()
 				hr.Data = string(body)
-				json.Unmarshal(body, &hr.JsonData)
 				hr.Api = r.api
 				hr.Msg = r.msg
-				//if r.arduinoId != "" {
-				//	hr.ArduinoId = r.arduinoId
-				//}
-				//if r.cardId != "" {
-				//	hr.CardId = r.cardId
-				//}
+				hr.StatusCode = http.StatusOK
+				json.Unmarshal(body, &hr.JsonData)
 				r.s.OnHttpRequest(hr)
 			}
 		}

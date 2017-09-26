@@ -213,6 +213,18 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 			}
 		}
 	case AuthorityGet:
+		if httpRes.StatusCode != 200 {
+			arduinoId := httpRes.Msg.GetStr("ID")
+			arduinoType := at(arduinoId)
+			addr := InboxAddress{arduinoType, arduinoId}
+			msg := NewInboxMessage()
+			msg.SetCmd("authority_check")
+			msg.Set("return", "false")
+			s.sendToOne(msg, addr)
+			log.Println("request error:", httpRes.StatusCode)
+			return
+		}
+
 		if res, ok := httpRes.Get("return").(bool); ok {
 			arduinoId := httpRes.Msg.GetStr("ID")
 			arduinoType := at(arduinoId)
@@ -235,6 +247,18 @@ func (s *Srv) handleHttpMessage(httpRes *HttpResponse) {
 			}
 		}
 	case TicketCheck:
+		if httpRes.StatusCode != 200 {
+			arduinoId := httpRes.Msg.GetStr("ID")
+			arduinoType := at(arduinoId)
+			addr := InboxAddress{arduinoType, arduinoId}
+			msg := NewInboxMessage()
+			msg.SetCmd("ticket_check")
+			msg.Set("return", "false")
+			s.sendToOne(msg, addr)
+			log.Println("request error:", httpRes.StatusCode)
+			return
+		}
+
 		arduinoId := httpRes.Msg.GetStr("ID")
 		gameId, _ := strconv.Atoi(httpRes.Msg.GetStr("GAME"))
 		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
