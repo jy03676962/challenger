@@ -466,7 +466,7 @@ func (s *Srv) handleArduinoMessage(msg *InboxMessage) {
 				status = 0
 			}
 			box = append(box,
-				map[string]string{"box_n": strconv.Itoa(i), "box_s": strconv.Itoa(status)},
+				map[string]string{"box_n": strconv.Itoa(s.boxes[i].Box_ID), "box_s": strconv.Itoa(status)},
 			)
 		}
 		addr := InboxAddress{InboxAddressTypeGameArduinoDevice, arduinoId}
