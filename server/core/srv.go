@@ -1523,7 +1523,7 @@ func (s *Srv) watchBoxStatus() {
 	for {
 		<-tickChan
 		for i := range s.boxes {
-			if s.boxes[i].IsAssigned && s.boxes[i].Box_status == -1 {
+			if s.boxes[i].IsAssigned && s.boxes[i].Box_status != 1 {//宝箱被分配出去，且没有被打开过，则需要检查
 				loc, _ := time.LoadLocation("Local")
 				validityTime, err := time.ParseInLocation("2006-01-02 15:04:05", s.boxes[i].Time_validity, loc)
 				//log.Println("validityTime:", validityTime)
@@ -1532,7 +1532,7 @@ func (s *Srv) watchBoxStatus() {
 					timeNow := time.Now().Unix()
 					//log.Println("boxNum:",s.boxes[i].Box_ID," now:", timeNow, " endTime", lastTime)
 					if lastTime <= timeNow {
-						s.boxes[i].Box_status = 0
+						//s.boxes[i].Box_status = 0
 						var arduinoId string
 						arduinoId = returnBox(i)
 						addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
