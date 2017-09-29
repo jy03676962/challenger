@@ -1530,11 +1530,12 @@ func (s *Srv) watchBoxStatus() {
 				if err == nil {
 					lastTime := validityTime.Unix()
 					timeNow := time.Now().Unix()
-					//log.Println("boxNum:",s.boxes[i].Box_ID," now:", timeNow, " endTime", lastTime)
 					if lastTime <= timeNow {
+						//log.Println("boxNum:",s.boxes[i].Box_ID," now:", timeNow, " endTime", lastTime)
 						//s.boxes[i].Box_status = 0
 						var arduinoId string
-						arduinoId = returnBox(i)
+						arduinoId = returnBox(s.boxes[i].Box_ID)
+						log.Println("arduinoId:",arduinoId)
 						addr := InboxAddress{InboxAddressTypeBoxArduinoDevice, arduinoId}
 						msg := NewInboxMessage()
 						msg.SetCmd("box_reset")
