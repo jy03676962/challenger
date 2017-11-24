@@ -1149,9 +1149,17 @@ func (m *Match) initHardware() {
 	sendMsg1.SetCmd("mode_change")
 	sendMsg1.Set("mode", "1")
 	m.srv.sends(sendMsg1, InboxAddressTypeDoorArduino, InboxAddressTypeRoomArduinoDevice, InboxAddressTypeMusicArduino)
+
 	sendMsg := NewInboxMessage()
 	sendMsg.SetCmd("reset")
 	m.srv.sends(sendMsg, InboxAddressTypeDoorArduino, InboxAddressTypeRoomArduinoDevice, InboxAddressTypeMusicArduino)
+
+	sendMsg2 := NewInboxMessage()
+	m.magicLab.DeskLight = true
+	sendMsg2.SetCmd("book_desk")
+	sendMsg2.Set("status", "1")
+	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
+	m.srv.sendToOne(sendMsg2, addr)
 }
 
 //room1
