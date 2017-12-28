@@ -1,6 +1,7 @@
 package core
 
 import (
+	"golang.org/x/net/html/atom"
 	"log"
 	"math"
 	"strconv"
@@ -307,6 +308,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[0]) {
 						m.stairRoom.Candles[0], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[0] = 1
 				}
 			}
 		case "R-3-2":
@@ -319,6 +322,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[1]) {
 						m.stairRoom.Candles[1], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[1] = 1
 				}
 			}
 		case "R-3-3":
@@ -331,6 +336,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[2]) {
 						m.stairRoom.Candles[2], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[2] = 1
 				}
 			}
 		case "R-3-4":
@@ -343,6 +350,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[3]) {
 						m.stairRoom.Candles[3], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[3] = 1
 				}
 			}
 		case "R-3-5":
@@ -355,6 +364,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[4]) {
 						m.stairRoom.Candles[4], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[4] = 1
 				}
 			}
 		case "R-3-6":
@@ -367,6 +378,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 					if color != strconv.Itoa(m.stairRoom.Candles[5]) {
 						m.stairRoom.Candles[5], _ = strconv.Atoi(color)
 					}
+				} else {
+					m.stairRoom.Candles[5] = 1
 				}
 			}
 		case "R-3-7":
@@ -767,7 +780,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			//} else {
 			//m.setStage(StageRoom4)
 			//}
-			m.stairRoom.Step = 3
+			m.stairRoom.Step = 4
 		case StageRoom4:
 			// m.magicLab.Step++
 			//if m.magicLab.Step < 5 {
@@ -881,6 +894,9 @@ func (m *Match) gameStage(dt time.Duration) {
 			}
 			m.Step = 1
 		} else if m.library.Step == 2 {
+			if m.library.Table.IsFinish {
+				m.tableFinish(m.library)
+			}
 			if m.library.Table.IsDestroyed {
 				m.library.Step = 3
 			}
@@ -892,13 +908,20 @@ func (m *Match) gameStage(dt time.Duration) {
 		}
 	case StageRoom3:
 		if m.stairRoom.Step == 1 {
-			if m.ensureCandlesPoweroff() {
+			if m.ensureCandlesPoweron() {
 				m.magicTableAnimation(StageRoom3, dt)
 				m.stairRoom.Step = 2
-				log.Println("all candles off!")
+				log.Println("all candles on!")
 			}
 			m.Step = 1
 		} else if m.stairRoom.Step == 2 {
+			if m.ensureCandlesColorNum() {
+				m.tableFinish(m.stairRoom)
+				m.stairRoom.Step = 3
+				log.Println("all candles color turn!")
+			}
+			m.Step = 2
+		} else if m.stairRoom.Step == 3 {
 			if m.ensureCandlesColor() {
 				if !m.stairRoom.Table.IsFinish {
 					m.stairRoom.Table.IsFinish = true
@@ -908,10 +931,10 @@ func (m *Match) gameStage(dt time.Duration) {
 					sendMsg.Set("finish", "1")
 					addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-3-7"}
 					m.srv.sendToOne(sendMsg, addr)
-					log.Println("all canldes color right!")
+					log.Println("all candles color right!")
 				}
 				if m.stairRoom.Table.IsDestroyed {
-					m.stairRoom.Step = 3
+					m.stairRoom.Step = 4
 				}
 			} else {
 				if m.stairRoom.Table.IsFinish {
@@ -922,14 +945,14 @@ func (m *Match) gameStage(dt time.Duration) {
 					sendMsg.Set("finish", "0")
 					addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-3-7"}
 					m.srv.sendToOne(sendMsg, addr)
-					log.Println("some canldes color wrong!")
+					log.Println("some candles color wrong!")
 				}
 			}
-			m.Step = 2
-		} else if m.stairRoom.Step == 3 {
+			m.Step = 3
+		} else if m.stairRoom.Step == 4 {
 			m.stairRoom.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom3, dt)
-			m.Step = 3
+			m.Step = 4
 		}
 	case StageRoom4:
 		if m.magicLab.Step == 1 {
@@ -1160,6 +1183,63 @@ func (m *Match) initHardware() {
 	sendMsg2.Set("status", "1")
 	addr := InboxAddress{InboxAddressTypeRoomArduinoDevice, "R-4-6"}
 	m.srv.sendToOne(sendMsg2, addr)
+}
+
+func (m *Match) destoryFailed(room interface{}) {
+	sendMsg := NewInboxMessage()
+	switch room.(type) {
+	case *Room3:
+		m.bgmPlay(4)
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-3-1"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-2"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-3"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-4"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-5"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-6"}}
+		sendMsg.SetCmd("candle_ctrl")
+		sendMsg.Set("mode", "1")
+		m.srv.send(sendMsg, addrs)
+	case *Room5:
+		m.bgmPlay(6)
+	}
+}
+
+func (m *Match) tableFinish(room interface{}) {
+	m.bgmPlay(12)
+	sendMsg := NewInboxMessage()
+	switch room.(type) {
+	case *Room2:
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-2-2"},
+			{InboxAddressTypeRoomArduinoDevice, "R-2-3"},
+			{InboxAddressTypeRoomArduinoDevice, "R-2-4"},
+			{InboxAddressTypeRoomArduinoDevice, "R-2-5"}}
+		sendMsg.SetCmd("led_candle")
+		sendMsg.Set("mode", "1")
+		m.srv.send(sendMsg, addrs)
+	case *Room3:
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-3-1"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-2"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-3"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-4"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-5"},
+			{InboxAddressTypeRoomArduinoDevice, "R-3-6"}}
+		sendMsg.SetCmd("candle_ctrl")
+		sendMsg.Set("mode", "2")
+		m.srv.send(sendMsg, addrs)
+	case *Room4:
+		addrs := []InboxAddress{
+			{InboxAddressTypeRoomArduinoDevice, "R-4-1"},
+			{InboxAddressTypeRoomArduinoDevice, "R-4-2"},
+			{InboxAddressTypeRoomArduinoDevice, "R-4-3"},
+			{InboxAddressTypeRoomArduinoDevice, "R-4-4"}}
+		sendMsg.SetCmd("magic_desk")
+		sendMsg.Set("mode", "2")
+		m.srv.send(sendMsg, addrs)
+	case *Room5:
+	}
 }
 
 //room1
@@ -1638,13 +1718,28 @@ func (m *Match) ensureFakeBooks() bool {
 }
 
 //room3
-func (m *Match) ensureCandlesPoweroff() bool {
+func (m *Match) ensureCandlesPoweron() bool {
 	for _, v := range m.stairRoom.Candles {
-		if v != 0 {
+		if v == 0 {
 			return false
 		}
 	}
 	return true
+}
+
+//确定当前蜡烛是否都变色，共6盏蜡烛
+func (m *Match) ensureCandlesColorNum() bool {
+	num := 0
+	for _, v := range m.stairRoom.Candles {
+		if v != 0 && v != 1 {
+			num++
+		}
+	}
+	if num > 5 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (m *Match) ensureCandlesColor() bool {
@@ -3580,16 +3675,12 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 				if m.stairRoom.Table.IsFinish {
 					m.stairRoom.Table.IsDestroyed = true
 				} else {
-					sendMsg.SetCmd("candle_ctrl")
-					sendMsg.Set("status", "0")
-					addrs := []InboxAddress{
-						{InboxAddressTypeRoomArduinoDevice, "R-3-1"},
-						{InboxAddressTypeRoomArduinoDevice, "R-3-2"},
-						{InboxAddressTypeRoomArduinoDevice, "R-3-3"},
-						{InboxAddressTypeRoomArduinoDevice, "R-3-4"},
-						{InboxAddressTypeRoomArduinoDevice, "R-3-5"},
-						{InboxAddressTypeRoomArduinoDevice, "R-3-6"}}
-					m.srv.send(sendMsg, addrs)
+					m.stairRoom.Step = 2
+					m.destoryFailed(m.stairRoom)
+					for k,_ := range m.stairRoom.Candles {
+						m.stairRoom.Candles[k] = 1
+					}
+					log.Print("destory failed!turn to step 2")
 				}
 			}
 		}

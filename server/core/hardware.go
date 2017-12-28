@@ -213,12 +213,12 @@ func NewRoom3() *Room3 {
 	r3 := Room3{}
 	r3.Bgm = 0
 	r3.Candles = map[int]int{
-		0: 1,
-		1: 1,
-		2: 1,
-		3: 1,
-		4: 1,
-		5: 1,
+		0: 0,
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
 	}
 	r3.DoorExit = 0
 	r3.InAnimation = false
