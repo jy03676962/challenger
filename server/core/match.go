@@ -1,7 +1,6 @@
 package core
 
 import (
-	"golang.org/x/net/html/atom"
 	"log"
 	"math"
 	"strconv"
@@ -3765,7 +3764,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 				}
 			case 21:
 				log.Println("reset star!")
-				for k, _ := range m.starTower.ConstellationSymbol {
+				for k,_ := range m.starTower.ConstellationSymbol {
 					m.starTower.ConstellationSymbol[k] = false
 				}
 				sendMsg51 := NewInboxMessage()
