@@ -771,7 +771,7 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			//} else {
 			//m.setStage(StageRoom3)
 			//}
-			m.library.Step = 3
+			m.library.Step = 4
 		case StageRoom3:
 			//m.stairRoom.Step++
 			// if m.stairRoom.Step < 4 {
@@ -895,15 +895,18 @@ func (m *Match) gameStage(dt time.Duration) {
 		} else if m.library.Step == 2 {
 			if m.library.Table.IsFinish {
 				m.tableFinish(m.library)
-			}
-			if m.library.Table.IsDestroyed {
 				m.library.Step = 3
 			}
 			m.Step = 2
 		} else if m.library.Step == 3 {
+			if m.library.Table.IsDestroyed {
+				m.library.Step = 4
+			}
+			m.Step = 3
+		} else if m.library.Step == 4 {
 			m.library.DoorExit = DoorOpen
 			m.endingAnimation(StageRoom2, dt)
-			m.Step = 3
+			m.Step = 4
 		}
 	case StageRoom3:
 		if m.stairRoom.Step == 1 {
@@ -968,6 +971,7 @@ func (m *Match) gameStage(dt time.Duration) {
 			if m.ensureMagicStandsPowerFul() {
 				m.magicLab.Table.IsFinish = true
 				m.magicLab.Step = 3
+				m.tableFinish(m.magicLab)
 				log.Println("all magic stands poweful!")
 			}
 		} else if m.magicLab.Step == 3 {
@@ -990,19 +994,19 @@ func (m *Match) gameStage(dt time.Duration) {
 			}
 		} else if m.starTower.Step == 2 {
 			m.Step = 2
-			if m.ensureConstellationSymbol() || m.starTower.Table.IsFinish {
-				m.starTower.Table.IsFinish = true
+			if m.ensureConNum() {
+				m.tableFinish(m.stairRoom)
 				m.starTower.Step = 3
-				log.Println("constellation right!")
+				m.starTower.Table.IsFinish = true
+				log.Println("5 con has been waked!")
 			}
 		} else if m.starTower.Step == 3 {
 			m.Step = 3
-			if m.starTower.Table.IsDestroyed && m.starTower.Table.IsFinish {
+			if m.starTower.Table.IsDestroyed {
 				m.starTower.DoorExit = DoorOpen
 				m.starTower.DoorMagicRod = DoorOpen
 				m.endingAnimation(StageRoom5, dt)
 			}
-
 		}
 	case StageRoom6:
 		if m.endRoom.Step == 1 {
@@ -1778,7 +1782,7 @@ func (m *Match) powerDownAnimation() {
 }
 
 //room5
-func (m *Match) ensureConstellationSymbol() bool {
+func (m *Match) ensureConNum() bool {
 	i := 0
 	for _, v := range m.starTower.ConstellationSymbol {
 		if v {
@@ -1787,7 +1791,11 @@ func (m *Match) ensureConstellationSymbol() bool {
 	}
 	if i != 5 {
 		return false
+	} else {
+		return true
 	}
+}
+func (m *Match) ensureConstellationSymbol() bool {
 	for _, v := range m.opt.Constellations {
 		if !m.starTower.ConstellationSymbol[v] {
 			return false
@@ -3676,7 +3684,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 				} else {
 					m.stairRoom.Step = 2
 					m.destoryFailed(m.stairRoom)
-					for k,_ := range m.stairRoom.Candles {
+					for k, _ := range m.stairRoom.Candles {
 						m.stairRoom.Candles[k] = 1
 					}
 					log.Print("destory failed!turn to step 2")
@@ -3759,12 +3767,31 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 		if m.starTower.Table.IsUseful && !m.starTower.Table.IsDestroyed {
 			switch magicWords {
 			case 3:
-				if m.starTower.Table.IsFinish {
+				if m.ensureConstellationSymbol() && m.starTower.Table.IsFinish {
 					m.starTower.Table.IsDestroyed = true
+					log.Println("constellation right!")
+				} else {
+					m.destoryFailed(m.starTower)
+					m.starTower.Table.IsDestroyed = false
+					m.starTower.Table.IsFinish = false
+					m.starTower.Step = 2
+					for k, _ := range m.starTower.ConstellationSymbol {
+						m.starTower.ConstellationSymbol[k] = false
+					}
+					sendMsg := NewInboxMessage()
+					sendMsg.SetCmd("reset")
+					addrs := []InboxAddress{
+						{InboxAddressTypeRoomArduinoDevice, "R-5-1"},
+						{InboxAddressTypeRoomArduinoDevice, "R-5-2"},
+						{InboxAddressTypeRoomArduinoDevice, "R-5-3"},
+						{InboxAddressTypeRoomArduinoDevice, "R-5-4"},
+						{InboxAddressTypeRoomArduinoDevice, "R-5-5"}}
+					m.srv.send(sendMsg, addrs)
+					log.Println("constellation wrong and reset!")
 				}
 			case 21:
 				log.Println("reset star!")
-				for k,_ := range m.starTower.ConstellationSymbol {
+				for k, _ := range m.starTower.ConstellationSymbol {
 					m.starTower.ConstellationSymbol[k] = false
 				}
 				sendMsg51 := NewInboxMessage()
