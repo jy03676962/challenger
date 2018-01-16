@@ -10,7 +10,7 @@ Room3OpenDoorDelayTime = 10000.0
 Room4OpenDoorDelayTime = 10000.0
 Room5OpenDoorDelayTime = 10000.0
 Room6LaunchDelayTime = 6000.0
-Room6LastTime = 840000.0 #ms
+Room6LastTime = 600000.0 #ms
 TotalTime = 4200.0 #4200秒，70min
 
 arenaWidth = 8 # 场地长

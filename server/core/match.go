@@ -89,7 +89,7 @@ func (m *Match) initHardwareData() {
 }
 
 func (m *Match) Run() {
-	dt := 10 * time.Millisecond
+	dt := 50 * time.Millisecond
 	tickChan := time.Tick(dt)
 	for {
 		<-tickChan
@@ -511,8 +511,8 @@ func (m *Match) handleInput(msg *InboxMessage) { //处理arduino的信息，来�
 			}
 		case "D-4":
 			sendMsg := NewInboxMessage()
-			log.Println("server:", m.magicLab.DoorExit)
-			log.Println("arudino:", msg.GetStr("ST"))
+			//log.Println("server:", m.magicLab.DoorExit)
+			//log.Println("arudino:", msg.GetStr("ST"))
 			if msg.GetStr("ST") == "1" {
 				if m.magicLab.DoorExit != DoorOpen {
 					sendMsg.SetCmd("door_ctrl")
@@ -1189,10 +1189,12 @@ func (m *Match) initHardware() {
 }
 
 func (m *Match) destoryFailed(room interface{}) {
+	log.Println("destory failed!")
 	sendMsg := NewInboxMessage()
 	switch room.(type) {
 	case *Room3:
-		m.bgmPlay(4)
+		m.CurrentBgm = 4
+		m.bgmPlay(m.CurrentBgm)
 		addrs := []InboxAddress{
 			{InboxAddressTypeRoomArduinoDevice, "R-3-1"},
 			{InboxAddressTypeRoomArduinoDevice, "R-3-2"},
@@ -1204,12 +1206,15 @@ func (m *Match) destoryFailed(room interface{}) {
 		sendMsg.Set("mode", "1")
 		m.srv.send(sendMsg, addrs)
 	case *Room5:
-		m.bgmPlay(6)
+		m.CurrentBgm = 6
+		m.bgmPlay(m.CurrentBgm)
 	}
 }
 
 func (m *Match) tableFinish(room interface{}) {
-	m.bgmPlay(12)
+	log.Println("table finish!")
+	m.CurrentBgm = 12
+	m.bgmPlay(m.CurrentBgm)
 	sendMsg := NewInboxMessage()
 	switch room.(type) {
 	case *Room2:
@@ -1239,7 +1244,7 @@ func (m *Match) tableFinish(room interface{}) {
 			{InboxAddressTypeRoomArduinoDevice, "R-4-3"},
 			{InboxAddressTypeRoomArduinoDevice, "R-4-4"}}
 		sendMsg.SetCmd("magic_desk")
-		sendMsg.Set("mode", "2")
+		sendMsg.Set("mode", "1")
 		m.srv.send(sendMsg, addrs)
 	case *Room5:
 	}
@@ -2579,6 +2584,7 @@ func (m *Match) starControl(starNum int, isOpen bool) { //TODO
 }
 
 func (m *Match) dealStar(starNum int) {
+	log.Println("star:",starNum)
 	switch starNum {
 	case 0:
 	case 1:
@@ -3751,6 +3757,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 		}
 		m.magicLab.MagicWords = 0
 	case *Room5:
+		log.Println("magic words:",magicWords)
 		if magicWords == 1 {
 			m.starTower.LightWall = true
 			sendMsg.SetCmd("light_ctrl")
