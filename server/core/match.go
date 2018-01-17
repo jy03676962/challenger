@@ -2584,7 +2584,7 @@ func (m *Match) starControl(starNum int, isOpen bool) { //TODO
 }
 
 func (m *Match) dealStar(starNum int) {
-	log.Println("star:",starNum)
+	log.Println("star:", starNum)
 	switch starNum {
 	case 0:
 	case 1:
@@ -3285,14 +3285,14 @@ func (m *Match) endingAnimation(s string, dt time.Duration) {
 		m.srv.fakeBooksControl("0", "0", "R-2-23")
 
 		//TODO 蜡烛
-		candles := make([]map[string]string, 3)
-		candles[0] = map[string]string{"candle": "0", "color": "0"}
-		candles[1] = map[string]string{"candle": "1", "color": "0"}
-		candles[2] = map[string]string{"candle": "2", "color": "0"}
-		m.srv.candlesControl(candles, "R-2-2")
-		m.srv.candlesControl(candles, "R-2-3")
-		m.srv.candlesControl(candles, "R-2-4")
-		m.srv.candlesControl(candles, "R-2-5")
+		//candles := make([]map[string]string, 3)
+		//candles[0] = map[string]string{"candle": "0", "color": "0"}
+		//candles[1] = map[string]string{"candle": "1", "color": "0"}
+		//candles[2] = map[string]string{"candle": "2", "color": "0"}
+		//m.srv.candlesControl(candles, "R-2-2")
+		//m.srv.candlesControl(candles, "R-2-3")
+		//m.srv.candlesControl(candles, "R-2-4")
+		//m.srv.candlesControl(candles, "R-2-5")
 		sendMsg1 := NewInboxMessage()
 		sendMsg1.SetCmd("door_ctrl")
 		sendMsg1.Set("status", "1")
@@ -3757,7 +3757,7 @@ func (m *Match) dealMagicWords(room interface{}, magicWords int) {
 		}
 		m.magicLab.MagicWords = 0
 	case *Room5:
-		log.Println("magic words:",magicWords)
+		log.Println("magic words:", magicWords)
 		if magicWords == 1 {
 			m.starTower.LightWall = true
 			sendMsg.SetCmd("light_ctrl")
